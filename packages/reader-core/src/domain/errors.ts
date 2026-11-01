@@ -1,8 +1,13 @@
 export type ReaderErrorCode =
   | "document-not-found"
+  | "document-missing"
   | "document-unavailable"
+  | "document-changed"
   | "unsupported-document"
+  | "unsupported-media-type"
   | "invalid-document"
+  | "invalid-fingerprint"
+  | "duplicate-document"
   | "password-required"
   | "permission-required"
   | "permission-denied"

@@ -23,12 +23,12 @@ REQUIRED_FILES = (
     "spec/02-reader-engine.md", "spec/03-ai-companion.md", "spec/04-data-model.md",
     "spec/05-cross-platform.md", "spec/06-quality-security.md", "spec/07-roadmap.md",
     "spec/08-github-work-plan.md", "docs/README.md", "docs/product/README.md",
-    "docs/architecture/README.md", "docs/architecture/reader-contracts.md",
+    "docs/architecture/README.md", "docs/architecture/reader-contracts.md", "docs/architecture/document-library.md",
     "docs/development/README.md", "docs/decisions/README.md",
     "docs/decisions/0001-desktop-runtime-packaging.md", "docs/web-assets.md",
     "apps/web/package.json", "apps/web/index.html", "apps/web/tsconfig.json",
     "apps/web/tsconfig.build.json", "apps/web/src/main.ts",
-    "apps/web/src/application.ts", "apps/web/src/styles.css",
+    "apps/web/src/application.ts", "apps/web/src/styles.css", "apps/web/src/adapters/web-local-files.ts",
     "apps/web/public/favicon.svg", "apps/web/public/site.webmanifest",
     "apps/web/public/robots.txt", "apps/web/public/brand/shelf-mark.svg",
     "apps/web/public/icons/shelf.svg", ".nvmrc", "package.json", "package-lock.json",
@@ -37,15 +37,18 @@ REQUIRED_FILES = (
     "packages/reader-core/tsconfig.build.json", "packages/reader-core/src/index.ts",
     "packages/reader-core/src/domain/ids.ts", "packages/reader-core/src/domain/page-index.ts",
     "packages/reader-core/src/domain/byte-range.ts", "packages/reader-core/src/domain/document-locator.ts",
+    "packages/reader-core/src/domain/document-access.ts",
     "packages/reader-core/src/domain/result.ts",
     "packages/reader-core/src/domain/errors.ts", "packages/reader-core/src/domain/document.ts",
     "packages/reader-core/src/domain/reading-progress.ts",
     "packages/reader-core/src/domain/bookmark.ts",
     "packages/reader-core/src/domain/annotation.ts", "packages/reader-core/src/domain/quote.ts",
-    "packages/reader-core/src/ports/document-source.ts",
+    "packages/reader-core/src/ports/document-source.ts", "packages/reader-core/src/ports/document-library.ts",
     "packages/reader-core/src/ports/repositories.ts",
     "packages/reader-core/src/ports/runtime.ts", "packages/reader-core/src/ports/index.ts",
     "packages/reader-core/src/application/reader-use-cases.ts",
+    "packages/reader-core/src/application/document-library.ts",
+    "packages/reader-core/src/application/sha256.ts",
     "packages/reader-core/tests/contracts.type-test.ts",
     "packages/pdf-engine/README.md", "packages/pdf-engine/package.json",
     "packages/pdf-engine/tsconfig.json", "packages/pdf-engine/tsconfig.build.json",
@@ -61,9 +64,10 @@ REQUIRED_FILES = (
     "scripts/format-check.mjs", "scripts/lint.mjs", "scripts/run-tests.mjs",
     "scripts/clean.mjs", "scripts/build-web.mjs", "tests/README.md",
     "tests/unit/application-foundation.test.mjs", "tests/unit/reader-contracts.test.mjs",
+    "tests/unit/document-library.test.mjs", "tests/unit/web-file-adapter.test.mjs",
 )
 REQUIRED_DIRS = (
-    "apps/web/src", "apps/web/public", "apps/desktop", "apps/mobile",
+    "apps/web/src", "apps/web/src/adapters", "apps/web/public", "apps/desktop", "apps/mobile",
     "packages/reader-core", "packages/reader-core/src/domain",
     "packages/reader-core/src/ports", "packages/reader-core/src/application",
     "packages/reader-core/tests", "packages/pdf-engine",
@@ -142,6 +146,8 @@ def check_application_workspace() -> None:
         fail(f"root npm workspace must explicitly include {expected_workspaces}")
     if web_manifest.get("name") != "@shelf/web" or web_manifest.get("private") is not True:
         fail("web application must be a private @shelf/web workspace")
+    if web_manifest.get("dependencies", {}).get("@shelf/reader-core") != "0.1.0":
+        fail("web application must use the Reader Core workspace API")
     if reader_manifest.get("name") != "@shelf/reader-core" or reader_manifest.get("private") is not True:
         fail("Reader core must be a private @shelf/reader-core workspace")
     if reader_manifest.get("types") != "./dist/index.d.ts":
@@ -167,6 +173,8 @@ def check_application_workspace() -> None:
         fail("package-lock.json is missing the Reader core workspace entry")
     if lock_packages.get("node_modules/@shelf/reader-core", {}).get("resolved") != "packages/reader-core":
         fail("package-lock.json is missing the Reader core workspace link")
+    if lock_packages.get("apps/web", {}).get("dependencies", {}).get("@shelf/reader-core") != "0.1.0":
+        fail("package-lock.json is missing the web-to-reader-core workspace dependency")
     if lock_packages.get("packages/pdf-engine", {}).get("name") != "@shelf/pdf-engine":
         fail("package-lock.json is missing the PDF engine workspace entry")
     if lock_packages.get("node_modules/@shelf/pdf-engine", {}).get("resolved") != "packages/pdf-engine":

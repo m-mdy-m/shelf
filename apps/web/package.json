@@ -1,1 +1,9 @@
-{"name":"@shelf/web","version":"0.1.0","private":true,"type":"module"}
+{
+  "name": "@shelf/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@shelf/reader-core": "0.1.0"
+  }
+}

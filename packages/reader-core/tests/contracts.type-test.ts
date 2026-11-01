@@ -1,4 +1,5 @@
 import type {
+  DocumentCopyStorePort,
   DocumentPermissionPort,
   DocumentLocatorStorePort,
   DocumentSourcePort,
@@ -9,6 +10,9 @@ import type {
   DocumentId,
   DocumentLocator,
   DocumentSource,
+  Document,
+  DocumentAccessState,
+  DocumentImportMode,
   PageIndex,
   QuoteId,
 } from "../src/index.js";
@@ -52,7 +56,7 @@ const locator: DocumentLocator = {
 };
 
 const safeDocumentSource: DocumentSource = {
-  kind: "local-file",
+  kind: "external-reference",
   displayName: "fixture.pdf",
   mediaType: "application/pdf",
   sizeBytes: 0,
@@ -81,6 +85,34 @@ const fakeDocumentSourcePort: DocumentSourcePort = {
   }),
   close: async () => ({ ok: true, value: undefined }),
 };
+
+const fakeCopyStore: DocumentCopyStorePort = {
+  copyFromSource: async () => ({ ok: true, value: locator }),
+  deleteCopy: async () => ({ ok: true, value: undefined }),
+};
+
+const importMode: DocumentImportMode = "imported-copy";
+const accessState: DocumentAccessState = safeDocumentAccessState();
+const safeDocument: Document = {
+  id: documentId,
+  metadata: {
+    title: "Fixture PDF",
+    authors: [],
+    language: null,
+    pageCount: null,
+    pdfTitle: null,
+    pdfSubject: null,
+  },
+  source: safeDocumentSource,
+  fingerprint: null,
+  accessState,
+  createdAt: 1,
+  updatedAt: 1,
+};
+
+function safeDocumentAccessState(): DocumentAccessState {
+  return "available";
+}
 
 const fakePermissions: DocumentPermissionPort = {
   query: async () => ({ ok: true, value: "granted" }),
@@ -114,7 +146,11 @@ void [
   highlightDraft,
   noteDraft,
   safeDocumentSource,
+  safeDocument,
   fakeDocumentSourcePort,
+  fakeCopyStore,
+  importMode,
+  accessState,
   fakePermissions,
   fakeLocatorStore,
   invalidDocument,

@@ -2,8 +2,9 @@ import type {
   DocumentFingerprint,
   DocumentId,
 } from "./ids.js";
+import type { DocumentAccessState } from "./document-access.js";
 
-export type DocumentSourceKind = "local-file" | "imported-copy" | "provider";
+export type DocumentSourceKind = "imported-copy" | "external-reference" | "provider";
 
 export interface DocumentSource {
   /** Source category only; access locators are stored separately by adapters. */
@@ -31,6 +32,8 @@ export interface Document {
   readonly source: DocumentSource;
   /** Optional content fingerprint for matching/relinking, not a primary ID. */
   readonly fingerprint: DocumentFingerprint | null;
+  /** Last verified access state; never contains a path, URI, or provider error. */
+  readonly accessState: DocumentAccessState;
   readonly createdAt: number;
   readonly updatedAt: number;
 }

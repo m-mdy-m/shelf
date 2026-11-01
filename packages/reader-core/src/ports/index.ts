@@ -1,4 +1,7 @@
 export type {
+  DocumentCopyStorePort,
+} from "./document-library.js";
+export type {
   DocumentLocatorStorePort,
   DocumentPermissionPort,
   DocumentPermissionState,

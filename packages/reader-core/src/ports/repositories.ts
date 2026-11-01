@@ -2,7 +2,7 @@ import type { Annotation } from "../domain/annotation.js";
 import type { Bookmark } from "../domain/bookmark.js";
 import type { Document } from "../domain/document.js";
 import type { ReaderError } from "../domain/errors.js";
-import type { AnnotationId, BookmarkId, DocumentId, QuoteId } from "../domain/ids.js";
+import type { AnnotationId, BookmarkId, DocumentFingerprint, DocumentId, QuoteId } from "../domain/ids.js";
 import type { ReadingProgress } from "../domain/reading-progress.js";
 import type { Quote } from "../domain/quote.js";
 import type { Result } from "../domain/result.js";
@@ -10,6 +10,7 @@ import type { Result } from "../domain/result.js";
 /** Persistence interfaces deliberately expose domain records, not SQL details. */
 export interface DocumentRepositoryPort {
   getById(id: DocumentId): Promise<Result<Document | null, ReaderError>>;
+  findByFingerprint(fingerprint: DocumentFingerprint): Promise<Result<Document | null, ReaderError>>;
   list(): Promise<Result<readonly Document[], ReaderError>>;
   save(document: Document): Promise<Result<void, ReaderError>>;
   delete(id: DocumentId): Promise<Result<void, ReaderError>>;

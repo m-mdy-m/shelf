@@ -10,7 +10,7 @@
 | Android | Capacitor/native | Storage Access Framework, local persistence, share sheet, local notifications |
 | iOS | Capacitor/native | UIDocumentPicker/security-scoped access, local persistence, Keychain, share sheet, local notifications |
 
-PWA is an additional delivery option, not equivalent to a fully offline native app.
+PWA is an additional delivery option, not equivalent to a fully offline native app. The web file adapter accepts picker-provided Blobs as temporary sources and writes imported copies to the browser Origin Private File System (OPFS); the durable library repository/locator store is still a separate persistence integration.
 
 ## Shared code
 
@@ -18,7 +18,7 @@ Share domain/application contracts, React/TypeScript Reader UI where practical, 
 
 ## Native adapters
 
-Keep document pickers and persistent permissions, import/copy/range access, secure credentials, local DB lifecycle/backup, notifications, share/open-in, app lifecycle, packaging, and permission prompts behind platform adapters.
+Keep document pickers and persistent permissions, import/copy/range access, secure credentials, local DB lifecycle/backup, notifications, share/open-in, app lifecycle, packaging, and permission prompts behind platform adapters. Android Storage Access Framework and iOS security-scoped document references must implement the same opaque locator/permission ports without leaking their URI or URL formats into Reader Core.
 
 ## Local-first acceptance
 

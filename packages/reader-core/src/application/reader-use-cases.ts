@@ -1,7 +1,6 @@
 import type { Annotation } from "../domain/annotation.js";
 import type { Bookmark } from "../domain/bookmark.js";
 import type { Document } from "../domain/document.js";
-import type { DocumentLocator } from "../domain/document-locator.js";
 import type { ReaderError } from "../domain/errors.js";
 import type {
   AnnotationId,
@@ -14,6 +13,7 @@ import type { PageIndex } from "../domain/page-index.js";
 import type { ReadingProgress, ReaderSession } from "../domain/reading-progress.js";
 import type { Quote } from "../domain/quote.js";
 import type { Result } from "../domain/result.js";
+import type { ImportDocumentInput, ImportDocumentResult } from "./document-library.js";
 
 type WithoutGeneratedFields<Value> = Value extends unknown
   ? Omit<Value, "id" | "createdAt" | "updatedAt">
@@ -32,7 +32,7 @@ export interface SaveReadingProgressInput {
 }
 
 export interface ReaderUseCases {
-  importDocument(locator: DocumentLocator): Promise<Result<Document, ReaderError>>;
+  importDocument(input: ImportDocumentInput): Promise<Result<ImportDocumentResult, ReaderError>>;
   getDocument(id: DocumentId): Promise<Result<Document | null, ReaderError>>;
   listDocuments(): Promise<Result<readonly Document[], ReaderError>>;
   openDocument(id: DocumentId): Promise<Result<ReaderSession, ReaderError>>;

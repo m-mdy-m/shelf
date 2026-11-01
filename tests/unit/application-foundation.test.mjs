@@ -12,7 +12,7 @@ async function json(relativePath) {
 
 test("the root workspace exposes all required quality gates", async () => {
   const manifest = await json("package.json");
-  const required = ["format:check", "lint", "typecheck", "test", "build:core", "build:pdf", "build", "check", "ci"];
+  const required = ["format:check", "lint", "typecheck", "test", "build:core", "build:pdf", "build:web:ts", "build", "check", "ci"];
   for (const script of required) {
     assert.equal(typeof manifest.scripts[script], "string", `missing npm script: ${script}`);
   }
@@ -28,6 +28,8 @@ test("the web and reader core are private, locked npm workspaces", async () => {
   assert.deepEqual(rootManifest.workspaces, ["apps/web", "packages/reader-core", "packages/pdf-engine"]);
   assert.equal(webManifest.name, "@shelf/web");
   assert.equal(webManifest.private, true);
+  assert.equal(webManifest.dependencies["@shelf/reader-core"], "0.1.0");
+  assert.equal(lock.packages["apps/web"].dependencies["@shelf/reader-core"], "0.1.0");
   assert.equal(readerManifest.name, "@shelf/reader-core");
   assert.equal(readerManifest.private, true);
   assert.equal(readerManifest.types, "./dist/index.d.ts");

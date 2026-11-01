@@ -13,7 +13,7 @@
 
 ## Entities
 
-- **Document:** stable ID, title, authors, language, safe source metadata (kind/display name/media type/size/modified time), content fingerprint, page count, outline/text extraction status, timestamps. No raw path, content URI, or platform access handle.
+- **Document:** stable ID, title, authors, language, safe source metadata (imported copy/external reference/provider, display name/media type/size/modified time), SHA-256 content fingerprint, explicit access state, page count, outline/text extraction status, timestamps. No raw path, content URI, or platform access handle.
 - **Document access locator:** opaque path/URI/provider handle stored separately by an adapter and keyed by Document ID; may expire and is never exported by default.
 - **ReadingProgress:** document ID, zero-based page index, normalized scroll offset, zoom, reading mode, updated timestamp.
 - **Bookmark:** stable ID, document ID, zero-based page index, optional text anchor/label, creation timestamp.
@@ -24,7 +24,7 @@
 
 ## Relationships
 
-Document owns progress, bookmarks, annotations, quotes, and document-scoped conversations. The separate access-locator record is keyed by Document ID and is removed when the document is forgotten or its access is revoked. A Quote may reference an Annotation but remains independently exportable. AI output is not persisted as a Note, Quote, Highlight, or Concept until the user accepts it and the application confirms the write. All records remain valid in standalone mode.
+Document owns progress, bookmarks, annotations, quotes, and document-scoped conversations. The separate access-locator record is keyed by Document ID and is removed when the document is forgotten or its access is revoked. An imported copy is stored in app-managed reopenable storage; an external reference points to the original source and requires reopenable permission material. Duplicate imports default to reusing the existing stable document ID and can explicitly keep a second library entry. A Quote may reference an Annotation but remains independently exportable. AI output is not persisted as a Note, Quote, Highlight, or Concept until the user accepts it and the application confirms the write. All records remain valid in standalone mode.
 
 ## Migrations
 

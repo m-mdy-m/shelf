@@ -8,7 +8,7 @@ The public, platform-neutral TypeScript API lives in `packages/reader-core`. She
 - `DocumentLocator` is adapter-owned access information. Its opaque value may encode a filesystem path, content URI, security-scoped URL, browser handle, or provider-specific token.
 - A locator is not an ID. It may expire, change, or be unavailable after import. It must not appear in the exportable `Document` record, UI, logs, or exports.
 - Adapters persist or retain locator values separately through `DocumentLocatorStorePort`, keyed by `DocumentId`. Store access material using platform-appropriate protection and clear it when the document is removed or access is released.
-- `Document.source` contains only source category and safe display metadata. It never contains an opaque path/URI/handle.
+- `Document.source` contains only source category and safe display metadata. It never contains an opaque path/URI/handle. `Document.accessState` distinguishes available, missing, permission-required, permission-denied, permission-expired, and changed content.
 - Opaque IDs are nominal TypeScript types; a bookmark ID cannot be passed where a document ID is required.
 - `PageIndex` is always zero-based. The first physical page is index `0`; simple human-facing numbering is index + 1. PDF page labels are presentation metadata and do not redefine the index.
 
@@ -16,7 +16,7 @@ The public, platform-neutral TypeScript API lives in `packages/reader-core`. She
 
 | Record | Purpose |
 |---|---|
-| `Document` | Stable identity, metadata, safe source metadata, optional content fingerprint, and timestamps. |
+| `Document` | Stable identity, metadata, safe source metadata, SHA-256 content fingerprint, access state, and timestamps. |
 | `ReadingProgress` | Last page index, normalized scroll offset, zoom, reading mode, and update time. |
 | `Bookmark` | A reading destination with an optional text anchor and user label. |
 | `Annotation` | Discriminated highlight or note; passage anchors and normalized page geometry are independent. |
@@ -38,6 +38,7 @@ Use `parsePageIndex`, `parseOpaqueId`, and `parseByteRange` for untrusted input;
 - `DocumentSourcePort`: inspect a locator, open a handle, read a bounded byte range, and close the handle.
 - `DocumentLocatorStorePort`: store and retrieve the adapter-owned locator separately from the exportable Document record.
 - `DocumentPermissionPort`: query, request, and release access to the underlying source.
+- `DocumentCopyStorePort`: stream a bounded source handle into app-managed, reopenable imported-copy storage and remove partial/owned copies.
 - Repository ports: save/read/delete documents, reading progress, bookmarks, annotations, and quotes without exposing SQL or storage-driver types.
 - `ClockPort` and `IdGeneratorPort`: deterministic time and ID generation at application boundaries.
 - `SecureCredentialStorePort`: transient secret access via a secure platform store; values must never be logged or exported.
@@ -47,14 +48,14 @@ A byte range uses a zero-based offset and a positive length no larger than `MAX_
 
 ## Reader use cases
 
-`ReaderUseCases` defines the application-facing operations for import/list/get/open/close, progress, bookmarks, annotations, and quotes. This is a contract, not an implementation. On import, application services store the safe Document record and the access locator through their separate ports. Opening resolves the locator by stable DocumentId and handles permission renewal. Persistence transactions, source release, and record consistency belong to application services and concrete adapters—not UI components.
+`ReaderUseCases` defines the application-facing operations for import/list/get/open/close, progress, bookmarks, annotations, and quotes. `DocumentLibraryService` implements the import/access portion with injected ports. Imported copies are written into app-managed storage; external references retain the original source and require a reopenable locator. Imports compute a streaming SHA-256 fingerprint using successive reads no larger than 1 MiB. Duplicate imports reuse an existing stable document ID by default; `keep-both` is an explicit alternative. Opening checks permission, source availability, and fingerprint before returning the record as available. A replacement external reference can be relinked only when its content fingerprint matches. Persistence compensation, source release, and record consistency belong to application services—not UI components.
 
 ## Adapter rules
 
 - Adapters translate their platform's locators, permission errors, and lifecycle events into these contracts.
 - No platform object (FileSystemHandle, Android Uri, NSURL, SQLite connection, Capacitor plugin instance) crosses the port boundary.
 - A file handle or source handle must be released deterministically on close, error, and cancellation.
-- File access is requested explicitly; expired permission is distinct from a missing document.
+- File access is requested explicitly; expired permission is distinct from a missing document. Changed content is distinct from both and must not silently inherit the old annotations/anchors.
 - Keep opaque locators out of document exports and logs; clear them when the source is deleted or access is revoked.
 - Do not persist provider credentials or raw OS errors in Reader records.
 - Unit tests can use in-memory fakes because the contracts contain no concrete platform dependency.
@@ -67,4 +68,4 @@ npm run build
 npm test
 ```
 
-The TypeScript type tests assert ID separation, locator separation, PageIndex branding, discriminated annotation drafts, and structural compatibility of fake source/permission/locator-store ports. Runtime tests validate page-index parsing, bounded byte ranges, and opaque-ID parsing.
+The TypeScript type tests assert ID separation, locator separation, PageIndex branding, discriminated annotation drafts, document access/import types, and structural compatibility of source/copy/permission/locator-store ports. Runtime tests validate page-index parsing, bounded byte ranges, opaque-ID parsing, SHA-256 vectors, duplicate imports, rollback, missing/expired access, and fingerprint-verified relinking.

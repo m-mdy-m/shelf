@@ -15,7 +15,7 @@ The normative design is in [spec/01-architecture.md](../../spec/01-architecture.
 
 Shells depend on UI packages. UI invokes application use cases. Application use cases depend on domain contracts and ports. Platform/provider adapters implement those ports.
 
-Domain code must not depend on React, PDF.js internals, SQLite drivers, Capacitor APIs, or one model vendor. The public Reader contracts are defined in [reader-contracts.md](reader-contracts.md) and exported from `@shelf/reader-core`. PDF.js integration, rendering layers, and page virtualization live in [`pdf-engine.md`](pdf-engine.md), isolated inside `@shelf/pdf-engine`.
+Domain code must not depend on React, PDF.js internals, SQLite drivers, Capacitor APIs, or one model vendor. The public Reader contracts are defined in [reader-contracts.md](reader-contracts.md) and exported from `@shelf/reader-core`. Local import, duplicate identity, access-state handling, and fingerprint-verified relinking are specified in [document-library.md](document-library.md). PDF.js integration, rendering layers, and page virtualization live in [`pdf-engine.md`](pdf-engine.md), isolated inside `@shelf/pdf-engine`.
 
 ## When to create a package
 
