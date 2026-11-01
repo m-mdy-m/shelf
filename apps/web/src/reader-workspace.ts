@@ -163,7 +163,10 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   stage.setAttribute("role", "region");
   stage.setAttribute("aria-label", "PDF pages. Use arrow keys or Page Up and Page Down to navigate.");
   const spacer = element(owner, "div", "reader-scroll-spacer");
-  stage.append(spacer);
+  const loadingMessage = element(owner, "p", "reader-loading", "Loading PDF page…");
+  loadingMessage.setAttribute("role", "status");
+  stage.setAttribute("aria-busy", "true");
+  stage.append(spacer, loadingMessage);
   body.append(outline, stage);
 
   root.replaceChildren(documentHeading, toolbar, body);
@@ -186,6 +189,12 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     continuousButton.setAttribute("aria-pressed", String(mode === "continuous"));
     singleButton.setAttribute("aria-pressed", String(mode === "single-page"));
     if (owner.activeElement !== pageInput) pageInput.value = String(currentPage + 1);
+  }
+
+  function setReaderBusy(busy: boolean, message = "Loading PDF page…"): void {
+    loadingMessage.textContent = message;
+    loadingMessage.hidden = !busy;
+    stage.setAttribute("aria-busy", String(busy));
   }
 
   function rememberHandle(index: number, handle: PdfPageHandle): void {
@@ -241,6 +250,22 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     return { root: pageRoot, layers, handle: null, loading: false, renderedScale: null };
   }
 
+  function showPageError(index: number, page: MountedPage, message: string): void {
+    page.root.querySelector(".reader-page-error")?.remove();
+    const error = element(owner, "div", "reader-page-error");
+    const description = element(owner, "p", "reader-page-error-message", message);
+    const retry = createButton(owner, "Retry page");
+    retry.addEventListener("click", () => {
+      error.remove();
+      page.renderedScale = null;
+      void renderMountedPage(index, page);
+    });
+    error.append(description, retry);
+    page.root.append(error);
+    if (index === currentPage) setReaderBusy(false);
+    onStatus(message, true);
+  }
+
   function clearPagesExcept(keep: ReadonlySet<number>): void {
     for (const [index, page] of pages) {
       if (keep.has(index)) continue;
@@ -261,7 +286,11 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     page.loading = true;
     const handle = page.handle ?? await getPageHandle(index);
     page.loading = false;
-    if (disposed || pages.get(index) !== page || handle === null) return;
+    if (disposed || pages.get(index) !== page) return;
+    if (handle === null) {
+      showPageError(index, page, "This page could not be loaded. Check the source file and retry.");
+      return;
+    }
     page.handle = handle;
 
     const changed = updateMeasuredSize(index, handle);
@@ -280,9 +309,9 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       devicePixelRatio: Math.min(globalThis.devicePixelRatio || 1, 2),
     });
     if (!result.ok && result.error.code !== "cancelled" && !disposed && pages.get(index) === page) {
-      const message = element(owner, "p", "reader-page-error", result.error.message);
-      page.root.append(message);
-      onStatus(result.error.message, true);
+      showPageError(index, page, result.error.message);
+    } else if (result.ok && index === currentPage) {
+      setReaderBusy(false);
     }
   }
 
@@ -315,7 +344,12 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     }
 
     const firstVisible = window.firstVisibleIndex as number;
-    if (firstVisible >= 0 && firstVisible < session.info.pageCount) currentPage = firstVisible;
+    if (firstVisible >= 0 && firstVisible < session.info.pageCount && firstVisible !== currentPage) {
+      currentPage = firstVisible;
+      setReaderBusy(true, "Loading page " + String(currentPage + 1) + "…");
+    }
+    const visiblePage = pages.get(currentPage);
+    if (visiblePage?.handle !== null && visiblePage?.renderedScale === zoom) setReaderBusy(false);
     syncControls();
   }
 
@@ -336,7 +370,12 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       spacer.style.height = String(Math.max(stage.clientHeight, height + 32)) + "px";
     }
     spacer.style.width = "100%";
-    if (page.handle === null || page.renderedScale !== zoom) void renderMountedPage(currentPage, page);
+    if (page.handle === null || page.renderedScale !== zoom) {
+      setReaderBusy(true, "Loading page " + String(currentPage + 1) + "…");
+      void renderMountedPage(currentPage, page);
+    } else {
+      setReaderBusy(false);
+    }
     stage.scrollTop = 0;
     syncControls();
   }
@@ -404,6 +443,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       return;
     }
     currentPage = index;
+    setReaderBusy(true, "Loading page " + String(index + 1) + "…");
     const handle = await ensurePageGeometry(index);
     if (handle === null) return;
     if (mode === "continuous") {
@@ -443,6 +483,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     if (Math.abs(next - zoom) < 0.001) return;
     const position = readPosition();
     zoom = next;
+    setReaderBusy(true, "Rendering at " + formatZoom(zoom) + "…");
     if (mode === "continuous") {
       const size = virtualizer.getPageSize(toPageIndex(position.pageIndex));
       stage.scrollTop = virtualizer.getPageTop(toPageIndex(position.pageIndex), zoom) +
@@ -566,6 +607,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
 
   async function initialize(): Promise<void> {
     syncControls();
+    setReaderBusy(true, "Loading page " + String(currentPage + 1) + "…");
     const first = await ensurePageGeometry(currentPage);
     if (disposed) return;
     if (first !== null && mode === "continuous") {

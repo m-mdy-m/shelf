@@ -97,6 +97,10 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(shell.includes("registerReference"), true);
   assert.equal(shell.includes("mountReaderWorkspace"), true);
   assert.equal(workspace.includes("createPdfPageLayers"), true);
+  assert.equal(workspace.includes("Loading PDF page"), true);
+  assert.equal(workspace.includes("Retry page"), true);
+  assert.equal(workspace.includes("does not contain a table of contents"), true);
+  assert.equal(workspace.includes("reader-page-error"), true);
   assert.equal(buildScript.includes("access(entryAsset)"), true);
   assert.equal(shell.includes("fetch("), false);
   assert.equal(shell.includes("XMLHttpRequest"), false);
