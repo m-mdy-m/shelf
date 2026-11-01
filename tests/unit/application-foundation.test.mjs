@@ -86,6 +86,7 @@ test("the web entry point contains local import and reader wiring", async () => 
   const entry = await readFile(path.join(root, "apps/web/src/main.ts"), "utf8");
   const shell = await readFile(path.join(root, "apps/web/src/application.ts"), "utf8");
   const workspace = await readFile(path.join(root, "apps/web/src/reader-workspace.ts"), "utf8");
+  const store = await readFile(path.join(root, "packages/platform-adapters/src/browser/indexeddb-store.ts"), "utf8");
   const buildScript = await readFile(path.join(root, "scripts/build-web.mjs"), "utf8");
 
   assert.equal(html.includes('src="/assets/main.js"'), true);
@@ -97,6 +98,16 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(shell.includes("registerReference"), true);
   assert.equal(shell.includes("mountReaderWorkspace"), true);
   assert.equal(workspace.includes("createPdfPageLayers"), true);
+  assert.equal(workspace.includes("Loading PDF page"), true);
+  assert.equal(workspace.includes("Retry page"), true);
+  assert.equal(workspace.includes("Retry contents"), true);
+  assert.equal(workspace.includes("let outlineLoaded = false"), true);
+  assert.equal(workspace.includes("await loadOutline()"), false);
+  assert.equal(store.includes("function isReadingProgress"), true);
+  assert.equal(store.includes('"pageIndex" in record'), true);
+  assert.equal(shell.includes("document.addEventListener(\"visibilitychange\""), true);
+  assert.equal(shell.includes("workspace.dispose()"), true);
+  assert.equal(shell.includes("Ownership of the permission-checked source handle transfers"), true);
   assert.equal(buildScript.includes("access(entryAsset)"), true);
   assert.equal(shell.includes("fetch("), false);
   assert.equal(shell.includes("XMLHttpRequest"), false);

@@ -122,13 +122,16 @@ export function mountShelf(root: HTMLElement): void {
   }
 
   async function closeActiveDocument(): Promise<void> {
-    if (activeWorkspace !== null) {
-      await activeWorkspace.persist();
-      activeWorkspace.dispose();
-    }
+    const workspace = activeWorkspace;
+    const session = activeSession;
     activeWorkspace = null;
-    if (activeSession !== null) await activeSession.close();
     activeSession = null;
+
+    if (workspace !== null) {
+      workspace.dispose();
+      await workspace.persist();
+    }
+    if (session !== null) await session.close();
     viewer.replaceChildren();
     viewer.hidden = true;
   }
@@ -150,6 +153,9 @@ export function mountShelf(root: HTMLElement): void {
       return;
     }
 
+    // Ownership of the permission-checked source handle transfers to the PDF
+    // adapter. It releases the handle on every failed open and the session
+    // releases it on close; do not close it a second time here.
     const opened = await pdf.open(id, access.value.source);
     if (!opened.ok) {
       setStatus(opened.error.message, true);
@@ -266,14 +272,24 @@ export function mountShelf(root: HTMLElement): void {
   referenceButton.addEventListener("click", () => {
     void importPickedFile("external-reference");
   });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "hidden" || activeWorkspace === null) return;
+    void activeWorkspace.persist();
+  });
+
   window.addEventListener("pagehide", () => {
-    void (async () => {
-      if (activeWorkspace !== null) {
-        await activeWorkspace.persist();
-        activeWorkspace.dispose();
-      }
-      if (activeSession !== null) await activeSession.close();
-    })();
+    const workspace = activeWorkspace;
+    const session = activeSession;
+    activeWorkspace = null;
+    activeSession = null;
+
+    // pagehide is a last-chance signal: release UI/render resources
+    // synchronously, then make a best-effort final IndexedDB write.
+    if (workspace !== null) {
+      workspace.dispose();
+      void workspace.persist();
+    }
+    if (session !== null) void session.close();
   }, { once: true });
 
   void refreshLibrary();
