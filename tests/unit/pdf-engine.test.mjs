@@ -457,7 +457,7 @@ test("virtualization updates offsets after discovering mixed page dimensions", (
     estimatedPageHeight: 100,
     pageGap: 10,
     maxMountedPages: 3,
-    overscanPages: 0,
+    overscanPages: 1,
   });
   const before = virtualizer.getWindow({
     scrollTop: 220,
