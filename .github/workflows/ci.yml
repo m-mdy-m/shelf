@@ -9,24 +9,91 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: shelf-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
-    name: Quality
+    name: Pipeline quality checks
     runs-on: ubuntu-latest
     steps:
-      - name: Smoke
-        run: echo "quality job"
+      - name: Check out Shelf
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Fetch the pinned shared Pipeline runner
+        run: |
+          mkdir -p .pipeline
+          git -C .pipeline init
+          git -C .pipeline remote add origin https://github.com/m-mdy-m/pipeline.git
+          git -C .pipeline fetch --depth 1 origin f4e05487193a653ecb96cd09f9a6b2da7ba4822
+          git -C .pipeline checkout --detach FETCH_HEAD
+
+      - name: Run Shelf task graph
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.pipeline/src
+        run: python -m pipeline.providers.github task ci --root "$GITHUB_WORKSPACE" --config "$GITHUB_WORKSPACE/pipeline.toml" --json
 
   structure:
-    name: Structure
+    name: PSX project structure
     runs-on: ubuntu-latest
     steps:
-      - name: Smoke
-        run: echo "structure job"
+      - name: Check out Shelf
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.25.0"
+          cache: false
+
+      - name: Fetch the pinned PSX checker
+        run: |
+          mkdir -p .tools/psx
+          git -C .tools/psx init
+          git -C .tools/psx remote add origin https://github.com/m-mdy-m/PSX.git
+          git -C .tools/psx fetch --depth 1 origin e4f12e85725e1ebd44c7f3a4e18fcbaa893b30df
+          git -C .tools/psx checkout --detach FETCH_HEAD
+
+      - name: Build PSX
+        working-directory: .tools/psx
+        run: go build -trimpath -o "$RUNNER_TEMP/psx" ./cmd/psx
+
+      - name: Verify declared project structure
+        run: |
+          "$RUNNER_TEMP/psx" fix --dry-run
+          "$RUNNER_TEMP/psx" check
+          git diff --exit-code
 
   git_flow:
-    name: Git flow
+    name: GIX branch-flow configuration
     runs-on: ubuntu-latest
     steps:
-      - name: Smoke
-        run: echo "git flow job"
+      - name: Check out Shelf
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.25.0"
+          cache: false
+
+      - name: Fetch the pinned GIX tool
+        run: |
+          mkdir -p .tools/gix
+          git -C .tools/gix init
+          git -C .tools/gix remote add origin https://github.com/m-mdy-m/gix.git
+          git -C .tools/gix fetch --depth 1 origin 9f0867923177cef3cd36d980cc2b356a35bee507
+          git -C .tools/gix checkout --detach FETCH_HEAD
+
+      - name: Build GIX
+        working-directory: .tools/gix
+        run: go build -trimpath -o "$RUNNER_TEMP/gix" ./cmd/gix
+
+      - name: Validate Shelf Git-flow configuration
+        run: "$RUNNER_TEMP/gix" config list
