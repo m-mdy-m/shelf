@@ -1,38 +1,96 @@
 # Shelf — Architecture
 
-## Shape
-Start as an independently distributable **modular application with explicit ports and adapters**, not a fleet of microservices.
+## Architectural shape
+
+Start as an independently distributable **modular application with explicit ports and adapters**. Do not split every feature into a process or microservice.
 
 ```text
 Shelf
-├── Application shells: Web/PWA | Desktop (Win/macOS/Linux) | Mobile (Android/iOS)
-├── Shared UI: Reader | PDF adapter | Selection/Annotations | AI Companion
-├── Application core: Library | Progress | Annotations | AI Context/Jobs | Export
-├── Ports: Document Access | Persistence | AI | Secure Credentials | Notifications
-└── Adapters: Go+SQLite | Browser storage/file APIs | Capacitor Native | Local/Cloud Providers | IDIOS
+├── Application shells
+│   ├── Web / PWA
+│   ├── Desktop (Windows / macOS / Linux)
+│   └── Mobile (Android / iOS)
+├── Shared UI packages
+│   ├── Reader UI
+│   ├── PDF.js adapter
+│   ├── Selection / annotation UI
+│   └── AI Companion UI
+├── Application core
+│   ├── Library and document lifecycle
+│   ├── Reading progress and sessions
+│   ├── Bookmarks and annotations
+│   ├── AI context and jobs
+│   └── Import / export
+├── Ports
+│   ├── Document access
+│   ├── Persistence
+│   ├── AI generation / streaming
+│   ├── Secure credentials
+│   └── Notifications
+└── Platform adapters
+    ├── Desktop local runtime
+    ├── Browser storage and file APIs
+    ├── Native mobile APIs
+    └── Local / cloud AI providers
 ```
 
-## Boundary rules
-- Reader packages MUST NOT import IDIOS-private modules.
+## Module boundaries
+
+- Reader packages MUST NOT depend on shell-specific or provider-specific internals.
 - Domain/application code MUST NOT import React, PDF.js internals, SQLite drivers, or Capacitor APIs.
-- PDF.js stays behind a Shelf-owned `PdfDocumentAdapter`.
-- Shells call typed use cases; UI does not own persistence or provider policy.
-- Platform differences remain in adapters.
-- Provider credentials remain in trusted backend/native secure storage, never browser JS or logs.
-- Shelf never queries another product's private database.
+- PDF.js stays behind a Shelf-owned PdfDocumentAdapter.
+- UI shells call typed application use cases; UI does not own persistence, annotation policy, or AI routing.
+- Platform-specific behavior stays behind ports/adapters.
+- Provider credentials stay in a trusted local/native backend or OS secure store, never in browser JavaScript or logs.
+- A module may not query another module's private database tables.
+- Shared packages must have a narrow purpose and public API; avoid an unbounded common or utils package.
 
-## Operating modes
-- **Standalone:** no IDIOS executable, account, or server required; local reading and annotations work offline.
-- **IDIOS-integrated:** optional, versioned adapters reuse shared AI/Notes/Graph/Notifications when available, with graceful fallback.
-- **Multi-device sync (future):** optional service with explicit conflict, deletion, encryption, and device authorization rules.
+## Standalone runtime modes
 
-## Runtime
-Desktop: React/TypeScript UI plus local application services and SQLite. Decide whether Go ships as a sidecar or another package layout before release automation. Any local HTTP API binds to loopback and needs origin/CSRF protection.
+### Standalone local
+The product starts without an account or remote server. Core reading, local metadata, and annotations use the device's storage adapter. AI is optional and may use a configured local or cloud provider.
 
-Mobile: Capacitor can host the shared UI, but a remote-server-only WebView is not standalone offline Shelf. Native file access and local persistence are required. Do not assume arbitrary Go daemons can run indefinitely on iOS/Android.
+### Connected provider
+A user may configure a remote AI endpoint. This connection is task-scoped and does not make document storage or basic reading remote.
+
+### Multi-device sync (future)
+Sync is a separate optional service, not a hidden requirement of AI or Reader. It needs conflict rules, deletion semantics, encryption, device authorization, and a recovery model before implementation.
+
+## Runtime topology
+
+### Desktop
+- Reuse the shared React/TypeScript UI.
+- Provide local application services and SQLite through a packaged local runtime.
+- Decide whether Go is shipped as a sidecar or via another package layout before release automation.
+- Any local HTTP API binds to loopback and uses origin/CSRF protection and strict request validation.
+
+### Mobile
+- Capacitor may host shared Web UI.
+- A WebView that only connects to a remote server is not a standalone offline app.
+- Standalone mobile requires native document access and durable local persistence.
+- Do not assume arbitrary Go daemons can run indefinitely on iOS or Android.
+- Use native APIs for document pickers, secure storage, share sheets, local notifications, and lifecycle.
 
 ## Contracts
-Version commands/events for document import/open/close, progress, annotation CRUD, AI submit/stream/cancel, citation resolution, export/import, and optional IDIOS integration. Use stable opaque IDs; filesystem paths and content URIs are locators only.
+
+Version commands/events for document import/open/close, progress updates, annotation CRUD, AI submit/stream/cancel, citation resolution, export/import, and local reminders. Use stable opaque IDs; paths and platform URIs are locators, not document identity.
+
+Potential links:
+- shelf://document/{documentId}?page={pageNumber}
+- shelf://annotation/{annotationId}
+- shelf://ai-job/{jobId}
+
+## Dependency direction
+
+```text
+Shells -> UI packages -> Application use cases -> Domain contracts
+                                      ^                |
+                                      |                v
+                             Platform adapters <- Ports
+```
+
+The domain defines required capabilities; adapters implement them.
 
 ## Extraction readiness
-A module is extractable from IDIOS only after its API is documented/versioned, it imports no private IDIOS modules, tests run independently, dependencies sit behind ports, and standalone configuration/failures are defined. Prove the boundary before moving code to another repo.
+
+A module is ready to move into a separately published package only when its API is documented/versioned, it has no private cross-module imports, tests run in isolation, dependencies are behind ports, and standalone configuration/failure states are defined. Prove the boundary before creating another repository.
