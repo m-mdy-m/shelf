@@ -1,8 +1,16 @@
-import { toPageIndex } from "@shelf/reader-core";
+import {
+  findTextMatches,
+  resolveTextSelectionOffsets,
+  toPageIndex,
+} from "@shelf/reader-core";
 import type {
+  ExtractedPageText,
+  PageRect,
   ReadingMode,
   ReadingProgress,
   ReadingProgressRepositoryPort,
+  TextSearchMatch,
+  TextSelection,
 } from "@shelf/reader-core";
 import type {
   PdfDocumentSession,
@@ -41,6 +49,12 @@ const MAX_ZOOM = 4;
 const ZOOM_STEP = 0.1;
 const SAVE_DEBOUNCE_MS = 450;
 const MAX_CACHED_PAGE_HANDLES = 24;
+const MAX_CACHED_TEXT_PAGES = 24;
+const MAX_SEARCH_PAGES = 2_000;
+const MAX_SEARCH_CHARACTERS = 2_000_000;
+const MAX_SEARCH_RESULTS = 100;
+const MAX_SEARCH_MATCHES_PER_PAGE = 20;
+const MAX_SELECTION_CHARACTERS = 20_000;
 
 function element<K extends keyof HTMLElementTagNameMap>(
   owner: Document,
@@ -82,6 +96,13 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   const virtualizer = session.createVirtualizer({ overscanPages: 2, maxMountedPages: 10 });
   const pages = new Map<number, MountedPage>();
   const pageHandleCache = new Map<number, PdfPageHandle>();
+  const pageTextCache = new Map<number, ExtractedPageText>();
+  let searchController: AbortController | null = null;
+  let searchMatches: readonly TextSearchMatch[] = [];
+  let activeSearchMatchIndex = -1;
+  let activeSelection: TextSelection | null = null;
+  let selectionTimer: number | null = null;
+  let selectionGeneration = 0;
   let disposed = false;
   let renderFrame: number | null = null;
   let saveTimer: number | null = null;
@@ -121,13 +142,23 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   const fitPageButton = createButton(owner, "Fit page");
   zoomControls.append(zoomOutButton, zoomLabel, zoomInButton, fitWidthButton, fitPageButton);
 
+  const searchControls = element(owner, "div", "reader-control-group reader-search-controls");
+  const searchInput = element(owner, "input", "reader-search-input") as HTMLInputElement;
+  searchInput.type = "search";
+  searchInput.placeholder = "Search in document";
+  searchInput.setAttribute("aria-label", "Search PDF text");
+  const searchButton = createButton(owner, "Search", "button button-small");
+  const cancelSearchButton = createButton(owner, "Cancel", "button button-small");
+  cancelSearchButton.hidden = true;
+  searchControls.append(searchInput, searchButton, cancelSearchButton);
+
   const trailingControls = element(owner, "div", "reader-control-group reader-trailing-controls");
   const outlineButton = createButton(owner, "Contents", "button button-small reader-touch-button");
   outlineButton.setAttribute("aria-expanded", "false");
   outlineButton.setAttribute("aria-controls", "reader-outline");
   const closeButton = createButton(owner, "Close", "button button-small");
   trailingControls.append(outlineButton, closeButton);
-  toolbar.append(navigation, modeControls, zoomControls, trailingControls);
+  toolbar.append(navigation, modeControls, zoomControls, searchControls, trailingControls);
 
   const documentHeading = element(owner, "div", "reader-document-heading");
   const documentTitle = element(
@@ -148,6 +179,24 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       (metadataText.length > 0 ? " · " + metadataText : ""),
   );
   documentHeading.append(documentTitle, documentMeta);
+
+  const readerPanels = element(owner, "div", "reader-panels");
+
+  const searchPanel = element(owner, "section", "reader-search-panel");
+  searchPanel.hidden = true;
+  searchPanel.setAttribute("aria-label", "Search results");
+  const searchSummary = element(owner, "p", "reader-search-summary", "Enter a phrase to search this PDF.");
+  const searchResults = element(owner, "div", "reader-search-results");
+  searchPanel.append(searchSummary, searchResults);
+
+  const selectionPanel = element(owner, "section", "reader-selection-panel");
+  selectionPanel.hidden = true;
+  selectionPanel.setAttribute("aria-label", "Selected PDF text");
+  const selectionHeading = element(owner, "h3", "reader-selection-heading", "Selection");
+  const selectionText = element(owner, "blockquote", "reader-selection-text");
+  const selectionMeta = element(owner, "p", "reader-selection-meta");
+  selectionPanel.append(selectionHeading, selectionText, selectionMeta);
+  readerPanels.append(searchPanel, selectionPanel);
 
   const body = element(owner, "div", "reader-body");
   const outline = element(owner, "aside", "reader-outline");
@@ -170,7 +219,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   stage.append(spacer, loadingMessage);
   body.append(outline, stage);
 
-  root.replaceChildren(documentHeading, toolbar, body);
+  root.replaceChildren(documentHeading, toolbar, readerPanels, body);
   root.hidden = false;
 
   const savedPage = options.initialProgress?.pageIndex as number | undefined;
@@ -275,6 +324,303 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     }
   }
 
+  async function getPageText(index: number, signal?: AbortSignal): Promise<ExtractedPageText | null> {
+    const cached = pageTextCache.get(index);
+    if (cached !== undefined) {
+      pageTextCache.delete(index);
+      pageTextCache.set(index, cached);
+      return cached;
+    }
+    const result = await session.getPageText(toPageIndex(index), signal);
+    if (!result.ok) {
+      if (result.error.code !== "cancelled") onStatus(result.error.message, true);
+      return null;
+    }
+    pageTextCache.set(index, result.value);
+    while (pageTextCache.size > MAX_CACHED_TEXT_PAGES) {
+      const oldest = pageTextCache.keys().next().value as number | undefined;
+      if (oldest === undefined) break;
+      pageTextCache.delete(oldest);
+    }
+    return result.value;
+  }
+
+  function addOverlayRect(
+    layer: HTMLElement,
+    className: string,
+    rectangle: PageRect,
+  ): void {
+    const marker = element(owner, "span", className);
+    marker.style.left = String(rectangle.x * 100) + "%";
+    marker.style.top = String(rectangle.y * 100) + "%";
+    marker.style.width = String(rectangle.width * 100) + "%";
+    marker.style.height = String(rectangle.height * 100) + "%";
+    layer.append(marker);
+  }
+
+  function updateInteractionOverlay(index: number, page: MountedPage): void {
+    const layer = page.layers.interaction;
+    layer.replaceChildren();
+    const pageText = pageTextCache.get(index);
+    const matches = searchMatches.filter((match) => match.pageIndex === index);
+    if (pageText !== undefined) {
+      for (const match of matches) {
+        const active = searchMatches[activeSearchMatchIndex] === match;
+        for (const run of pageText.runs) {
+          if (run.startOffset >= match.endOffset || run.endOffset <= match.startOffset) continue;
+          for (const rectangle of run.rectangles) {
+            addOverlayRect(
+              layer,
+              active ? "shelf-pdf-search-highlight shelf-pdf-search-highlight--active" : "shelf-pdf-search-highlight",
+              rectangle,
+            );
+          }
+        }
+      }
+    }
+    if (activeSelection !== null && activeSelection.pageIndex === index) {
+      for (const rectangle of activeSelection.rectangles) {
+        addOverlayRect(layer, "shelf-pdf-selection-highlight", rectangle);
+      }
+    }
+  }
+
+  function updateAllInteractionOverlays(): void {
+    for (const [index, page] of pages) updateInteractionOverlay(index, page);
+  }
+
+  function updateSearchControls(isSearching: boolean): void {
+    searchButton.disabled = isSearching;
+    searchInput.disabled = isSearching;
+    cancelSearchButton.hidden = !isSearching;
+  }
+
+  function yieldToBrowser(): Promise<void> {
+    return new Promise((resolve) => {
+      if (owner.defaultView === null) {
+        resolve();
+        return;
+      }
+      owner.defaultView.setTimeout(resolve, 0);
+    });
+  }
+
+  function cancelSearch(): void {
+    searchController?.abort();
+    searchController = null;
+    updateSearchControls(false);
+  }
+
+  async function runSearch(): Promise<void> {
+    const query = searchInput.value;
+    if (query.trim().length === 0) {
+      cancelSearch();
+      searchMatches = [];
+      activeSearchMatchIndex = -1;
+      searchPanel.hidden = true;
+      updateAllInteractionOverlays();
+      return;
+    }
+
+    cancelSearch();
+    const controller = new AbortController();
+    searchController = controller;
+    searchMatches = [];
+    activeSearchMatchIndex = -1;
+    searchPanel.hidden = false;
+    searchResults.replaceChildren();
+    searchSummary.textContent = "Searching locally…";
+    updateSearchControls(true);
+    updateAllInteractionOverlays();
+
+    let scannedPages = 0;
+    let indexedCharacters = 0;
+    let pagesWithText = 0;
+    let truncated = false;
+    let failureMessage: string | null = null;
+
+    try {
+      const pageLimit = Math.min(session.info.pageCount, MAX_SEARCH_PAGES);
+      for (let index = 0; index < pageLimit; index += 1) {
+        if (controller.signal.aborted || disposed) break;
+        const pageText = await getPageText(index, controller.signal);
+        if (controller.signal.aborted || disposed) break;
+        scannedPages += 1;
+        if (pageText === null) continue;
+        if (pageText.hasSelectableText) pagesWithText += 1;
+
+        const remainingCharacters = MAX_SEARCH_CHARACTERS - indexedCharacters;
+        if (remainingCharacters <= 0) {
+          truncated = true;
+          break;
+        }
+        const boundedPage = pageText.text.length > remainingCharacters
+          ? { ...pageText, text: pageText.text.slice(0, remainingCharacters) }
+          : pageText;
+        indexedCharacters += boundedPage.text.length;
+        if (pageText.text.length > remainingCharacters) truncated = true;
+
+        const remainingResults = MAX_SEARCH_RESULTS - searchMatches.length;
+        const pageMatches = findTextMatches(
+          boundedPage,
+          query,
+          Math.min(MAX_SEARCH_MATCHES_PER_PAGE, remainingResults),
+        );
+        if (pageMatches.length > 0) searchMatches = [...searchMatches, ...pageMatches];
+        if (searchMatches.length >= MAX_SEARCH_RESULTS || truncated) {
+          truncated = true;
+          break;
+        }
+        if (index % 8 === 7) {
+          searchSummary.textContent = "Searching… " + String(scannedPages) + " / " + String(pageLimit) + " pages";
+          await yieldToBrowser();
+        }
+      }
+
+      if (session.info.pageCount > MAX_SEARCH_PAGES && scannedPages >= MAX_SEARCH_PAGES) {
+        truncated = true;
+      }
+      if (controller.signal.aborted || disposed) {
+        searchSummary.textContent = "Search cancelled.";
+      } else if (failureMessage !== null) {
+        searchSummary.textContent = failureMessage;
+      } else if (pagesWithText === 0) {
+        searchSummary.textContent = "No selectable text was found. This may be an image-only PDF; OCR has not been run.";
+      } else if (searchMatches.length === 0) {
+        searchSummary.textContent = "No matches in " + String(scannedPages) + " pages.";
+      } else {
+        searchSummary.textContent = String(searchMatches.length) + " matches in " +
+          String(scannedPages) + " pages" + (truncated ? " · bounded search limit reached" : "");
+        for (let matchIndex = 0; matchIndex < searchMatches.length; matchIndex += 1) {
+          const match = searchMatches[matchIndex];
+          if (match === undefined) continue;
+          const resultButton = createButton(
+            owner,
+            "Page " + String((match.pageIndex as number) + 1) + " · " + match.snippet,
+            "reader-search-result",
+          );
+          resultButton.addEventListener("click", () => {
+            activeSearchMatchIndex = matchIndex;
+            jumpTo(match.pageIndex as number);
+            updateAllInteractionOverlays();
+          });
+          searchResults.append(resultButton);
+        }
+      }
+      updateAllInteractionOverlays();
+    } catch {
+      if (!controller.signal.aborted && !disposed) {
+        failureMessage = "Shelf could not complete this local text search.";
+        searchSummary.textContent = failureMessage;
+      }
+    } finally {
+      if (searchController === controller) {
+        searchController = null;
+        updateSearchControls(false);
+      }
+    }
+  }
+
+  function textOffsetAt(
+    rootLayer: HTMLElement,
+    container: Node,
+    offset: number,
+  ): number | null {
+    if (!rootLayer.contains(container)) return null;
+    try {
+      const range = owner.createRange();
+      range.selectNodeContents(rootLayer);
+      range.setEnd(container, offset);
+      return range.toString().length;
+    } catch {
+      return null;
+    }
+  }
+
+  async function captureTextSelection(): Promise<void> {
+    const generation = ++selectionGeneration;
+    const selected = owner.getSelection();
+    if (selected === null || selected.rangeCount === 0) {
+      activeSelection = null;
+      selectionPanel.hidden = true;
+      updateAllInteractionOverlays();
+      return;
+    }
+
+    const range = selected.getRangeAt(0);
+    const pageEntry = [...pages.entries()].find(([, page]) =>
+      page.layers.text.contains(range.startContainer) &&
+      page.layers.text.contains(range.endContainer),
+    );
+    const selectedText = selected.toString();
+    if (pageEntry === undefined || selectedText.trim().length === 0 ||
+        selectedText.length > MAX_SELECTION_CHARACTERS) {
+      activeSelection = null;
+      selectionPanel.hidden = true;
+      updateAllInteractionOverlays();
+      return;
+    }
+
+    const [pageIndex, page] = pageEntry;
+    activeSelection = null;
+    selectionPanel.hidden = true;
+    updateAllInteractionOverlays();
+    const approximateStart = textOffsetAt(page.layers.text, range.startContainer, range.startOffset) ?? 0;
+    const pageText = await getPageText(pageIndex);
+    if (disposed || generation !== selectionGeneration || pageText === null) return;
+
+    const offsets = resolveTextSelectionOffsets(pageText.text, selectedText, approximateStart);
+    if (offsets === null) {
+      activeSelection = null;
+      selectionPanel.hidden = true;
+      updateAllInteractionOverlays();
+      return;
+    }
+
+    const pageBounds = page.root.getBoundingClientRect();
+    const rectangles: PageRect[] = Array.from(range.getClientRects())
+      .map((rectangle) => {
+        const x = clamp((rectangle.left - pageBounds.left) / Math.max(1, pageBounds.width), 0, 1);
+        const y = clamp((rectangle.top - pageBounds.top) / Math.max(1, pageBounds.height), 0, 1);
+        return {
+          x,
+          y,
+          width: clamp(rectangle.width / Math.max(1, pageBounds.width), 0, 1 - x),
+          height: clamp(rectangle.height / Math.max(1, pageBounds.height), 0, 1 - y),
+        };
+      })
+      .filter((rectangle) => rectangle.width > 0 && rectangle.height > 0);
+
+    if (rectangles.length === 0) return;
+    activeSelection = {
+      documentId: session.info.documentId,
+      pageIndex: toPageIndex(pageIndex),
+      selectedText,
+      normalizedText: selectedText.normalize("NFKC").replace(/\s+/gu, " ").trim().toLowerCase(),
+      startOffset: offsets.startOffset,
+      endOffset: offsets.endOffset,
+      documentFingerprint: session.info.fingerprint as TextSelection["documentFingerprint"],
+      anchorVersion: 1,
+      rectangles,
+      offsetConfidence: offsets.confidence,
+    };
+    selectionText.textContent = selectedText;
+    selectionMeta.textContent = "Page " + String(pageIndex + 1) + " · offsets " +
+      String(offsets.startOffset) + "–" + String(offsets.endOffset) + " · " +
+      String(rectangles.length) + " geometry fragments · " + offsets.confidence + " offsets";
+    selectionPanel.hidden = false;
+    updateInteractionOverlay(pageIndex, page);
+    onStatus("Selected " + String(selectedText.length) + " characters on page " + String(pageIndex + 1) + ".");
+  }
+
+  function onSelectionChange(): void {
+    if (selectionTimer !== null) owner.defaultView?.clearTimeout(selectionTimer);
+    selectionTimer = owner.defaultView?.setTimeout(() => {
+      selectionTimer = null;
+      void captureTextSelection();
+    }, 70) ?? null;
+  }
+
   function clearPagesExcept(keep: ReadonlySet<number>): void {
     for (const [index, page] of pages) {
       if (keep.has(index)) continue;
@@ -331,6 +677,15 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
 
       if (result.ok) {
         page.renderedScale = renderScale;
+        updateInteractionOverlay(index, page);
+        if (
+          searchMatches.some((match) => match.pageIndex === index) &&
+          !pageTextCache.has(index)
+        ) {
+          void getPageText(index).then(() => {
+            if (!disposed && pages.get(index) === page) updateInteractionOverlay(index, page);
+          });
+        }
         if (index === currentPage && renderScale === zoom) setReaderBusy(false);
         if (renderScale !== zoom) scheduleRender();
       } else if (result.error.code !== "cancelled") {
@@ -631,6 +986,18 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     }
   }
 
+  searchButton.addEventListener("click", () => void runSearch());
+  searchInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      void runSearch();
+    }
+  });
+  cancelSearchButton.addEventListener("click", () => {
+    cancelSearch();
+    searchSummary.textContent = "Search cancelled.";
+  });
+  owner.addEventListener("selectionchange", onSelectionChange);
   previousButton.addEventListener("click", () => stepPage(-1));
   nextButton.addEventListener("click", () => stepPage(1));
   pageInput.addEventListener("change", () => {
@@ -679,8 +1046,13 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       if (saveTimer !== null) owner.defaultView?.clearTimeout(saveTimer);
       stage.removeEventListener("scroll", onScroll);
       stage.removeEventListener("keydown", onKeyDown);
+      owner.removeEventListener("selectionchange", onSelectionChange);
+      if (selectionTimer !== null) owner.defaultView?.clearTimeout(selectionTimer);
+      cancelSearch();
+      selectionGeneration += 1;
       clearPagesExcept(new Set());
       pageHandleCache.clear();
+      pageTextCache.clear();
     },
   };
 }

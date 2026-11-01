@@ -7,6 +7,7 @@ export interface PdfPageLayers {
   readonly root: HTMLElement;
   readonly canvas: HTMLCanvasElement;
   readonly text: HTMLElement;
+  readonly interaction: HTMLElement;
   readonly annotations: HTMLElement;
 }
 
@@ -47,14 +48,16 @@ export function createPdfPageLayers(root: HTMLElement): PdfPageLayers {
   const document = root.ownerDocument;
   const canvas = document.createElement("canvas");
   const text = document.createElement("div");
+  const interaction = document.createElement("div");
   const annotations = document.createElement("div");
 
   root.classList.add("shelf-pdf-page");
   canvas.className = "shelf-pdf-canvas";
   text.className = "textLayer shelf-pdf-text-layer";
+  interaction.className = "shelf-pdf-interaction-layer";
   annotations.className = "shelf-pdf-annotation-layer";
-  root.replaceChildren(canvas, text, annotations);
-  return { root, canvas, text, annotations };
+  root.replaceChildren(canvas, text, interaction, annotations);
+  return { root, canvas, text, interaction, annotations };
 }
 
 function renderShelfAnnotations(
@@ -144,6 +147,8 @@ export class PdfPageRenderer {
     layers.canvas.style.height = viewport.height + "px";
     layers.text.style.width = viewport.width + "px";
     layers.text.style.height = viewport.height + "px";
+    layers.interaction.style.width = viewport.width + "px";
+    layers.interaction.style.height = viewport.height + "px";
     layers.annotations.style.width = viewport.width + "px";
     layers.annotations.style.height = viewport.height + "px";
 
@@ -205,6 +210,7 @@ export class PdfPageRenderer {
     state.task?.cancel();
     state.textLayer?.cancel();
     layers.text.replaceChildren();
+    layers.interaction.replaceChildren();
     layers.annotations.replaceChildren();
   }
 }

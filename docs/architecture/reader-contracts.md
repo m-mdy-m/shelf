@@ -76,3 +76,12 @@ ReaderUseCases defines the application-facing operations for import/list/get/ope
     npm test
 
 The TypeScript type tests assert ID separation, locator separation, PageIndex branding, discriminated annotation drafts, and structural compatibility of fake source/permission/locator-store ports. Runtime tests validate page-index parsing, bounded byte ranges, and opaque-ID parsing.
+
+
+## Extracted text and selection
+
+- `ExtractedPageText` is a session-level, page-local representation, not a durable document record. It contains normalized text, zero-based PageIndex, selectable-text status, and runs with UTF-16 offsets, direction, font name, and normalized page rectangles.
+- `TextSelection` carries the exact browser-selected text, normalized fallback, page-local UTF-16 offsets, document fingerprint, anchor version, and normalized selection rectangles. `offsetConfidence` distinguishes exact offsets from nearest normalized-text resolution.
+- `findTextMatches` performs NFKC/case/whitespace-insensitive matching while returning offsets into the original extracted page string. Query normalization never changes the stored selected text.
+- The PDF adapter exposes no PDF.js objects: it consumes the text-content stream under per-page item/character limits and observes AbortSignal between stream chunks.
+- Search is local and bounded by page, character, and result limits. Image-only pages return an empty extraction with `hasSelectableText: false`; OCR is explicitly not run by this feature.

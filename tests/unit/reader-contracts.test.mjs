@@ -54,3 +54,50 @@ test("byte ranges are validated and capped at one mebibyte per read", () => {
     if (!parsed.ok) assert.equal(parsed.error.code, "invalid-range");
   }
 });
+
+
+test("text search normalizes case, Unicode ligatures, and whitespace while preserving source offsets", async () => {
+  const { findTextMatches, resolveTextSelectionOffsets } = await import("../../packages/reader-core/dist/index.js");
+  const page = {
+    pageIndex: toPageIndex(4),
+    text: "Intro\\nThe ﬁrst  READER guide ends here.\\n",
+    runs: [],
+    hasSelectableText: true,
+  };
+  const matches = findTextMatches(page, "FIRST reader", 10);
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].pageIndex, 4);
+  assert.equal(matches[0].matchedText, "ﬁrst  READER");
+  assert.equal(page.text.slice(matches[0].startOffset, matches[0].endOffset), "ﬁrst  READER");
+
+  const selection = resolveTextSelectionOffsets(page.text, "first READER", matches[0].startOffset);
+  assert.deepEqual(selection, {
+    startOffset: matches[0].startOffset,
+    endOffset: matches[0].endOffset,
+    confidence: "nearest-text-match",
+  });
+});
+
+test("text search ignores empty queries and pages without selectable text", async () => {
+  const { findTextMatches } = await import("../../packages/reader-core/dist/index.js");
+  const page = {
+    pageIndex: toPageIndex(0),
+    text: "",
+    runs: [],
+    hasSelectableText: false,
+  };
+  assert.deepEqual(findTextMatches(page, "anything"), []);
+  assert.deepEqual(findTextMatches({ ...page, text: "plain text", hasSelectableText: true }, "  "), []);
+});
+
+test("text search bounds result counts and rejects invalid limits", async () => {
+  const { findTextMatches } = await import("../../packages/reader-core/dist/index.js");
+  const page = {
+    pageIndex: toPageIndex(1),
+    text: "match match match match",
+    runs: [],
+    hasSelectableText: true,
+  };
+  assert.equal(findTextMatches(page, "match", 2).length, 2);
+  assert.throws(() => findTextMatches(page, "match", 0), RangeError);
+});

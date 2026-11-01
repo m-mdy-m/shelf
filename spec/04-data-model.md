@@ -35,3 +35,8 @@ Index document lookup, annotation by document/page, quotes, and update timestamp
 ## Export
 
 A versioned bundle contains a manifest/schema version, safe document metadata, progress, bookmarks, annotations, quotes, and optionally AI conversations/source manifests. The user chooses whether PDF bytes are included. Opaque access locators and provider credentials are never exported.
+
+
+## Text extraction and transient selection
+
+Extracted page text is derived from PDF.js text-content streams and is not a durable entity by itself. Selection metadata includes exact selected text, normalized fallback text, UTF-16 offsets in the extracted page representation, document fingerprint, anchor schema version, page index, and normalized rectangles. Persisting these anchors belongs to the Annotation workflow. OCR output is not present unless a separate OCR capability explicitly creates it.

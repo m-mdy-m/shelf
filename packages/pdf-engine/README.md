@@ -51,15 +51,15 @@ PDF.js password requests are bridged to the optional asynchronous `passwordPromp
 
 ## Rendering layers
 
-`createPdfPageLayers(root)` creates separate canvas, text, and Shelf annotation elements. `PdfPageRenderer` renders PDF.js into the canvas with the built-in annotation layer disabled, runs the PDF.js TextLayer separately, and draws only persisted Shelf annotation markers in the annotation overlay. The package stylesheet implements PDF.js TextLayer positioning and selection rules inside Shelf's isolated page classes. Text selection therefore remains independent from saved bookmarks/highlights/notes and no global PDF.js viewer stylesheet is required.
+`createPdfPageLayers(root)` creates separate canvas, text, transient interaction, and Shelf annotation elements. `PdfPageRenderer` renders PDF.js into the canvas with the built-in annotation layer disabled, runs the PDF.js TextLayer separately, and draws only persisted Shelf annotation markers in the annotation overlay. The package stylesheet implements PDF.js TextLayer positioning and selection rules inside Shelf's isolated page classes. Text selection therefore remains independent from saved bookmarks/highlights/notes and no global PDF.js viewer stylesheet is required.
 
-The renderer materializes at most 200 annotation markers per page render and expects the caller to supply records scoped to the requested page. The canvas pixel budget defaults to 16,777,216 pixels. Page scale is capped at 8 and device pixel ratio at 4. Render tasks and text streams can be cancelled before a virtual page is unmounted. The renderer also rejects allocations above the configured pixel budget before touching canvas memory.
+The interaction layer is reserved for transient search/selection overlays and is cleared on cancellation. It is separate from persisted annotations. The renderer materializes at most 200 annotation markers per page render and expects the caller to supply records scoped to the requested page. The canvas pixel budget defaults to 16,777,216 pixels. Page scale is capped at 8 and device pixel ratio at 4. Render tasks and text streams can be cancelled before a virtual page is unmounted. The renderer also rejects allocations above the configured pixel budget before touching canvas memory.
 
 ## Page virtualization
 
 `PageVirtualizer` uses a Fenwick tree over estimated page heights. When PDF.js yields an actual page viewport, call `updatePageSize(index, { width, height })`. A viewport query computes visible pages plus a bounded overscan window in logarithmic time, without walking or mounting every page in the document. It supports mixed page sizes and rotated page geometry.
 
-The UI owns the scroll container and calls `getWindow` as it scrolls; only the returned `pages` should be mounted and rendered. The UI integration and navigation controls are built in the Reader UI issue.
+The Reader workspace owns the scroll container and calls `getWindow` as it scrolls; only the returned `pages` are mounted and rendered. Navigation, local text search, and selection are wired in the web workspace while PDF.js remains behind the adapter.
 
 ## Runtime assets
 
@@ -74,3 +74,12 @@ It copies Shelf's isolated page-layer/TextLayer stylesheet. `resolvePdfJsAssetUr
 ## Tests
 
 `tests/unit/pdf-engine.test.mjs` uses deterministic fake platform ports and a fake PDF.js runtime to verify range limits, worker cleanup, page indexing, password/malformed errors, layer separation, and virtual-window bounds. The fixture builder generates a three-page PDF with mixed MediaBox dimensions, 0°/90°/270° rotations, and Helvetica/Times/Courier resources, plus a malformed PDF.
+
+
+## Page text extraction
+
+A session exposes `getPageText(toPageIndex(index), signal?)`. It reads PDF.js text-content chunks from `streamTextContent()`, not from an unbounded full-page text allocation. Extraction is capped at 50,000 items and 500,000 characters per page and cached for at most 24 pages per session. AbortSignal cancels the active stream and returns a `cancelled` Result.
+
+The returned `ExtractedPageText` contains normalized text, source-preserving UTF-16 offsets, direction/font metadata, and viewport-projected page rectangles. NFKC normalization expands compatibility ligatures; geometric line grouping, paragraph-gap detection, punctuation-aware space inference, simple gutter-based column ordering, and RTL ordering provide deterministic layout fallbacks. They do not replace OCR or guarantee semantic order for malformed PDFs.
+
+Use the Reader Core `findTextMatches` helper to search normalized text while retaining offsets into the extracted string. The Reader shell bounds a search to 2,000 pages, 2,000,000 characters, 100 results, and 20 matches per page. Image-only pages are explicitly represented with `hasSelectableText: false`.

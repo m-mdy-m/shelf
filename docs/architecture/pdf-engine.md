@@ -16,9 +16,10 @@ The adapter uses a 64 KiB default PDF.js chunk and caps configurable chunks at 1
 
 ## Page rendering
 
-The renderer creates three sibling layers:
+The renderer creates four sibling layers:
 - Canvas: pixels produced by PDF.js; PDF.js's own annotation layer is disabled.
 - Text: PDF.js TextLayer from the page's text-content stream; it remains selectable and independently cancellable.
+- Interaction: transient search and browser-selection rectangles; never persisted as annotations.
 - Annotations: Shelf-owned DOM markers projected from normalized page rectangles.
 
 Canvas pixel budgets are checked before allocation. Render tasks and text streams are cancelled when a page is rerendered or removed. At most 200 Shelf annotation markers are materialized per page render, and callers pass page-scoped annotations. TextLayer positioning and selection rules live in the PDF engine's scoped stylesheet; no global PDF.js viewer stylesheet is loaded.
@@ -57,3 +58,14 @@ PageVirtualizer exposes page offsets and measured page sizes so the shell can pl
 ReadingProgress is stored per DocumentId in the IndexedDB readingProgress object store. Its pageIndex is zero-based, scrollOffset is a clamped fraction within that page, zoom is bounded by the Reader UI, and readingMode distinguishes continuous from single-page presentation. The UI debounces writes, persists when the document becomes hidden, and makes a final best-effort write on pagehide after synchronously disposing render resources.
 
 The web shell treats page loading and rendering as one bounded in-flight operation per mount. A render scale is committed only after a successful render; failed pages retain a single recoverable error state and require an explicit Retry action rather than repeated work on each scroll event. The PDF adapter takes ownership of a supplied, pre-authorized source handle: it releases the handle on every failed open, while a successful session releases it from session.close().
+
+
+## Text extraction, search, and selection
+
+`PdfDocumentSession.getPageText(PageIndex, AbortSignal?)` returns a Shelf-owned `ExtractedPageText`: normalized page text, selectable-text status, and text runs with UTF-16 start/end offsets, direction, font identity, and page-normalized geometry. The adapter consumes PDF.js `streamTextContent()` incrementally rather than materializing an unbounded `getTextContent()` result. It stops at 50,000 text items or 500,000 characters per page, cancels the stream when the caller aborts, and retains an LRU cache of at most 24 extracted pages per session.
+
+The extractor applies Unicode NFKC normalization (including compatibility ligatures), derives rectangles through the page viewport so rotation is included, groups text geometrically into lines, infers word spaces from gaps while avoiding punctuation spacing, and uses a large horizontal gutter to identify simple two-column layouts. RTL lines are read from right to left; columns are emitted in reading order. These are deterministic fallbacks, not a claim that PDF content streams always encode semantic reading order.
+
+Reader Core search normalizes case, compatibility characters, and whitespace while retaining a source-offset map, so each match points back to UTF-16 offsets in the extracted page string. The web shell searches sequentially and locally, with caps of 2,000 pages, 2,000,000 indexed characters, 100 total results, and 20 matches per page. Each page's extracted text is itself bounded; cancellation stops the scan and cancels the active text stream. Search results are transient and are not persisted.
+
+Selection is derived from the browser Range inside a page's PDF.js text layer. The shell captures the exact selected string and page-local client rectangles, then resolves the closest matching occurrence in the extracted text to provide start/end offsets. It reports whether offsets are exact or were resolved to the nearest normalized text occurrence. This selection model is an input contract for annotations; persistence and anchor-recovery workflows belong to the annotation work.

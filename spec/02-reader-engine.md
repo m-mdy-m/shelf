@@ -61,3 +61,14 @@ Persist last document, page/scroll, zoom, reading mode, and timestamps; debounce
 - The outline is loaded only when the Contents panel is first opened. Destination lookups use bounded concurrency (at most 12 active PDF.js lookups) and preserve source ordering; failed outline loads can be retried.
 - Page rendering keeps each mount in a loading state until its render task settles. Failed page renders expose an explicit Retry action and are not retried on every scroll or layout pass.
 - Previous/next, page jump, outline activation, and keyboard commands share the same navigation path. Native scrolling and touch panning remain available in continuous mode.
+
+
+## Text extraction, local search, and precise selection
+
+- `PdfDocumentSession.getPageText(PageIndex, AbortSignal?)` streams PDF.js text content into a Shelf-owned page model; PDF.js proxy objects never leave the adapter.
+- A page extraction is bounded to 50,000 text items and 500,000 characters and participates in a 24-page LRU cache. Cancellation cancels the active text stream.
+- Extracted text is NFKC-normalized (including compatibility ligatures), and runs preserve UTF-16 start/end offsets, direction, font name, and normalized viewport rectangles. Geometry includes page rotation.
+- Layout reconstruction groups nearby baselines, inserts punctuation-aware word spaces, preserves line/paragraph gaps, detects a simple two-column gutter, and uses RTL ordering for RTL lines. These heuristics are tested fallbacks; no semantic reading-order guarantee is made for arbitrary PDFs.
+- Local search is sequential, cancellable, and bounded to 2,000 pages, 2,000,000 indexed characters, 100 results, and 20 results per page. Search normalization handles case, NFKC, and whitespace while returning offsets into the extracted page text.
+- Browser selection reports exact selected text, DocumentId, zero-based PageIndex, UTF-16 offsets, document fingerprint, anchor version, normalized page rectangles, and offset confidence. Selection offsets are resolved against extracted text, preferring exact text and then the nearest normalized-text occurrence.
+- A page with no extractable text is reported as non-selectable. OCR is not run and must never be implied. Search/selection state remains transient; annotation persistence and resilient anchor recovery are handled by Issue #12.
