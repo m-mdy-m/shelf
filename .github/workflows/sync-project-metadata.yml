@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/labels.json"
       - ".github/milestones.json"
+      - ".github/issue-metadata.json"
       - "scripts/sync_github_metadata.py"
       - ".github/workflows/sync-project-metadata.yml"
   workflow_dispatch:
@@ -22,7 +23,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - name: Create or update labels and milestones
+      - name: Create labels and milestones; apply issue metadata
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}

@@ -1,0 +1,410 @@
+{
+  "2": {
+    "labels": [
+      "type:epic",
+      "area:reader",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "3": {
+    "labels": [
+      "type:epic",
+      "area:ai",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "0.2 — AI Companion",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "4": {
+    "labels": [
+      "type:epic",
+      "area:knowledge",
+      "area:integration",
+      "priority:P2"
+    ],
+    "milestone": "0.3 — Knowledge & IDIOS Integration",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "5": {
+    "labels": [
+      "type:epic",
+      "area:platform",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "1.0 — Cross-platform Standalone Release",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "6": {
+    "labels": [
+      "type:task",
+      "area:architecture",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "7": {
+    "labels": [
+      "type:feature",
+      "area:architecture",
+      "area:platform",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "8": {
+    "labels": [
+      "type:feature",
+      "area:pdf",
+      "area:reader",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "9": {
+    "labels": [
+      "type:feature",
+      "area:library",
+      "area:storage",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "10": {
+    "labels": [
+      "type:feature",
+      "area:reader",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "11": {
+    "labels": [
+      "type:feature",
+      "area:pdf",
+      "area:reader",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "12": {
+    "labels": [
+      "type:feature",
+      "area:annotations",
+      "area:reader",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "13": {
+    "labels": [
+      "type:feature",
+      "area:storage",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "14": {
+    "labels": [
+      "type:feature",
+      "area:reader",
+      "area:quality",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "15": {
+    "labels": [
+      "type:task",
+      "area:quality",
+      "area:pdf",
+      "priority:P0",
+      "platform:all"
+    ],
+    "milestone": "0.1 — Reader Foundation",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "16": {
+    "labels": [
+      "type:feature",
+      "area:ai",
+      "area:privacy",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "0.2 — AI Companion",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "17": {
+    "labels": [
+      "type:feature",
+      "area:ai",
+      "area:ai-local",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "0.2 — AI Companion",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "18": {
+    "labels": [
+      "type:feature",
+      "area:ai",
+      "area:ai-cloud",
+      "area:privacy",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "0.2 — AI Companion",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "19": {
+    "labels": [
+      "type:feature",
+      "area:ai",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "0.2 — AI Companion",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "20": {
+    "labels": [
+      "type:feature",
+      "area:ai",
+      "area:quality",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "0.2 — AI Companion",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "21": {
+    "labels": [
+      "type:feature",
+      "area:ai",
+      "area:quality",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "0.2 — AI Companion",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "22": {
+    "labels": [
+      "type:feature",
+      "area:ai",
+      "area:reader",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "0.2 — AI Companion",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "23": {
+    "labels": [
+      "type:feature",
+      "area:ai",
+      "area:quality",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "0.2 — AI Companion",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "24": {
+    "labels": [
+      "type:feature",
+      "area:knowledge",
+      "area:annotations",
+      "priority:P2"
+    ],
+    "milestone": "0.3 — Knowledge & IDIOS Integration",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "25": {
+    "labels": [
+      "type:feature",
+      "area:integration",
+      "priority:P2",
+      "platform:all"
+    ],
+    "milestone": "0.3 — Knowledge & IDIOS Integration",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "28": {
+    "labels": [
+      "type:feature",
+      "area:integration",
+      "priority:P2"
+    ],
+    "milestone": "0.3 — Knowledge & IDIOS Integration",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "29": {
+    "labels": [
+      "type:feature",
+      "area:knowledge",
+      "area:ai",
+      "priority:P2"
+    ],
+    "milestone": "0.3 — Knowledge & IDIOS Integration",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "30": {
+    "labels": [
+      "type:research",
+      "area:platform",
+      "area:desktop",
+      "priority:P1",
+      "platform:windows",
+      "platform:macos",
+      "platform:linux"
+    ],
+    "milestone": "1.0 — Cross-platform Standalone Release",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "31": {
+    "labels": [
+      "type:feature",
+      "area:platform",
+      "area:desktop",
+      "priority:P1",
+      "platform:windows",
+      "platform:macos",
+      "platform:linux"
+    ],
+    "milestone": "1.0 — Cross-platform Standalone Release",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "32": {
+    "labels": [
+      "type:feature",
+      "area:platform",
+      "area:mobile",
+      "priority:P1",
+      "platform:android"
+    ],
+    "milestone": "1.0 — Cross-platform Standalone Release",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "33": {
+    "labels": [
+      "type:feature",
+      "area:platform",
+      "area:mobile",
+      "priority:P1",
+      "platform:ios"
+    ],
+    "milestone": "1.0 — Cross-platform Standalone Release",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "34": {
+    "labels": [
+      "type:feature",
+      "area:platform",
+      "area:privacy",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "1.0 — Cross-platform Standalone Release",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  },
+  "35": {
+    "labels": [
+      "type:task",
+      "area:quality",
+      "area:platform",
+      "priority:P1",
+      "platform:all"
+    ],
+    "milestone": "1.0 — Cross-platform Standalone Release",
+    "assignees": [
+      "m-mdy-m"
+    ]
+  }
+}
