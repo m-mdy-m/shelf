@@ -1,3 +1,6 @@
+import type { ReaderError } from "./errors.js";
+import type { Result } from "./result.js";
+
 declare const pageIndexBrand: unique symbol;
 
 /**
@@ -8,13 +11,30 @@ export type PageIndex = number & {
   readonly [pageIndexBrand]: true;
 };
 
-/** Validate an untrusted number before using it as a page index. */
-export function toPageIndex(value: number): PageIndex {
+/** Parse untrusted page indexes into the declared operational error channel. */
+export function parsePageIndex(value: number): Result<PageIndex, ReaderError> {
   if (!Number.isSafeInteger(value) || value < 0) {
-    throw new RangeError("PageIndex must be a non-negative safe integer (zero-based).");
+    return {
+      ok: false,
+      error: {
+        code: "invalid-input",
+        message: "Page index must be a non-negative safe integer (zero-based).",
+        retryable: false,
+      },
+    };
   }
 
-  return value as PageIndex;
+  return { ok: true, value: value as PageIndex };
+}
+
+/**
+ * Trusted-input convenience constructor. Throws RangeError for invalid values;
+ * use parsePageIndex when handling untrusted input inside Result-based flows.
+ */
+export function toPageIndex(value: number): PageIndex {
+  const parsed = parsePageIndex(value);
+  if (!parsed.ok) throw new RangeError(parsed.error.message);
+  return parsed.value;
 }
 
 /** Convert an index to the ordinary one-based ordinal shown in simple UIs. */

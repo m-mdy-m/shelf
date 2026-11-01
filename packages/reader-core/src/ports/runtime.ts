@@ -6,7 +6,10 @@ import type {
 import type { ReaderError } from "../domain/errors.js";
 import type { Result } from "../domain/result.js";
 
-export type SecretValue = string & { readonly __secretValue: unique symbol };
+declare const secretValueBrand: unique symbol;
+
+/** In-memory only. Concrete secure stores must never serialize or log this value. */
+export type SecretValue = string & { readonly [secretValueBrand]: true };
 
 export interface ClockPort {
   now(): number;

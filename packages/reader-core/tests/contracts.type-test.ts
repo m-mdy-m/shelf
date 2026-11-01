@@ -1,9 +1,14 @@
-import type { DocumentPermissionPort, DocumentSourcePort } from "../src/ports/index.js";
+import type {
+  DocumentPermissionPort,
+  DocumentLocatorStorePort,
+  DocumentSourcePort,
+} from "../src/ports/index.js";
 import type {
   AnnotationId,
   BookmarkId,
   DocumentId,
   DocumentLocator,
+  DocumentSource,
   PageIndex,
   QuoteId,
 } from "../src/index.js";
@@ -46,6 +51,14 @@ const locator: DocumentLocator = {
   persistence: "ephemeral",
 };
 
+const safeDocumentSource: DocumentSource = {
+  kind: "local-file",
+  displayName: "fixture.pdf",
+  mediaType: "application/pdf",
+  sizeBytes: 0,
+  modifiedAt: null,
+};
+
 const metadata = {
   mediaType: "application/pdf",
   sizeBytes: 0,
@@ -53,7 +66,7 @@ const metadata = {
   displayName: "fixture.pdf",
 };
 
-const fakeDocumentSource: DocumentSourcePort = {
+const fakeDocumentSourcePort: DocumentSourcePort = {
   inspect: async () => ({ ok: true, value: metadata }),
   open: async () => ({
     ok: true,
@@ -75,6 +88,12 @@ const fakePermissions: DocumentPermissionPort = {
   release: async () => ({ ok: true, value: undefined }),
 };
 
+const fakeLocatorStore: DocumentLocatorStorePort = {
+  getLocator: async () => ({ ok: true, value: locator }),
+  saveLocator: async () => ({ ok: true, value: undefined }),
+  deleteLocator: async () => ({ ok: true, value: undefined }),
+};
+
 // @ts-expect-error A bookmark ID is not a document ID.
 const invalidDocument: DocumentId = bookmarkId;
 // @ts-expect-error A quote ID is not an annotation ID.
@@ -83,6 +102,8 @@ const invalidAnnotation: AnnotationId = quoteId;
 const invalidPage: PageIndex = 1;
 // @ts-expect-error A locator is not a stable document identity.
 const invalidLocator: DocumentId = locator;
+// @ts-expect-error Access locators are not part of exportable source metadata.
+const invalidSource: DocumentSource = locator;
 
 void [
   sameDocument,
@@ -92,10 +113,13 @@ void [
   firstPage,
   highlightDraft,
   noteDraft,
-  fakeDocumentSource,
+  safeDocumentSource,
+  fakeDocumentSourcePort,
   fakePermissions,
+  fakeLocatorStore,
   invalidDocument,
   invalidAnnotation,
   invalidPage,
   invalidLocator,
+  invalidSource,
 ];
