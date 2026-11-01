@@ -1,0 +1,14 @@
+{
+  "name": "@shelf/reader-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Platform-independent Reader domain contracts and ports",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}

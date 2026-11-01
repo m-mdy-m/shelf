@@ -20,7 +20,7 @@ async function collect(directory) {
   for (const entry of entries) {
     const relative = path.posix.join(directory, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === "node_modules" || entry.name.startsWith(".")) continue;
+      if (entry.name === "node_modules" || entry.name === "dist" || entry.name.startsWith(".")) continue;
       files.push(...(await collect(relative)));
     } else if (entry.isFile() && sourceExtensions.has(path.extname(entry.name))) {
       files.push(relative);
@@ -39,10 +39,7 @@ function visit(node, sourceFile, file, moduleSpecifiers) {
   if (ts.isDebuggerStatement(node)) report(file, line, "remove debugger statements");
   if (node.kind === ts.SyntaxKind.AnyKeyword) report(file, line, "avoid explicit any types");
 
-  if (
-    ts.isImportDeclaration(node) ||
-    ts.isExportDeclaration(node)
-  ) {
+  if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
     const specifier = node.moduleSpecifier;
     if (specifier && ts.isStringLiteralLike(specifier)) moduleSpecifiers.push(specifier.text);
   }
