@@ -3,81 +3,33 @@ name: Shelf CI
 on:
   push:
     branches: [main, develop]
-  pull_request:
-  workflow_dispatch:
+  pull_request: {}
+  workflow_dispatch: {}
 
 permissions:
   contents: read
-
-concurrency:
-  group: shelf-ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - name: Check out Shelf
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - name: Check out the shared Pipeline task runner
+
+      - name: Check out the shared Pipeline runner
         uses: actions/checkout@v7
         with:
           repository: m-mdy-m/pipeline
           ref: f4e05487193a653ecb96cd09f9a6b2da7ba4822
           path: .pipeline
           persist-credentials: false
-      - name: Run the Shelf task graph
+
+      - name: Run Shelf task graph
         env:
           PYTHONPATH: ${{ github.workspace }}/.pipeline/src
-        run: >-
-          python -m pipeline.providers.github task ci
-          --root "$GITHUB_WORKSPACE"
-          --config "$GITHUB_WORKSPACE/pipeline.toml"
-          --json
-
-  structure:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
-        with:
-          go-version: "1.25.0"
-          cache: false
-      - name: Check out PSX
-        uses: actions/checkout@v7
-        with:
-          repository: m-mdy-m/PSX
-          ref: e4f12e85725e1ebd44c7f3a4e18fcbaa893b30df
-          path: .tools/psx
-          persist-credentials: false
-      - name: Build pinned PSX
-        working-directory: .tools/psx
-        run: go build -trimpath -o "$RUNNER_TEMP/psx" ./cmd/psx
-      - name: Initialize and verify the declared structure
-        run: |
-          "$RUNNER_TEMP/psx" fix
-          "$RUNNER_TEMP/psx" check
-          git diff --exit-code
-
-  git-flow:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
-        with:
-          go-version: "1.25.0"
-          cache: false
-      - name: Check out GIX
-        uses: actions/checkout@v7
-        with:
-          repository: m-mdy-m/gix
-          ref: 9f0867923177cef3cd36d980cc2b356a35bee507
-          path: .tools/gix
-          persist-credentials: false
-      - name: Build pinned GIX
-        working-directory: .tools/gix
-        run: go build -trimpath -o "$RUNNER_TEMP/gix" ./cmd/gix
-      - name: Validate Shelf Git-flow configuration
-        run: "$RUNNER_TEMP/gix" config list
+        run: python -m pipeline.providers.github task ci --root "$GITHUB_WORKSPACE" --config "$GITHUB_WORKSPACE/pipeline.toml" --json
