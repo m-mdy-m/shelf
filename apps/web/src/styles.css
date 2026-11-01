@@ -505,6 +505,7 @@ button {
   .reader-navigation,
   .reader-mode-controls,
   .reader-zoom-controls,
+  .reader-search-controls,
   .reader-trailing-controls {
     width: 100%;
   }

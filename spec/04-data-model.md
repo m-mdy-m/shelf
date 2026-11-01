@@ -40,3 +40,6 @@ A versioned bundle contains a manifest/schema version, safe document metadata, p
 ## Text extraction and transient selection
 
 Extracted page text is derived from PDF.js text-content streams and is not a durable entity by itself. Selection metadata includes exact selected text, normalized fallback text, UTF-16 offsets in the extracted page representation, document fingerprint, anchor schema version, page index, and normalized rectangles. Persisting these anchors belongs to the Annotation workflow. OCR output is not present unless a separate OCR capability explicitly creates it.
+
+- **ExtractedPageText (transient):** page index, normalized text, geometry-bearing runs, selectable-text status, and a truncation flag. It is session/cache data, not a durable record or export field.
+- **TextSelection (transient anchor draft):** exact selected text, normalized fallback, page-local offsets, document fingerprint, anchor version, normalized page rectangles, and offset confidence. It can be passed to annotation workflows but becomes durable only after an explicit annotation or quote write succeeds.

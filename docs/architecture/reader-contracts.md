@@ -85,3 +85,6 @@ The TypeScript type tests assert ID separation, locator separation, PageIndex br
 - `findTextMatches` performs NFKC/case/whitespace-insensitive matching while returning offsets into the original extracted page string. Query normalization never changes the stored selected text.
 - The PDF adapter exposes no PDF.js objects: it consumes the text-content stream under per-page item/character limits and observes AbortSignal between stream chunks.
 - Search is local and bounded by page, character, and result limits. Image-only pages return an empty extraction with `hasSelectableText: false`; OCR is explicitly not run by this feature.
+
+
+The `ExtractedPageText.truncated` flag is true when the adapter stops at the per-page item/character budget. The Reader reports those pages in search summaries rather than implying full coverage. Search queries are capped at 256 characters, result count at 100, and transient interaction markers at 500 per page. Browser selection geometry is capped at 512 rectangles. `ReaderWorkspaceController.getSelection()` and the optional `onSelection` callback expose the current transient `TextSelection` to annotation workflows without persisting it.
