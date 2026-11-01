@@ -1,36 +1,68 @@
-# Development guide
+# Development
 
-Shelf is being built as a modular cross-platform application. The repository begins specification-first; implementation commands will become meaningful as the respective toolchains land.
+## Requirements
 
-## First steps
+- Node.js **22.16.0** (see `.nvmrc`).
+- npm **10.9.x**.
+- Python **3.12 or newer** for the repository validation task graph.
+- Git.
 
-1. Read [the product brief](../../spec/00-product-brief.md).
-2. Read [the architecture](../../spec/01-architecture.md).
-3. Read the acceptance criteria in the Issue you are implementing.
-4. Use a GIX feature or bugfix branch from develop.
-5. Keep a change focused and link its Issue in the PR.
+Go is required only when working on the local backend or the PSX/GIX tooling; the application foundation does not yet build a backend binary.
 
-## Project tools
+## First-time setup
 
-- **PSX** checks and creates the agreed repository structure using psx.yml.
-- **GIX** manages main/develop and topic branches using .gix/config.
-- **Pipeline** is the task graph source of truth in pipeline.toml and the shared CI runner.
+From the repository root:
 
-Install the pinned Pipeline task runner with make setup. Run make check and make ci. Use psx check for structure checks and gix doctor for branch-flow diagnostics.
+```sh
+npm ci
+```
 
-## Git flow
+The checked-in lockfile pins the TypeScript compiler and the web workspace. Do not use `npm install` for CI or clean-clone verification.
 
-- feature/* starts from develop and finishes back into develop.
-- bugfix/* starts from develop and finishes back into develop.
-- hotfix/* starts from main and finishes into main and develop.
-- release/* starts from develop and finishes into main and develop.
+## Quality gates
 
-Do not push ordinary feature work directly to main. Open a pull request and link the Issue.
+Run the same checks locally that run in GitHub Actions:
 
-## Tests
+```sh
+npm run format:check
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
 
-Use unit tests for domain behavior and validation. Use integration tests for adapters and storage. Use end-to-end tests for user workflows. PDF test files must be redistributable and must not contain private documents.
+Or run the complete sequence:
 
-## Platform claims
+```sh
+npm run ci
+```
 
-Record exactly which platform and device/OS combination was tested. A successful compile is not proof that file picking, permissions, storage, or notifications work on that platform.
+The production web shell is written to `dist/web/`. To inspect it locally, run:
+
+```sh
+python -m http.server 4173 --directory dist/web
+```
+
+Then open `http://localhost:4173`.
+
+## Pipeline task graph
+
+The repository-level task graph remains the entry point for project validation:
+
+```sh
+make setup
+make check
+make ci
+```
+
+`make setup` installs the pinned Pipeline CLI and runs `npm ci`. The Pipeline graph runs repository-manifest checks, Python script compilation, and the application quality gates.
+
+## Architecture rules
+
+- Keep the web shell independent of backend internals and native platform APIs.
+- Keep shared packages independent of app shells and backend implementation details.
+- Domain code must not import UI frameworks, PDF renderer internals, storage drivers, or platform SDKs.
+- Put cross-layer communication behind typed application contracts and ports.
+- Record material runtime or packaging choices as ADRs under `docs/decisions/`.
+
+The architecture and package directories are deliberately established before feature code is added. A directory existing in the scaffold is not evidence that its feature is implemented.
