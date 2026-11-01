@@ -68,7 +68,9 @@ test("web, reader, PDF, library, and platform adapters are locked workspaces", a
 test("Node runtime pin matches the declared engine range", async () => {
   const manifest = await json("package.json");
   const version = (await readFile(path.join(root, ".nvmrc"), "utf8")).trim();
-  assert.match(version, /^\\d+\\.\\d+\\.\\d+$/u);
+  const segments = version.split(".");
+  assert.equal(segments.length, 3);
+  assert.ok(segments.every((part) => part.length > 0 && [...part].every((character) => character >= "0" && character <= "9")));
   assert.ok(manifest.engines.node.includes(">=" + version));
 });
 
@@ -85,16 +87,17 @@ test("the web entry point contains local import and reader wiring", async () => 
   const shell = await readFile(path.join(root, "apps/web/src/application.ts"), "utf8");
   const buildScript = await readFile(path.join(root, "scripts/build-web.mjs"), "utf8");
 
-  assert.match(html, /src="\\/assets\\/main\\.js"/u);
-  assert.doesNotMatch(html, /role="application"/u);
-  assert.doesNotMatch(html, /frame-ancestors/u);
-  assert.match(entry, /from "\\.\\/application\\.js"/u);
-  assert.match(shell, /new DocumentLibraryService/u);
-  assert.match(shell, /registerCopy/u);
-  assert.match(shell, /registerReference/u);
-  assert.match(shell, /createPdfPageLayers/u);
-  assert.match(buildScript, /access\\(entryAsset\\)/u);
-  assert.doesNotMatch(shell, /fetch\\(|XMLHttpRequest/u);
+  assert.equal(html.includes('src="/assets/main.js"'), true);
+  assert.equal(html.includes('role="application"'), false);
+  assert.equal(html.includes("frame-ancestors"), false);
+  assert.equal(entry.includes('from "./application.js"'), true);
+  assert.equal(shell.includes("new DocumentLibraryService"), true);
+  assert.equal(shell.includes("registerCopy"), true);
+  assert.equal(shell.includes("registerReference"), true);
+  assert.equal(shell.includes("createPdfPageLayers"), true);
+  assert.equal(buildScript.includes("access(entryAsset)"), true);
+  assert.equal(shell.includes("fetch("), false);
+  assert.equal(shell.includes("XMLHttpRequest"), false);
 });
 
 test("the repository declares explicit application boundaries", async () => {
