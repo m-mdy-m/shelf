@@ -50,8 +50,10 @@ No native exception text, local path, URI, provider token, or document text is c
 
 ## Reader navigation and persistence
 
-The adapter exposes a Shelf-owned outline tree. PDF.js destinations are resolved to zero-based PageIndex values within the adapter; unresolved destinations are represented with a null pageIndex, and external outline actions are never executed by the web shell. Outline traversal is bounded to 1,000 items and 16 levels.
+The adapter exposes a Shelf-owned outline tree. PDF.js destinations are resolved to zero-based PageIndex values within the adapter; unresolved destinations are represented with a null pageIndex, and external outline actions are never executed by the web shell. Outline traversal is bounded to 1,000 items and 16 levels, with at most 12 active destination/page-index lookups. The web shell loads the outline lazily when the Contents panel is first opened, so large tables of contents do not delay the initial page render.
 
 PageVirtualizer exposes page offsets and measured page sizes so the shell can place a bounded set of page roots inside one scroll spacer. The continuous Reader uses the scroll viewport as the source of truth for the current page; single-page mode mounts only one page. Page roots are cancelled and unmounted when they leave the virtual window.
 
-ReadingProgress is stored per DocumentId in the IndexedDB readingProgress object store. Its pageIndex is zero-based, scrollOffset is a clamped fraction within that page, zoom is bounded by the Reader UI, and readingMode distinguishes continuous from single-page presentation. The UI debounces writes and flushes on close/pagehide.
+ReadingProgress is stored per DocumentId in the IndexedDB readingProgress object store. Its pageIndex is zero-based, scrollOffset is a clamped fraction within that page, zoom is bounded by the Reader UI, and readingMode distinguishes continuous from single-page presentation. The UI debounces writes, persists when the document becomes hidden, and makes a final best-effort write on pagehide after synchronously disposing render resources.
+
+The web shell treats page loading and rendering as one bounded in-flight operation per mount. A render scale is committed only after a successful render; failed pages retain a single recoverable error state and require an explicit Retry action rather than repeated work on each scroll event. The PDF adapter takes ownership of a supplied, pre-authorized source handle: it releases the handle on every failed open, while a successful session releases it from session.close().

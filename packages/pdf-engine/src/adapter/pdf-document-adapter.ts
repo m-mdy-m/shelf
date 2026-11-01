@@ -231,47 +231,75 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
 
       const maxItems = 1_000;
       const maxDepth = 16;
+      const maxConcurrentLookups = 12;
       let visited = 0;
+      let activeLookups = 0;
+      const lookupQueue: Array<() => void> = [];
+
+      const withLookupLimit = async <Value>(operation: () => Promise<Value>): Promise<Value> => {
+        if (activeLookups >= maxConcurrentLookups) {
+          await new Promise<void>((resolve) => lookupQueue.push(resolve));
+        }
+        activeLookups += 1;
+        try {
+          return await operation();
+        } finally {
+          activeLookups -= 1;
+          lookupQueue.shift()?.();
+        }
+      };
+
+      const resolveItem = async (
+        item: PdfJsOutlineItem,
+        depth: number,
+      ): Promise<PdfOutlineItem> => {
+        let pageIndex: PageIndex | null = null;
+        try {
+          const destination = typeof item.dest === "string"
+            ? await withLookupLimit(() => this.#document.getDestination(item.dest as string))
+            : Array.isArray(item.dest)
+              ? item.dest
+              : null;
+          const reference = destination?.[0];
+          if (reference !== undefined) {
+            const numericIndex = await withLookupLimit(() => this.#document.getPageIndex(reference));
+            if (
+              Number.isSafeInteger(numericIndex) &&
+              numericIndex >= 0 &&
+              numericIndex < this.#info.pageCount
+            ) {
+              pageIndex = toPageIndex(numericIndex);
+            }
+          }
+        } catch {
+          // Keep the label when a destination is unsupported or cannot be resolved.
+        }
+
+        const children = depth >= maxDepth
+          ? []
+          : await resolveItems(item.items ?? [], depth + 1);
+        return {
+          title: safeMetadataString(item.title) ?? "Untitled section",
+          pageIndex,
+          children,
+        };
+      };
 
       const resolveItems = async (
         items: readonly PdfJsOutlineItem[],
         depth: number,
       ): Promise<readonly PdfOutlineItem[]> => {
         const output: PdfOutlineItem[] = [];
-        for (const item of items) {
-          if (visited >= maxItems) break;
-          visited += 1;
-
-          let pageIndex: PageIndex | null = null;
-          try {
-            const destination = typeof item.dest === "string"
-              ? await this.#document.getDestination(item.dest)
-              : Array.isArray(item.dest)
-                ? item.dest
-                : null;
-            const reference = destination?.[0];
-            if (reference !== undefined) {
-              const numericIndex = await this.#document.getPageIndex(reference);
-              if (
-                Number.isSafeInteger(numericIndex) &&
-                numericIndex >= 0 &&
-                numericIndex < this.#info.pageCount
-              ) {
-                pageIndex = toPageIndex(numericIndex);
-              }
-            }
-          } catch {
-            // Keep the label when a destination is unsupported or cannot be resolved.
+        const batchSize = 12;
+        for (let offset = 0; offset < items.length && visited < maxItems; offset += batchSize) {
+          const batch: PdfJsOutlineItem[] = [];
+          for (const item of items.slice(offset, offset + batchSize)) {
+            if (visited >= maxItems) break;
+            visited += 1;
+            batch.push(item);
           }
-
-          const children = depth >= maxDepth
-            ? []
-            : await resolveItems(item.items ?? [], depth + 1);
-          output.push({
-            title: safeMetadataString(item.title) ?? "Untitled section",
-            pageIndex,
-            children,
-          });
+          const resolved = await Promise.all(batch.map((item) => resolveItem(item, depth)));
+          output.push(...resolved);
         }
         return output;
       };
@@ -328,27 +356,27 @@ export class PdfDocumentAdapter {
     this.#options = options;
   }
 
+  /**
+   * A supplied source handle transfers ownership to this adapter. On success the
+   * PDF session releases it from close(); on every failure this method releases it
+   * before returning the error.
+   */
   async open(
     documentId: DocumentId,
     existingSourceHandle?: OpenDocumentHandle,
   ): Promise<Result<PdfDocumentSession, ReaderError>> {
-    const locatorResult = await this.#locators.getLocator(documentId);
-    if (!locatorResult.ok) {
-      if (existingSourceHandle !== undefined) {
-        await this.#source.close(existingSourceHandle.id);
+    let locator: DocumentLocator | null = null;
+    if (existingSourceHandle === undefined) {
+      const locatorResult = await this.#locators.getLocator(documentId);
+      if (!locatorResult.ok) return locatorResult;
+      locator = locatorResult.value;
+      if (locator === null) {
+        return { ok: false, error: errorResult("document-not-found", "The source for this PDF could not be found.") };
       }
-      return locatorResult;
-    }
-    const locator: DocumentLocator | null = locatorResult.value;
-    if (locator === null) {
-      if (existingSourceHandle !== undefined) {
-        await this.#source.close(existingSourceHandle.id);
-      }
-      return { ok: false, error: errorResult("document-not-found", "The source for this PDF could not be found.") };
     }
 
     const sourceResult: Result<OpenDocumentHandle, ReaderError> = existingSourceHandle === undefined
-      ? await this.#source.open(locator)
+      ? await this.#source.open(locator as DocumentLocator)
       : { ok: true, value: existingSourceHandle };
     if (!sourceResult.ok) return sourceResult;
     const sourceHandle = sourceResult.value;

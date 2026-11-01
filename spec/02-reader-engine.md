@@ -57,5 +57,7 @@ Persist last document, page/scroll, zoom, reading mode, and timestamps; debounce
 - Continuous mode derives the current page from the scroll container and measured page offsets. Single-page mode mounts only the selected page.
 - Zoom is bounded between 25% and 400%; Fit Width and Fit Page derive scale from the selected page geometry and the visible reader viewport.
 - Outline entries expose safe titles, child items, and resolved zero-based page indexes. External outline URLs and PDF.js objects do not cross the adapter boundary; unresolved destinations remain non-navigable labels.
-- The browser stores per-document page, normalized intra-page scroll, zoom, and reading mode in a versioned IndexedDB object store. Writes are debounced and flushed when the Reader is closed or the page is hidden.
+- The browser stores per-document page, normalized intra-page scroll, zoom, and reading mode in a versioned IndexedDB object store. Writes are debounced, flushed when the document becomes hidden, and attempted again on pagehide after render resources are synchronously disposed.
+- The outline is loaded only when the Contents panel is first opened. Destination lookups use bounded concurrency (at most 12 active PDF.js lookups) and preserve source ordering; failed outline loads can be retried.
+- Page rendering keeps each mount in a loading state until its render task settles. Failed page renders expose an explicit Retry action and are not retried on every scroll or layout pass.
 - Previous/next, page jump, outline activation, and keyboard commands share the same navigation path. Native scrolling and touch panning remain available in continuous mode.
