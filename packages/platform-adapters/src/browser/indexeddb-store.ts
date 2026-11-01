@@ -38,6 +38,13 @@ function storageError(
   return { code, message, retryable: true };
 }
 
+function isReadingProgress(record: Document | ReadingProgress): record is ReadingProgress {
+  return "pageIndex" in record &&
+    "scrollOffset" in record &&
+    "readingMode" in record &&
+    "updatedAt" in record;
+}
+
 /** One local database stores safe records, opaque locators, and source bytes separately. */
 export class IndexedDbShelfStore
 implements DocumentRepositoryPort, ReadingProgressRepositoryPort, DocumentLocatorStorePort, BrowserDocumentStoragePort {
@@ -137,14 +144,14 @@ implements DocumentRepositoryPort, ReadingProgressRepositoryPort, DocumentLocato
   async save(progress: ReadingProgress): Promise<Result<void, ReaderError>>;
   async save(record: Document | ReadingProgress): Promise<Result<void, ReaderError>> {
     try {
-      if ("documentId" in record) {
+      if (isReadingProgress(record)) {
         await this.#run("readingProgress", "readwrite", (store) => store.put(record));
       } else {
         await this.saveDocument(record);
       }
       return { ok: true, value: undefined };
     } catch {
-      const message = "documentId" in record
+      const message = isReadingProgress(record)
         ? "Shelf could not save the reading position."
         : "Shelf could not save the document record.";
       return { ok: false, error: storageError("write-failed", message) };

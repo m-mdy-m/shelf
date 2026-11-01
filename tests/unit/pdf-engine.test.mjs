@@ -54,6 +54,9 @@ function createFakeEnvironment(options = {}) {
   const pageRequests = [];
   const renderCalls = [];
   let sourceCloseCount = 0;
+  let locatorReadCount = 0;
+  let outlineLookupActive = 0;
+  let maxOutlineLookupActive = 0;
   let workerDestroyed = false;
   let workerCreateCount = 0;
   const workerNames = [];
@@ -77,10 +80,24 @@ function createFakeEnvironment(options = {}) {
       return options.outline ?? null;
     },
     async getDestination(name) {
-      return options.destinations?.[name] ?? null;
+      outlineLookupActive += 1;
+      maxOutlineLookupActive = Math.max(maxOutlineLookupActive, outlineLookupActive);
+      try {
+        await new Promise((resolve) => setImmediate(resolve));
+        return options.destinations?.[name] ?? null;
+      } finally {
+        outlineLookupActive -= 1;
+      }
     },
     async getPageIndex(reference) {
-      return typeof reference === "number" ? reference : Number(reference);
+      outlineLookupActive += 1;
+      maxOutlineLookupActive = Math.max(maxOutlineLookupActive, outlineLookupActive);
+      try {
+        await new Promise((resolve) => setImmediate(resolve));
+        return typeof reference === "number" ? reference : Number(reference);
+      } finally {
+        outlineLookupActive -= 1;
+      }
     },
     async getPage(pageNumber) {
       pageRequests.push(pageNumber);
@@ -125,6 +142,7 @@ function createFakeEnvironment(options = {}) {
 
   const locatorStore = {
     async getLocator() {
+      locatorReadCount += 1;
       return {
         ok: true,
         value: {
@@ -216,6 +234,8 @@ function createFakeEnvironment(options = {}) {
     pageRequests,
     renderCalls,
     sourceCloseCount: () => sourceCloseCount,
+    locatorReadCount: () => locatorReadCount,
+    maxOutlineLookupConcurrency: () => maxOutlineLookupActive,
     workerDestroyed: () => workerDestroyed,
     workerCreateCount: () => workerCreateCount,
     workerNames: () => [...workerNames],
@@ -601,6 +621,71 @@ test("PDF outline treats missing contents as empty and rejects access after clos
   const closed = await session.getOutline();
   assert.equal(closed.ok, false);
   if (!closed.ok) assert.equal(closed.error.code, "cancelled");
+});
+
+test("PDF adapter takes ownership of a supplied source handle and skips locator lookup", async () => {
+  const environment = createFakeEnvironment();
+  const suppliedHandle = {
+    id: "pre-authorized-source",
+    metadata: {
+      displayName: "fixture.pdf",
+      mediaType: "application/pdf",
+      sizeBytes: 3 * 1024 * 1024,
+      modifiedAt: null,
+    },
+  };
+
+  const result = await environment.adapter.open(documentId, suppliedHandle);
+  assert.equal(result.ok, true);
+  assert.equal(environment.locatorReadCount(), 0);
+  if (result.ok) {
+    const closed = await result.value.close();
+    assert.equal(closed.ok, true);
+  }
+  assert.equal(environment.sourceCloseCount(), 1);
+});
+
+test("PDF adapter releases a supplied source handle when opening fails", async () => {
+  const environment = createFakeEnvironment({ failure: namedError("InvalidPDFException") });
+  const suppliedHandle = {
+    id: "failed-open-source",
+    metadata: {
+      displayName: "broken.pdf",
+      mediaType: "application/pdf",
+      sizeBytes: 3 * 1024 * 1024,
+      modifiedAt: null,
+    },
+  };
+
+  const result = await environment.adapter.open(documentId, suppliedHandle);
+  assert.equal(result.ok, false);
+  assert.equal(environment.locatorReadCount(), 0);
+  assert.equal(environment.sourceCloseCount(), 1);
+});
+
+test("large PDF outlines resolve destinations with bounded concurrency and stable order", async () => {
+  const outline = Array.from({ length: 48 }, (_, index) => ({
+    title: "Section " + String(index + 1),
+    dest: "section-" + String(index),
+    items: [],
+  }));
+  const destinations = Object.fromEntries(
+    Array.from({ length: 48 }, (_, index) => ["section-" + String(index), [index % 3]]),
+  );
+  const environment = createFakeEnvironment({ outline, destinations });
+  const session = await openFixture(environment);
+  const result = await session.getOutline();
+
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.value.length, 48);
+    assert.equal(result.value[0].title, "Section 1");
+    assert.equal(result.value[47].title, "Section 48");
+    assert.equal(result.value[47].pageIndex, 2);
+  }
+  assert.ok(environment.maxOutlineLookupConcurrency() <= 12);
+  assert.ok(environment.maxOutlineLookupConcurrency() > 1);
+  await session.close();
 });
 
 test("virtualizer exposes measured page tops and sizes for scroll synchronization", () => {
