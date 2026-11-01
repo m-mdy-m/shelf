@@ -5,6 +5,7 @@ import {
   PdfPageRenderer,
   PageVirtualizer,
   createPdfPageLayers,
+  createPdfJsRuntime,
 } from "../../packages/pdf-engine/dist/index.js";
 import { MAX_DOCUMENT_READ_BYTES, toPageIndex } from "../../packages/reader-core/dist/index.js";
 import {
@@ -55,6 +56,9 @@ function createFakeEnvironment(options = {}) {
   let sourceCloseCount = 0;
   let workerDestroyed = false;
   let workerCreateCount = 0;
+  const workerNames = [];
+  const destroyedWorkerNames = [];
+  let passwordUpdateCount = 0;
   let taskDestroyCount = 0;
   let rangeAbortCount = 0;
   let rangeConfig = null;
@@ -129,11 +133,12 @@ function createFakeEnvironment(options = {}) {
   const runtime = {
     annotationModeDisable: 0,
     passwordResponses: { NEED_PASSWORD: 1, INCORRECT_PASSWORD: 2 },
-    createWorker() {
+    createWorker(name) {
       workerCreateCount += 1;
+      workerNames.push(name);
       return {
         promise: Promise.resolve(),
-        destroy() { workerDestroyed = true; },
+        destroy() { workerDestroyed = true; destroyedWorkerNames.push(name); },
       };
     },
     createRangeTransport(_length, _filename, requestRange, onAbort) {
@@ -161,6 +166,9 @@ function createFakeEnvironment(options = {}) {
         async destroy() {
           taskDestroyCount += 1;
           workerDestroyed = true;
+          if (options.rejectOnDestroy === true) {
+            rejectDocument(namedError("AbortException"));
+          }
         },
       };
 
@@ -169,6 +177,7 @@ function createFakeEnvironment(options = {}) {
       } else if (options.passwordEvent === true) {
         queueMicrotask(() => {
           task.onPassword((password) => {
+            passwordUpdateCount += 1;
             if (password === "correct horse") resolveDocument(pdfDocument);
             else rejectDocument(namedError("PasswordException"));
           }, runtime.passwordResponses.NEED_PASSWORD);
@@ -199,6 +208,9 @@ function createFakeEnvironment(options = {}) {
     sourceCloseCount: () => sourceCloseCount,
     workerDestroyed: () => workerDestroyed,
     workerCreateCount: () => workerCreateCount,
+    workerNames: () => [...workerNames],
+    destroyedWorkerNames: () => [...destroyedWorkerNames],
+    passwordUpdateCount: () => passwordUpdateCount,
     taskDestroyCount: () => taskDestroyCount,
     rangeAbortCount: () => rangeAbortCount,
     rangeConfig: () => rangeConfig,
@@ -261,6 +273,12 @@ test("source range failures destroy the active PDF.js task instead of returning 
   assert.equal(environment.reads.length, 1);
   assert.equal(environment.taskDestroyCount(), 1);
   assert.equal(environment.workerDestroyed(), true);
+  const pageAfterFailure = await session.getPage(toPageIndex(0));
+  assert.equal(pageAfterFailure.ok, false);
+  if (!pageAfterFailure.ok) {
+    assert.equal(pageAfterFailure.error.code, "read-failed");
+    assert.equal(pageAfterFailure.error.retryable, false);
+  }
 
   const closed = await session.close();
   assert.equal(closed.ok, true);
@@ -268,19 +286,30 @@ test("source range failures destroy the active PDF.js task instead of returning 
   assert.equal(environment.sourceCloseCount(), 1);
 });
 
-test("PDF document close destroys loading task and releases its source handle", async () => {
+test("PDF document close releases its own worker without affecting another session", async () => {
   const environment = createFakeEnvironment();
   const session = await openFixture(environment);
+  const secondSession = await openFixture(environment);
+  const [firstWorkerName, secondWorkerName] = environment.workerNames();
+  assert.notEqual(firstWorkerName, secondWorkerName);
 
   const first = await session.close();
-  const second = await session.close();
   assert.equal(first.ok, true);
+  assert.deepEqual(environment.destroyedWorkerNames(), [firstWorkerName]);
+
+  const secondPage = await secondSession.getPage(toPageIndex(0));
+  assert.equal(secondPage.ok, true);
+  const second = await secondSession.close();
   assert.equal(second.ok, true);
-  assert.equal(environment.taskDestroyCount(), 1);
+  assert.deepEqual(environment.destroyedWorkerNames(), [firstWorkerName, secondWorkerName]);
+
+  const repeated = await session.close();
+  assert.equal(repeated.ok, true);
+  assert.equal(environment.taskDestroyCount(), 2);
   assert.equal(environment.workerDestroyed(), true);
-  assert.equal(environment.rangeAbortCount(), 1);
-  assert.equal(environment.sourceCloseCount(), 1);
-  assert.equal(environment.workerCreateCount(), 1);
+  assert.equal(environment.rangeAbortCount(), 2);
+  assert.equal(environment.sourceCloseCount(), 2);
+  assert.equal(environment.workerCreateCount(), 2);
 });
 
 test("Shelf page indexes map to PDF.js one-based pages without leaking PDF.js proxies", async () => {
@@ -322,6 +351,48 @@ test("password-protected and malformed PDFs produce explicit safe errors", async
   if (!malformedResult.ok) assert.equal(malformedResult.error.code, "invalid-document");
   assert.equal(malformedEnvironment.sourceCloseCount(), 1);
   assert.equal(malformedEnvironment.workerDestroyed(), true);
+});
+
+test("PDF.js runtime instances can resolve independent worker asset roots", () => {
+  const firstAssets = {
+    workerSrc: "https://shelf.example/one/assets/pdfjs/build/pdf.worker.min.mjs",
+    cMapUrl: "https://shelf.example/one/assets/pdfjs/cmaps/",
+    iccUrl: "https://shelf.example/one/assets/pdfjs/iccs/",
+    standardFontDataUrl: "https://shelf.example/one/assets/pdfjs/standard_fonts/",
+    wasmUrl: "https://shelf.example/one/assets/pdfjs/wasm/",
+  };
+  const secondAssets = {
+    ...firstAssets,
+    workerSrc: "https://shelf.example/two/assets/pdfjs/build/pdf.worker.min.mjs",
+  };
+
+  assert.doesNotThrow(() => createPdfJsRuntime(firstAssets));
+  assert.doesNotThrow(() => createPdfJsRuntime(secondAssets));
+});
+
+test("late password prompt responses are ignored after a document teardown", async () => {
+  let resolvePassword;
+  const environment = createFakeEnvironment({
+    passwordEvent: true,
+    readFailure: true,
+    rejectOnDestroy: true,
+    adapterOptions: {
+      passwordPrompt: () => new Promise((resolve) => { resolvePassword = resolve; }),
+    },
+  });
+  const opening = environment.adapter.open(documentId);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(typeof resolvePassword, "function");
+
+  environment.rangeConfig().range.requestDataRange(0, 1024);
+  const result = await opening;
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.error.code, "read-failed");
+
+  resolvePassword("correct horse");
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(environment.passwordUpdateCount(), 0);
+  assert.equal(environment.sourceCloseCount(), 1);
 });
 
 test("password prompt supports retries and explicit cancellation", async () => {
@@ -398,7 +469,9 @@ test("page renderer keeps canvas, text, and Shelf annotation layers separate", a
     kind: "highlight",
     color: "yellow",
     anchor: null,
-    rectangles: [{ x: 0.1, y: 0.2, width: 0.3, height: 0.05 }],
+    rectangles: Array.from({ length: 250 }, () => ({
+      x: 0.1, y: 0.2, width: 0.3, height: 0.05,
+    })),
     createdAt: 1,
     updatedAt: 1,
   };
@@ -409,7 +482,7 @@ test("page renderer keeps canvas, text, and Shelf annotation layers separate", a
   });
 
   assert.equal(rendered.ok, true);
-  assert.equal(layers.annotations.children.length, 1);
+  assert.equal(layers.annotations.children.length, 200);
   assert.equal(layers.text.children.length, 0);
   assert.equal(environment.renderCalls.length, 1);
   assert.equal(environment.renderCalls[0].annotationMode, environment.runtime.annotationModeDisable);

@@ -10,7 +10,7 @@
 4. Pass a bounded custom range transport into `getDocument`.
 5. Adapt password callbacks and PDF.js failures to safe `ReaderError` values.
 6. Return a session with metadata and zero-based page access.
-7. On close, abort outstanding range transport, await loading-task destruction, wait for pending source reads, and release the source handle.
+7. On close, abort outstanding range transport, await loading-task destruction, wait for pending source reads, and release the source handle. A failed byte-range read is terminal for that session: the adapter stops the loading task and returns a non-retryable session error; a caller must open a new session to retry.
 
 The adapter uses a 64 KiB default PDF.js chunk and caps configurable chunks at 1 MiB. It disables streaming and background auto-fetch while using range transport. This avoids eagerly materializing the complete file and keeps every source-port read within the Reader Core byte-range limit. The upstream worker and auxiliary asset URLs are version-matched and served on the same origin.
 
@@ -21,7 +21,7 @@ The renderer creates three sibling layers:
 - Text: PDF.js TextLayer from the page's text-content stream; it remains selectable and independently cancellable.
 - Annotations: Shelf-owned DOM markers projected from normalized page rectangles.
 
-Canvas pixel budgets are checked before allocation. Render tasks and text streams are cancelled when a page is rerendered or removed. TextLayer positioning and selection rules live in the PDF engine's scoped stylesheet; no global PDF.js viewer stylesheet is loaded.
+Canvas pixel budgets are checked before allocation. Render tasks and text streams are cancelled when a page is rerendered or removed. At most 200 Shelf annotation markers are materialized per page render, and callers pass page-scoped annotations. TextLayer positioning and selection rules live in the PDF engine's scoped stylesheet; no global PDF.js viewer stylesheet is loaded.
 
 ## Virtualization
 
@@ -31,7 +31,7 @@ Virtualization does not force a one-size-fits-all page layout: each page retains
 
 ## Asset deployment
 
-The web build copies the version-matched worker, CMaps, ICC profiles, standard fonts, WebAssembly decoder assets, the PDF.js Apache-2.0 license, and per-asset license notices from the locked `pdfjs-dist` dependency. The worker source and auxiliary URLs are resolved on the same application origin. The application CSP explicitly allows same-origin workers and WebAssembly compilation for PDF.js decoders.
+The web build copies the version-matched worker, CMaps, ICC profiles, standard fonts, WebAssembly decoder assets, the PDF.js Apache-2.0 license, and per-asset license notices from the locked `pdfjs-dist` dependency. The worker source and auxiliary URLs are resolved on the same application origin. The application CSP explicitly allows same-origin workers and WebAssembly compilation for PDF.js decoders. Blob workers are not enabled because the adapter loads the copied same-origin worker asset.
 
 ## Failure model
 
