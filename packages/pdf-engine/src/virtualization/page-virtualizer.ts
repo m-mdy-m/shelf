@@ -150,6 +150,28 @@ export class PageVirtualizer {
     this.#tree.set(numericIndex, size.height + this.#pageGap, previousHeight + this.#pageGap);
   }
 
+  getPageTop(index: PageIndex, scale = 1): number {
+    const numericIndex = index as number;
+    if (!Number.isSafeInteger(numericIndex) || numericIndex < 0 || numericIndex >= this.pageCount) {
+      throw new RangeError("Page index is outside this document.");
+    }
+    if (!Number.isFinite(scale) || scale <= 0 || scale > 8) {
+      throw new RangeError("Page scale must be finite and within the supported range.");
+    }
+    return this.#tree.prefix(numericIndex) * scale;
+  }
+
+  getPageSize(index: PageIndex): PageSize {
+    const numericIndex = index as number;
+    if (!Number.isSafeInteger(numericIndex) || numericIndex < 0 || numericIndex >= this.pageCount) {
+      throw new RangeError("Page index is outside this document.");
+    }
+    return {
+      width: this.#widths[numericIndex] ?? 612,
+      height: this.#heights[numericIndex] ?? 792,
+    };
+  }
+
   getWindow(viewport: PageViewportPosition): PageVirtualWindow {
     const { scrollTop, viewportWidth, viewportHeight, scale } = viewport;
     if (!Number.isFinite(scrollTop) || scrollTop < 0 ||

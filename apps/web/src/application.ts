@@ -1,7 +1,4 @@
-import {
-  toOpaqueId,
-  toPageIndex,
-} from "@shelf/reader-core";
+import { toOpaqueId } from "@shelf/reader-core";
 import type {
   Document,
   DocumentId,
@@ -13,15 +10,12 @@ import type {
 } from "@shelf/reader-core";
 import {
   createPdfJsRuntime,
-  createPdfPageLayers,
   PdfDocumentAdapter,
   PdfPageRenderer,
   resolvePdfJsAssetUrls,
 } from "@shelf/pdf-engine";
-import type {
-  PdfDocumentSession,
-  PdfPageLayers,
-} from "@shelf/pdf-engine";
+import type { PdfDocumentSession } from "@shelf/pdf-engine";
+import { mountReaderWorkspace } from "./reader-workspace.js";
 import { DocumentLibraryService } from "@shelf/library";
 import {
   BrowserDocumentSource,
@@ -78,7 +72,7 @@ export function mountShelf(root: HTMLElement): void {
   const renderer = new PdfPageRenderer(runtime);
 
   let activeSession: PdfDocumentSession | null = null;
-  let activeLayers: PdfPageLayers | null = null;
+  let activeWorkspace: ReturnType<typeof mountReaderWorkspace> | null = null;
 
   const main = createElement("main", "shelf-shell");
   const header = createElement("header", "shelf-header");
@@ -128,9 +122,12 @@ export function mountShelf(root: HTMLElement): void {
   }
 
   async function closeActiveDocument(): Promise<void> {
-    if (activeLayers !== null) renderer.cancel(activeLayers);
+    if (activeWorkspace !== null) {
+      await activeWorkspace.persist();
+      activeWorkspace.dispose();
+    }
+    activeWorkspace = null;
     if (activeSession !== null) await activeSession.close();
-    activeLayers = null;
     activeSession = null;
     viewer.replaceChildren();
     viewer.hidden = true;
@@ -145,57 +142,34 @@ export function mountShelf(root: HTMLElement): void {
       setStatus(access.error.message, true);
       return;
     }
-    const permissionClosed = await library.closeDocument(access.value.source);
-    if (!permissionClosed.ok) {
-      setStatus(permissionClosed.error.message, true);
+
+    const savedProgress = await store.getByDocumentId(id);
+    if (!savedProgress.ok) {
+      await library.closeDocument(access.value.source);
+      setStatus(savedProgress.error.message, true);
       return;
     }
 
-    const opened = await pdf.open(id);
+    const opened = await pdf.open(id, access.value.source);
     if (!opened.ok) {
       setStatus(opened.error.message, true);
       return;
     }
+
     activeSession = opened.value;
-
-    const firstPage = await activeSession.getPage(toPageIndex(0));
-    if (!firstPage.ok) {
-      setStatus(firstPage.error.message, true);
-      await closeActiveDocument();
-      return;
-    }
-
-    viewer.replaceChildren();
-    const viewerHeader = createElement("div", "viewer-header");
-    const viewerInfo = createElement("div", "viewer-info");
-    const viewerTitle = createElement("h2", "viewer-title", opened.value.info.title ?? opened.value.info.displayName ?? "Untitled PDF");
-    const viewerMeta = createElement("p", "viewer-meta", String(opened.value.info.pageCount) + " pages · " + formatSize(opened.value.info.sizeBytes));
-    viewerInfo.append(viewerTitle, viewerMeta);
-    const closeButton = createElement("button", "button button-small", "Close document") as HTMLButtonElement;
-    closeButton.type = "button";
-    closeButton.addEventListener("click", () => {
-      void closeActiveDocument();
-      setStatus("The PDF was closed. Your library remains available offline.");
-    });
-    viewerHeader.append(viewerInfo, closeButton);
-
-    const stage = createElement("div", "viewer-stage");
-    const pageRoot = createElement("div", "viewer-page");
-    stage.append(pageRoot);
-    viewer.append(viewerHeader, stage);
     viewer.hidden = false;
-
-    activeLayers = createPdfPageLayers(pageRoot);
-    const rendered = await renderer.render(firstPage.value, activeLayers, [], {
-      scale: 1,
-      devicePixelRatio: Math.min(globalThis.devicePixelRatio || 1, 2),
+    activeWorkspace = mountReaderWorkspace({
+      root: viewer,
+      session: opened.value,
+      renderer,
+      progressRepository: store,
+      initialProgress: savedProgress.value,
+      onStatus: setStatus,
+      onClose: () => {
+        void closeActiveDocument();
+        setStatus("The PDF was closed. Your library remains available offline.");
+      },
     });
-    if (!rendered.ok) {
-      setStatus(rendered.error.message, true);
-      await closeActiveDocument();
-      return;
-    }
-    setStatus("Opened locally. The first page is rendered; navigation controls are the next Reader step.");
   }
 
   async function importPickedFile(mode: "imported-copy" | "external-reference"): Promise<void> {
@@ -293,8 +267,13 @@ export function mountShelf(root: HTMLElement): void {
     void importPickedFile("external-reference");
   });
   window.addEventListener("pagehide", () => {
-    if (activeLayers !== null) renderer.cancel(activeLayers);
-    if (activeSession !== null) void activeSession.close();
+    void (async () => {
+      if (activeWorkspace !== null) {
+        await activeWorkspace.persist();
+        activeWorkspace.dispose();
+      }
+      if (activeSession !== null) await activeSession.close();
+    })();
   }, { once: true });
 
   void refreshLibrary();

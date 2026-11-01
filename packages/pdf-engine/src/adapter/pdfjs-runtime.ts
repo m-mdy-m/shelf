@@ -37,11 +37,20 @@ export interface PdfJsPageProxy {
   streamTextContent(): ReadableStream<unknown>;
 }
 
+export interface PdfJsOutlineItem {
+  readonly title: string;
+  readonly dest: string | readonly unknown[] | null;
+  readonly items: readonly PdfJsOutlineItem[];
+}
+
 export interface PdfJsDocumentProxy {
   readonly numPages: number;
   readonly fingerprints: readonly string[];
   getPage(pageNumber: number): Promise<PdfJsPageProxy>;
   getMetadata(): Promise<{ readonly info?: Readonly<Record<string, unknown>> }>;
+  getOutline(): Promise<readonly PdfJsOutlineItem[] | null>;
+  getDestination(name: string): Promise<readonly unknown[] | null>;
+  getPageIndex(reference: unknown): Promise<number>;
 }
 
 export interface PdfJsWorker {

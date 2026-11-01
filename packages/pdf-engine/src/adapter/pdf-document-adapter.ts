@@ -1,6 +1,7 @@
 import {
   MAX_DOCUMENT_READ_BYTES,
   parseByteRange,
+  toPageIndex,
 } from "@shelf/reader-core";
 import type {
   DocumentId,
@@ -15,6 +16,7 @@ import type {
 import type {
   PdfJsDocumentProxy,
   PdfJsLoadingTask,
+  PdfJsOutlineItem,
   PdfJsPageProxy,
   PdfJsRangeTransport,
   PdfJsRuntime,
@@ -65,6 +67,12 @@ export interface PdfPageGeometry {
   readonly rotation: number;
 }
 
+export interface PdfOutlineItem {
+  readonly title: string;
+  readonly pageIndex: PageIndex | null;
+  readonly children: readonly PdfOutlineItem[];
+}
+
 /** A Shelf-owned handle; no PDF.js object crosses this public boundary. */
 export interface PdfPageHandle {
   readonly geometry: PdfPageGeometry;
@@ -73,6 +81,7 @@ export interface PdfPageHandle {
 export interface PdfDocumentSession {
   readonly info: PdfDocumentInfo;
   getPage(index: PageIndex): Promise<Result<PdfPageHandle, ReaderError>>;
+  getOutline(): Promise<Result<readonly PdfOutlineItem[], ReaderError>>;
   createVirtualizer(options?: PageVirtualizerOptions): PageVirtualizer;
   close(): Promise<Result<void, ReaderError>>;
 }
@@ -209,6 +218,73 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
     }
   }
 
+  async getOutline(): Promise<Result<readonly PdfOutlineItem[], ReaderError>> {
+    if (this.#closedRef.current) {
+      return { ok: false, error: errorResult("cancelled", "The PDF document is closed.") };
+    }
+
+    try {
+      const sourceOutline = await this.#document.getOutline();
+      if (sourceOutline === null || sourceOutline.length === 0) {
+        return { ok: true, value: [] };
+      }
+
+      const maxItems = 1_000;
+      const maxDepth = 16;
+      let visited = 0;
+
+      const resolveItems = async (
+        items: readonly PdfJsOutlineItem[],
+        depth: number,
+      ): Promise<readonly PdfOutlineItem[]> => {
+        const output: PdfOutlineItem[] = [];
+        for (const item of items) {
+          if (visited >= maxItems) break;
+          visited += 1;
+
+          let pageIndex: PageIndex | null = null;
+          try {
+            const destination = typeof item.dest === "string"
+              ? await this.#document.getDestination(item.dest)
+              : Array.isArray(item.dest)
+                ? item.dest
+                : null;
+            const reference = destination?.[0];
+            if (reference !== undefined) {
+              const numericIndex = await this.#document.getPageIndex(reference);
+              if (
+                Number.isSafeInteger(numericIndex) &&
+                numericIndex >= 0 &&
+                numericIndex < this.#info.pageCount
+              ) {
+                pageIndex = toPageIndex(numericIndex);
+              }
+            }
+          } catch {
+            // Keep the label when a destination is unsupported or cannot be resolved.
+          }
+
+          const children = depth >= maxDepth
+            ? []
+            : await resolveItems(item.items ?? [], depth + 1);
+          output.push({
+            title: safeMetadataString(item.title) ?? "Untitled section",
+            pageIndex,
+            children,
+          });
+        }
+        return output;
+      };
+
+      return { ok: true, value: await resolveItems(sourceOutline, 0) };
+    } catch (error) {
+      return {
+        ok: false,
+        error: mapPdfJsFailure(error, this.#rangeFailureRef.current, null),
+      };
+    }
+  }
+
   createVirtualizer(options?: PageVirtualizerOptions): PageVirtualizer {
     return new PageVirtualizer(this.#info.pageCount, options);
   }
@@ -252,7 +328,10 @@ export class PdfDocumentAdapter {
     this.#options = options;
   }
 
-  async open(documentId: DocumentId): Promise<Result<PdfDocumentSession, ReaderError>> {
+  async open(
+    documentId: DocumentId,
+    existingSourceHandle?: OpenDocumentHandle,
+  ): Promise<Result<PdfDocumentSession, ReaderError>> {
     const locatorResult = await this.#locators.getLocator(documentId);
     if (!locatorResult.ok) return locatorResult;
     const locator: DocumentLocator | null = locatorResult.value;
@@ -260,7 +339,9 @@ export class PdfDocumentAdapter {
       return { ok: false, error: errorResult("document-not-found", "The source for this PDF could not be found.") };
     }
 
-    const sourceResult = await this.#source.open(locator);
+    const sourceResult: Result<OpenDocumentHandle, ReaderError> = existingSourceHandle === undefined
+      ? await this.#source.open(locator)
+      : { ok: true, value: existingSourceHandle };
     if (!sourceResult.ok) return sourceResult;
     const sourceHandle = sourceResult.value;
     const fileSize = sourceHandle.metadata.sizeBytes;
