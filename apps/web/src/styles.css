@@ -17,39 +17,259 @@ body {
   margin: 0;
 }
 
+button {
+  font: inherit;
+}
+
 #app {
-  display: grid;
   min-height: 100vh;
-  place-items: center;
-  padding: 2rem;
+  padding: clamp(1rem, 4vw, 3.5rem);
 }
 
 .shelf-shell {
   display: grid;
-  justify-items: center;
-  max-width: 36rem;
-  text-align: center;
+  gap: 1.5rem;
+  width: min(100%, 76rem);
+  margin: 0 auto;
+}
+
+.shelf-header,
+.shelf-brand,
+.shelf-actions,
+.document-card,
+.viewer-header,
+.section-heading {
+  display: flex;
+  align-items: center;
+}
+
+.shelf-header,
+.viewer-header,
+.section-heading {
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.shelf-brand {
+  gap: 1rem;
 }
 
 .shelf-mark {
   display: block;
-  margin-bottom: 1.25rem;
+  flex: 0 0 auto;
 }
 
-.shelf-shell h1 {
+.shelf-heading {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.shelf-title,
+.section-title,
+.viewer-title,
+.document-name {
   margin: 0;
-  font-size: clamp(2.5rem, 8vw, 4rem);
-  letter-spacing: -0.06em;
+  letter-spacing: -0.035em;
+}
+
+.shelf-title {
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+}
+
+.shelf-description,
+.section-hint,
+.document-metadata,
+.viewer-meta {
+  margin: 0;
+  color: #706e66;
 }
 
 .shelf-description {
-  max-width: 30rem;
-  margin: 1rem 0 0;
-  color: #68665d;
-  font-size: 1rem;
-  line-height: 1.7;
+  font-size: 0.95rem;
 }
 
-.boot-message {
-  color: #68665d;
+.shelf-actions {
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.button {
+  min-height: 2.65rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid #c9c5bb;
+  border-radius: 0.7rem;
+  background: #fffdf9;
+  color: #292820;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.button:hover:not(:disabled) {
+  border-color: #898579;
+  background: #f2eee5;
+}
+
+.button:focus-visible {
+  outline: 3px solid #8f9b79;
+  outline-offset: 2px;
+}
+
+.button-primary {
+  border-color: #37372f;
+  background: #37372f;
+  color: #fff;
+}
+
+.button-primary:hover:not(:disabled) {
+  border-color: #202019;
+  background: #202019;
+}
+
+.button-secondary {
+  background: transparent;
+}
+
+.button-small {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.88rem;
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.shelf-status {
+  min-height: 1.4rem;
+  margin: 0;
+  color: #656257;
+  font-size: 0.9rem;
+}
+
+.shelf-status-error {
+  color: #a23e32;
+}
+
+.library-section {
+  display: grid;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.section-heading {
+  align-items: end;
+}
+
+.section-title {
+  font-size: 1.35rem;
+}
+
+.section-hint {
+  font-size: 0.84rem;
+  text-align: right;
+}
+
+.document-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.document-card {
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid #dedad0;
+  border-radius: 0.9rem;
+  background: #fffdf9;
+}
+
+.document-details {
+  min-width: 0;
+}
+
+.document-name {
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.document-metadata {
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+}
+
+.library-empty {
+  padding: 2rem;
+  border: 1px dashed #c9c5bb;
+  border-radius: 0.9rem;
+  color: #706e66;
+  text-align: center;
+}
+
+.reader-viewer {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #dedad0;
+  border-radius: 1rem;
+  background: #eae6dd;
+}
+
+.reader-viewer[hidden] {
+  display: none;
+}
+
+.viewer-title {
+  font-size: 1.1rem;
+  overflow-wrap: anywhere;
+}
+
+.viewer-meta {
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+}
+
+.viewer-stage {
+  overflow: auto;
+  padding: 1.25rem;
+  border-radius: 0.7rem;
+  background: #d5d1c8;
+}
+
+.viewer-page {
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 0.35rem 1.4rem #25241f24;
+}
+
+@media (max-width: 640px) {
+  .shelf-header,
+  .section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .section-hint {
+    text-align: left;
+  }
+
+  .shelf-actions {
+    width: 100%;
+  }
+
+  .shelf-actions .button {
+    flex: 1 1 10rem;
+  }
+
+  .viewer-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .viewer-stage {
+    padding: 0.5rem;
+  }
 }

@@ -5,15 +5,17 @@
 - Local storage is the default source of truth.
 - Durable records use stable IDs and timestamps; evolving formats carry schema versions.
 - File paths, content URIs, browser handles, and platform locators are access references, not document identity. Keep them in adapter-owned access storage keyed by the stable Document ID, outside exportable document records.
+- A document source is explicitly an imported copy or an external reference. An imported copy belongs to Shelf's local storage; an external reference remains user-owned and must never be deleted when Shelf forgets the record.
 - Page indexes are zero-based: the first physical PDF page has index 0. Human-readable page ordinals and PDF page labels are presentation concerns.
 - A single source read is bounded to 1 MiB; adapters read larger sources in successive chunks.
+- Fingerprints are versioned content identifiers for duplicate detection, not primary document IDs. A fingerprint change does not silently replace a Document ID.
 - Deletion behavior is explicit and previewable.
 - Export/import is versioned and tested.
 - The former TechShelf catalog remains archived until a dedicated importer is scoped.
 
 ## Entities
 
-- **Document:** stable ID, title, authors, language, safe source metadata (kind/display name/media type/size/modified time), content fingerprint, page count, outline/text extraction status, timestamps. No raw path, content URI, or platform access handle.
+- **Document:** stable ID, title, authors, language, safe source metadata (kind/display name/media type/size/modified time), versioned content fingerprint, page count, outline/text extraction status, timestamps. No raw path, content URI, or platform access handle.
 - **Document access locator:** opaque path/URI/provider handle stored separately by an adapter and keyed by Document ID; may expire and is never exported by default.
 - **ReadingProgress:** document ID, zero-based page index, normalized scroll offset, zoom, reading mode, updated timestamp.
 - **Bookmark:** stable ID, document ID, zero-based page index, optional text anchor/label, creation timestamp.

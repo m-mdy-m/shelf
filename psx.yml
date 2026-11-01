@@ -82,6 +82,8 @@ custom:
           .gitkeep: ""
         pdf-engine:
           .gitkeep: ""
+        library:
+          .gitkeep: ""
         selection:
           .gitkeep: ""
         annotations:

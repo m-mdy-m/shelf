@@ -20,4 +20,5 @@ export type {
   LocalNotificationRequest,
   SecureCredentialStorePort,
   SecretValue,
+  Sha256DigestPort,
 } from "./runtime.js";
