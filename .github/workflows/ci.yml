@@ -20,18 +20,49 @@ jobs:
     steps:
       - name: Check out Shelf
         uses: actions/checkout@v7
-
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-
       - name: Fetch pinned Pipeline source
         run: |
           git clone --filter=blob:none --no-checkout https://github.com/m-mdy-m/pipeline.git .pipeline
           git -C .pipeline checkout --detach f4e05487193a653ecb96cd09f9a6b2da7ba4822
-
       - name: Run Shelf task graph
         env:
           PYTHONPATH: ${{ github.workspace }}/.pipeline/src
         run: python -m pipeline.providers.github task ci --root "$GITHUB_WORKSPACE" --config "$GITHUB_WORKSPACE/pipeline.toml" --json
+
+  project_standards:
+    name: PSX and GIX project standards
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Shelf
+        uses: actions/checkout@v7
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.25.0"
+          cache: false
+      - name: Fetch pinned PSX source
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/m-mdy-m/PSX.git .tools/psx
+          git -C .tools/psx checkout --detach e4f12e85725e1ebd44c7f3a4e18fcbaa893b30df
+      - name: Build and run PSX
+        working-directory: .tools/psx
+        run: go build -trimpath -o "$RUNNER_TEMP/psx" ./cmd/psx
+      - name: Verify Shelf structure
+        run: |
+          "$RUNNER_TEMP/psx" fix --dry-run
+          "$RUNNER_TEMP/psx" check
+          git diff --exit-code
+      - name: Fetch pinned GIX source
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/m-mdy-m/gix.git .tools/gix
+          git -C .tools/gix checkout --detach 9f0867923177cef3cd36d980cc2b356a35bee507
+      - name: Build and validate GIX flow
+        working-directory: .tools/gix
+        run: |
+          go build -trimpath -o "$RUNNER_TEMP/gix" ./cmd/gix
+          cd "$GITHUB_WORKSPACE"
+          "$RUNNER_TEMP/gix" config list
