@@ -46,3 +46,12 @@ The web build copies the version-matched worker, CMaps, ICC profiles, standard f
 | Other read/render failures | Safe, retryable `read-failed` |
 
 No native exception text, local path, URI, provider token, or document text is copied into an error message.
+
+
+## Reader navigation and persistence
+
+The adapter exposes a Shelf-owned outline tree. PDF.js destinations are resolved to zero-based PageIndex values within the adapter; unresolved destinations are represented with a null pageIndex, and external outline actions are never executed by the web shell. Outline traversal is bounded to 1,000 items and 16 levels.
+
+PageVirtualizer exposes page offsets and measured page sizes so the shell can place a bounded set of page roots inside one scroll spacer. The continuous Reader uses the scroll viewport as the source of truth for the current page; single-page mode mounts only one page. Page roots are cancelled and unmounted when they leave the virtual window.
+
+ReadingProgress is stored per DocumentId in the IndexedDB readingProgress object store. Its pageIndex is zero-based, scrollOffset is a clamped fraction within that page, zoom is bounded by the Reader UI, and readingMode distinguishes continuous from single-page presentation. The UI debounces writes and flushes on close/pagehide.

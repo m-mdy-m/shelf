@@ -73,6 +73,15 @@ function createFakeEnvironment(options = {}) {
   const pdfDocument = {
     numPages: options.numPages ?? pages.length,
     fingerprints: ["fixture-fingerprint"],
+    async getOutline() {
+      return options.outline ?? null;
+    },
+    async getDestination(name) {
+      return options.destinations?.[name] ?? null;
+    },
+    async getPageIndex(reference) {
+      return typeof reference === "number" ? reference : Number(reference);
+    },
     async getPage(pageNumber) {
       pageRequests.push(pageNumber);
       const page = pages[pageNumber - 1];
@@ -551,4 +560,61 @@ test("virtualization updates offsets after discovering mixed page dimensions", (
   assert.equal(after.firstVisibleIndex, 1);
   assert.equal(after.pages.find((page) => page.index === 2)?.top, 320);
   assert.equal(after.totalHeight, 200 + 10 + 100 + 10 + 100);
+});
+
+
+test("PDF outline destinations resolve to zero-based pages and keep nested hierarchy", async () => {
+  const environment = createFakeEnvironment({
+    outline: [
+      {
+        title: "  Chapter One  ",
+        dest: [0],
+        items: [
+          { title: "Section 1.1", dest: "section-1-1", items: [] },
+          { title: "Unsupported destination", dest: null, items: [] },
+        ],
+      },
+    ],
+    destinations: {
+      "section-1-1": [2],
+    },
+  });
+  const session = await openFixture(environment);
+  const result = await session.getOutline();
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.value.length, 1);
+    assert.equal(result.value[0].title, "Chapter One");
+    assert.equal(result.value[0].pageIndex, 0);
+    assert.equal(result.value[0].children[0].pageIndex, 2);
+    assert.equal(result.value[0].children[1].pageIndex, null);
+  }
+  await session.close();
+});
+
+test("PDF outline treats missing contents as empty and rejects access after close", async () => {
+  const environment = createFakeEnvironment({ outline: null });
+  const session = await openFixture(environment);
+  const empty = await session.getOutline();
+  assert.deepEqual(empty, { ok: true, value: [] });
+  await session.close();
+  const closed = await session.getOutline();
+  assert.equal(closed.ok, false);
+  if (!closed.ok) assert.equal(closed.error.code, "cancelled");
+});
+
+test("virtualizer exposes measured page tops and sizes for scroll synchronization", () => {
+  const virtualizer = new PageVirtualizer(4, {
+    estimatedPageWidth: 600,
+    estimatedPageHeight: 800,
+    pageGap: 20,
+  });
+  assert.equal(virtualizer.getPageTop(toPageIndex(2)), 1640);
+  assert.deepEqual(virtualizer.getPageSize(toPageIndex(1)), { width: 600, height: 800 });
+
+  virtualizer.updatePageSize(toPageIndex(0), { width: 400, height: 500 });
+  assert.equal(virtualizer.getPageTop(toPageIndex(2)), 1340);
+  assert.deepEqual(virtualizer.getPageSize(toPageIndex(0)), { width: 400, height: 500 });
+  assert.throws(() => virtualizer.getPageTop(toPageIndex(4)), RangeError);
+  assert.throws(() => virtualizer.getPageTop(toPageIndex(0), 9), RangeError);
 });

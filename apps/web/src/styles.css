@@ -273,3 +273,221 @@ button {
     padding: 0.5rem;
   }
 }
+
+
+.reader-document-heading {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.reader-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border: 1px solid #dedad0;
+  border-radius: 0.9rem;
+  background: #fffdf9;
+}
+
+.reader-control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.reader-navigation {
+  margin-right: auto;
+}
+
+.reader-page-input {
+  width: 4.25rem;
+  min-height: 2.65rem;
+  padding: 0.4rem;
+  border: 1px solid #c9c5bb;
+  border-radius: 0.6rem;
+  background: #fff;
+  color: #292820;
+  font: inherit;
+  text-align: center;
+}
+
+.reader-page-count,
+.reader-zoom-label {
+  color: #656257;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.reader-mode-button[aria-pressed="true"] {
+  border-color: #37372f;
+  background: #e7e3d9;
+}
+
+.reader-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.reader-body:has(.reader-outline:not([hidden])) {
+  grid-template-columns: minmax(13rem, 18rem) minmax(0, 1fr);
+}
+
+.reader-outline {
+  min-width: 0;
+  max-height: min(74vh, 56rem);
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid #dedad0;
+  border-radius: 0.85rem;
+  background: #fffdf9;
+}
+
+.reader-outline[hidden] {
+  display: none;
+}
+
+.reader-outline-heading {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.reader-outline-list {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding-left: 1rem;
+  list-style: none;
+}
+
+.reader-outline-item {
+  min-width: 0;
+}
+
+.reader-outline-link {
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.4rem 0.5rem;
+  border: 0;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: #38372f;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.reader-outline-link:hover:not(:disabled),
+.reader-outline-link:focus-visible {
+  background: #efede6;
+}
+
+.reader-outline-link:disabled {
+  color: #8b887f;
+  cursor: default;
+}
+
+.reader-outline-empty {
+  color: #706e66;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.reader-stage {
+  position: relative;
+  height: min(76vh, 68rem);
+  min-height: 24rem;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  outline-offset: 3px;
+}
+
+.reader-stage--single {
+  overflow: auto;
+}
+
+.reader-scroll-spacer {
+  position: relative;
+  min-width: 100%;
+}
+
+.reader-page-mount {
+  position: absolute;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 0.35rem 1.4rem #25241f24;
+}
+
+.reader-page-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 1rem;
+  background: rgb(255 253 249 / 94%);
+  color: #a23e32;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.reader-touch-button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
+@media (max-width: 900px) {
+  .reader-toolbar {
+    align-items: stretch;
+  }
+
+  .reader-navigation {
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .reader-body,
+  .reader-body:has(.reader-outline:not([hidden])) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reader-outline {
+    max-height: 15rem;
+  }
+
+  .reader-stage {
+    height: 70vh;
+    min-height: 22rem;
+  }
+
+  .reader-control-group {
+    flex-wrap: wrap;
+  }
+
+  .reader-navigation,
+  .reader-mode-controls,
+  .reader-zoom-controls,
+  .reader-trailing-controls {
+    width: 100%;
+  }
+
+  .reader-navigation .reader-page-input {
+    margin-left: auto;
+  }
+
+  .reader-zoom-controls .reader-zoom-label {
+    min-width: 3.5rem;
+    text-align: center;
+  }
+
+  .reader-trailing-controls .button {
+    flex: 1;
+  }
+}
