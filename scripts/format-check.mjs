@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const roots = ["apps/web", "scripts", "tests"];
+const roots = ["apps/web", "packages", "scripts", "tests"];
 const extensions = new Set([".css", ".json", ".mjs", ".ts"]);
 const failures = [];
 
@@ -18,7 +18,7 @@ async function collect(directory) {
   const files = [];
   for (const entry of entries) {
     if (entry.isDirectory()) {
-      if (entry.name === "node_modules" || entry.name.startsWith(".")) continue;
+      if (entry.name === "node_modules" || entry.name === "dist" || entry.name.startsWith(".")) continue;
       const relative = path.posix.join(directory, entry.name);
       files.push(...(await collect(relative)));
     } else if (entry.isFile() && extensions.has(path.extname(entry.name))) {

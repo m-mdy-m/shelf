@@ -4,18 +4,19 @@
 
 - Local storage is the default source of truth.
 - Durable records use stable IDs and timestamps; evolving formats carry schema versions.
-- File paths and platform URIs are locators, not document identity.
+- File paths, content URIs, browser handles, and platform locators are access references, not document identity.
+- Page indexes are zero-based: the first physical PDF page has index 0. Human-readable page ordinals and PDF page labels are presentation concerns.
 - Deletion behavior is explicit and previewable.
 - Export/import is versioned and tested.
 - The former TechShelf catalog remains archived until a dedicated importer is scoped.
 
 ## Entities
 
-- **Document:** ID, title, authors, language, metadata, source kind/locator, content fingerprint, page count, outline/text extraction status, timestamps.
-- **ReadingProgress:** ID, document ID, page index, scroll offset, zoom, reading mode, updated timestamp.
-- **Bookmark:** ID, document ID, page index, optional anchor/label, creation timestamp.
-- **Annotation:** ID, document ID, kind (highlight/note), page, selected/normalized text, text anchor, geometry, fingerprint, anchor version, optional note/style, timestamps.
-- **Quote:** ID, document ID, page, text, source/author metadata, optional annotation reference/tags, timestamps.
+- **Document:** stable ID, title, authors, language, metadata, source kind/opaque locator, content fingerprint, page count, outline/text extraction status, timestamps.
+- **ReadingProgress:** document ID, zero-based page index, normalized scroll offset, zoom, reading mode, updated timestamp.
+- **Bookmark:** stable ID, document ID, zero-based page index, optional text anchor/label, creation timestamp.
+- **Annotation:** stable ID, document ID, kind (highlight/note), zero-based page index, selected/normalized text, text anchor, normalized page geometry, fingerprint, anchor version, optional note/style, timestamps.
+- **Quote:** stable ID, document ID, zero-based page index, text, source/author metadata, optional annotation reference/tags, timestamps.
 - **AIConversation / AIMessage / AIJob:** scope, messages, bounded source references, task, status, provider/model identifiers (never secrets), context manifest, timestamps, error and cancellation state.
 - **Concept (later):** candidate term, normalized key, source page/segment, confidence/review state.
 
