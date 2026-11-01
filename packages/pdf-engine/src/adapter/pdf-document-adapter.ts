@@ -333,9 +333,17 @@ export class PdfDocumentAdapter {
     existingSourceHandle?: OpenDocumentHandle,
   ): Promise<Result<PdfDocumentSession, ReaderError>> {
     const locatorResult = await this.#locators.getLocator(documentId);
-    if (!locatorResult.ok) return locatorResult;
+    if (!locatorResult.ok) {
+      if (existingSourceHandle !== undefined) {
+        await this.#source.close(existingSourceHandle.id);
+      }
+      return locatorResult;
+    }
     const locator: DocumentLocator | null = locatorResult.value;
     if (locator === null) {
+      if (existingSourceHandle !== undefined) {
+        await this.#source.close(existingSourceHandle.id);
+      }
       return { ok: false, error: errorResult("document-not-found", "The source for this PDF could not be found.") };
     }
 
