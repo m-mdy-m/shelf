@@ -47,6 +47,16 @@ REQUIRED_FILES = (
     "packages/reader-core/src/ports/runtime.ts", "packages/reader-core/src/ports/index.ts",
     "packages/reader-core/src/application/reader-use-cases.ts",
     "packages/reader-core/tests/contracts.type-test.ts",
+    "packages/pdf-engine/README.md", "packages/pdf-engine/package.json",
+    "packages/pdf-engine/tsconfig.json", "packages/pdf-engine/tsconfig.build.json",
+    "packages/pdf-engine/src/index.ts", "packages/pdf-engine/src/create-pdf-document-adapter.ts",
+    "packages/pdf-engine/src/adapter/pdfjs-runtime.ts",
+    "packages/pdf-engine/src/adapter/pdf-document-adapter.ts",
+    "packages/pdf-engine/src/renderer/pdf-page-renderer.ts",
+    "packages/pdf-engine/src/virtualization/page-virtualizer.ts",
+    "packages/pdf-engine/src/styles.css", "docs/architecture/pdf-engine.md",
+    "tests/fixtures/pdf/README.md", "tests/fixtures/pdf/fixture-builder.mjs",
+    "tests/unit/pdf-engine.test.mjs",
     "scripts/check_project.py", "scripts/sync_github_metadata.py",
     "scripts/format-check.mjs", "scripts/lint.mjs", "scripts/run-tests.mjs",
     "scripts/clean.mjs", "scripts/build-web.mjs", "tests/README.md",
@@ -56,7 +66,10 @@ REQUIRED_DIRS = (
     "apps/web/src", "apps/web/public", "apps/desktop", "apps/mobile",
     "packages/reader-core", "packages/reader-core/src/domain",
     "packages/reader-core/src/ports", "packages/reader-core/src/application",
-    "packages/reader-core/tests", "packages/pdf-engine", "packages/selection",
+    "packages/reader-core/tests", "packages/pdf-engine",
+    "packages/pdf-engine/src", "packages/pdf-engine/src/adapter",
+    "packages/pdf-engine/src/renderer", "packages/pdf-engine/src/virtualization",
+    "packages/selection",
     "packages/annotations", "packages/ai-contracts", "packages/platform-adapters",
     "backend/cmd/shelf", "backend/internal/domain", "backend/internal/application",
     "backend/internal/ports", "backend/internal/adapters/storage",
@@ -120,10 +133,11 @@ def check_application_workspace() -> None:
     manifest = load_json("package.json")
     web_manifest = load_json("apps/web/package.json")
     reader_manifest = load_json("packages/reader-core/package.json")
+    pdf_manifest = load_json("packages/pdf-engine/package.json")
     lock = load_json("package-lock.json")
     compiler_config = load_json("tsconfig.base.json")
 
-    expected_workspaces = ["apps/web", "packages/reader-core"]
+    expected_workspaces = ["apps/web", "packages/reader-core", "packages/pdf-engine"]
     if manifest.get("workspaces") != expected_workspaces:
         fail(f"root npm workspace must explicitly include {expected_workspaces}")
     if web_manifest.get("name") != "@shelf/web" or web_manifest.get("private") is not True:
@@ -132,6 +146,14 @@ def check_application_workspace() -> None:
         fail("Reader core must be a private @shelf/reader-core workspace")
     if reader_manifest.get("types") != "./dist/index.d.ts":
         fail("Reader core must publish its generated TypeScript declaration entry")
+    if pdf_manifest.get("name") != "@shelf/pdf-engine" or pdf_manifest.get("private") is not True:
+        fail("PDF engine must be a private @shelf/pdf-engine workspace")
+    if pdf_manifest.get("types") != "./dist/index.d.ts":
+        fail("PDF engine must publish its generated TypeScript declaration entry")
+    if pdf_manifest.get("dependencies", {}).get("@shelf/reader-core") != "0.1.0":
+        fail("PDF engine must depend on Reader Core contracts")
+    if pdf_manifest.get("dependencies", {}).get("pdfjs-dist") != "6.4.299":
+        fail("PDF.js must remain pinned to 6.4.299")
     if manifest.get("devDependencies", {}).get("typescript") != "5.8.3":
         fail("TypeScript must be pinned to the reviewed 5.8.3 version")
     if lock.get("lockfileVersion") != 3:
@@ -145,6 +167,13 @@ def check_application_workspace() -> None:
         fail("package-lock.json is missing the Reader core workspace entry")
     if lock_packages.get("node_modules/@shelf/reader-core", {}).get("resolved") != "packages/reader-core":
         fail("package-lock.json is missing the Reader core workspace link")
+    if lock_packages.get("packages/pdf-engine", {}).get("name") != "@shelf/pdf-engine":
+        fail("package-lock.json is missing the PDF engine workspace entry")
+    if lock_packages.get("node_modules/@shelf/pdf-engine", {}).get("resolved") != "packages/pdf-engine":
+        fail("package-lock.json is missing the PDF engine workspace link")
+    pdfjs = lock_packages.get("node_modules/pdfjs-dist", {})
+    if pdfjs.get("version") != "6.4.299" or not pdfjs.get("integrity"):
+        fail("package-lock.json must lock the reviewed PDF.js release and integrity")
     if compiler_config.get("compilerOptions", {}).get("strict") is not True:
         fail("TypeScript strict mode must remain enabled")
 

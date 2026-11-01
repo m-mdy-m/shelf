@@ -29,3 +29,13 @@ Never rely only on screen pixels. Persist document ID/page, selected and normali
 
 ## Progress/search/accessibility
 Persist last document, page/scroll, zoom, reading mode, and timestamps; debounce frequent writes. MVP search is local over extractable text with cancellable, bounded indexing. OCR is deferred and image-only documents must explain why selection/search is unavailable. Include keyboard navigation, semantic lang/dir, mixed RTL/LTR tests, screen-reader support, reduced motion, scalable typography, contrast, and mobile touch targets.
+
+## PDF engine implementation boundary
+
+- `@shelf/pdf-engine` owns the locked PDF.js runtime, PDF worker, custom range transport, page renderer, and page virtualizer. `@shelf/reader-core` remains PDF.js-free.
+- PDF.js range chunks are capped at the Reader Core 1 MiB source-read limit. Streaming and background auto-fetch are disabled when a document is opened through the source port.
+- Worker and document loading tasks are destroyed when a session closes; pending source reads settle before the platform handle is released.
+- Page indexes remain zero-based in Shelf and convert to PDF.js's one-based page number only inside the adapter.
+- Page windows use measured page geometry plus bounded overscan. The UI mounts only returned page descriptors; it must not render every page in a long PDF.
+- Canvas, selectable text, and Shelf annotations are separate layers. PDF.js annotations are disabled in the canvas renderer to avoid mixing vendor-owned and Shelf-owned annotation state.
+- Deploy the version-matched worker, CMaps, ICC profiles, standard fonts, and WASM assets from the locked `pdfjs-dist` package on the same origin as the web app.

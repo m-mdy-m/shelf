@@ -1,0 +1,65 @@
+.shelf-pdf-page {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 18px rgb(0 0 0 / 12%);
+}
+
+.shelf-pdf-canvas {
+  display: block;
+}
+
+.shelf-pdf-text-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 1;
+  line-height: 1;
+  text-align: initial;
+  transform-origin: 0 0;
+  z-index: 1;
+}
+
+.shelf-pdf-annotation-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.shelf-pdf-annotation {
+  position: absolute;
+  display: block;
+  pointer-events: auto;
+}
+
+.shelf-pdf-annotation--highlight {
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+}
+
+.shelf-pdf-annotation--highlight[data-color="yellow"] {
+  background: #f5d547;
+}
+
+.shelf-pdf-annotation--highlight[data-color="green"] {
+  background: #55b879;
+}
+
+.shelf-pdf-annotation--highlight[data-color="blue"] {
+  background: #5498e8;
+}
+
+.shelf-pdf-annotation--highlight[data-color="pink"] {
+  background: #e98cb7;
+}
+
+.shelf-pdf-annotation--highlight[data-color="purple"] {
+  background: #a78be7;
+}
+
+.shelf-pdf-annotation--note {
+  border: 1px solid #8754bc;
+  background: rgb(135 84 188 / 12%);
+}
