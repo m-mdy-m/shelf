@@ -12,7 +12,7 @@ async function json(relativePath) {
 
 test("the root workspace exposes all required quality gates", async () => {
   const manifest = await json("package.json");
-  const required = ["format:check", "lint", "typecheck", "test", "build:core", "build", "check", "ci"];
+  const required = ["format:check", "lint", "typecheck", "test", "build:core", "build:pdf", "build", "check", "ci"];
   for (const script of required) {
     assert.equal(typeof manifest.scripts[script], "string", `missing npm script: ${script}`);
   }
@@ -22,9 +22,10 @@ test("the web and reader core are private, locked npm workspaces", async () => {
   const rootManifest = await json("package.json");
   const webManifest = await json("apps/web/package.json");
   const readerManifest = await json("packages/reader-core/package.json");
+  const pdfManifest = await json("packages/pdf-engine/package.json");
   const lock = await json("package-lock.json");
 
-  assert.deepEqual(rootManifest.workspaces, ["apps/web", "packages/reader-core"]);
+  assert.deepEqual(rootManifest.workspaces, ["apps/web", "packages/reader-core", "packages/pdf-engine"]);
   assert.equal(webManifest.name, "@shelf/web");
   assert.equal(webManifest.private, true);
   assert.equal(readerManifest.name, "@shelf/reader-core");
@@ -34,6 +35,14 @@ test("the web and reader core are private, locked npm workspaces", async () => {
   assert.equal(lock.packages["node_modules/typescript"].version, "5.8.3");
   assert.equal(lock.packages["packages/reader-core"].name, "@shelf/reader-core");
   assert.equal(lock.packages["node_modules/@shelf/reader-core"].resolved, "packages/reader-core");
+  assert.equal(pdfManifest.name, "@shelf/pdf-engine");
+  assert.equal(pdfManifest.private, true);
+  assert.equal(pdfManifest.dependencies["@shelf/reader-core"], "0.1.0");
+  assert.equal(pdfManifest.dependencies["pdfjs-dist"], "6.4.299");
+  assert.equal(lock.packages["packages/pdf-engine"].name, "@shelf/pdf-engine");
+  assert.equal(lock.packages["node_modules/@shelf/pdf-engine"].resolved, "packages/pdf-engine");
+  assert.equal(lock.packages["node_modules/pdfjs-dist"].version, "6.4.299");
+  assert.equal(lock.packages["node_modules/pdfjs-dist"].integrity.length > 20, true);
   assert.equal(lock.lockfileVersion, 3);
 });
 

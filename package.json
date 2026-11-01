@@ -8,18 +8,25 @@
     "node": ">=22.16.0 <23",
     "npm": ">=10.9.0 <11"
   },
-  "workspaces": ["apps/web", "packages/reader-core"],
+  "workspaces": [
+    "apps/web",
+    "packages/reader-core",
+    "packages/pdf-engine"
+  ],
   "scripts": {
     "format:check": "node scripts/format-check.mjs",
     "lint": "node scripts/lint.mjs",
-    "typecheck": "tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p packages/reader-core/tsconfig.json",
+    "typecheck": "npm run build:core && tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p packages/reader-core/tsconfig.json && tsc --noEmit -p packages/pdf-engine/tsconfig.json",
     "test:run": "node scripts/run-tests.mjs",
-    "test": "npm run build:core && npm run test:run",
+    "test": "npm run build:core && npm run build:pdf && npm run test:run",
     "build:core": "tsc -p packages/reader-core/tsconfig.build.json",
-    "build": "npm run clean && tsc -p apps/web/tsconfig.build.json && node scripts/build-web.mjs && npm run build:core",
+    "build": "npm run clean && tsc -p apps/web/tsconfig.build.json && node scripts/build-web.mjs && npm run build:core && npm run build:pdf",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run build && npm run test:run",
     "ci": "npm run check",
-    "clean": "node scripts/clean.mjs"
+    "clean": "node scripts/clean.mjs",
+    "build:pdf": "tsc -p packages/pdf-engine/tsconfig.build.json"
   },
-  "devDependencies": {"typescript": "5.8.3"}
+  "devDependencies": {
+    "typescript": "5.8.3"
+  }
 }
