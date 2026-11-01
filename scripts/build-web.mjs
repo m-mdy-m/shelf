@@ -21,12 +21,12 @@ await cp(path.join(source, "public"), output, { recursive: true });
 
 const pdfAssets = [
   ["LICENSE", "assets/pdfjs/LICENSE"],
-  ["build/pdf.worker.min.mjs", "assets/pdfjs/pdf.worker.min.mjs"],
-  ["web/cmaps", "assets/pdfjs/cmaps"],
-  ["web/iccs", "assets/pdfjs/iccs"],
-  ["web/standard_fonts", "assets/pdfjs/standard_fonts"],
-  ["web/wasm", "assets/pdfjs/wasm"],
-  ["web/text_layer_builder.css", "assets/pdfjs-text-layer.css"],
+  ["build/pdf.worker.min.mjs", "assets/pdfjs/build/pdf.worker.min.mjs"],
+  ["cmaps", "assets/pdfjs/cmaps"],
+  ["iccs", "assets/pdfjs/iccs"],
+  ["image_decoders", "assets/pdfjs/image_decoders"],
+  ["standard_fonts", "assets/pdfjs/standard_fonts"],
+  ["wasm", "assets/pdfjs/wasm"],
 ];
 
 for (const [relativeSource, relativeDestination] of pdfAssets) {
@@ -48,5 +48,5 @@ await cp(
 );
 
 console.log(
-  `Built standalone web shell with the PDF.js worker, CMaps, ICC profiles, standard fonts, WASM, license notices, and Reader layer styles at ${path.relative(root, output)}.`,
+  `Built standalone web shell with the PDF.js worker, CMaps, ICC profiles, image decoders, standard fonts, WASM, license notices, and Reader layer styles at ${path.relative(root, output)}.`,
 );

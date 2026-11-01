@@ -51,7 +51,7 @@ PDF.js password requests are bridged to the optional asynchronous `passwordPromp
 
 ## Rendering layers
 
-`createPdfPageLayers(root)` creates separate canvas, text, and Shelf annotation elements. `PdfPageRenderer` renders PDF.js into the canvas with the built-in annotation layer disabled, runs the PDF.js TextLayer separately, and draws only persisted Shelf annotation markers in the annotation overlay. The version-matched PDF.js TextLayer stylesheet is deployed separately from the app's global styles. Text selection therefore remains independent from saved bookmarks/highlights/notes.
+`createPdfPageLayers(root)` creates separate canvas, text, and Shelf annotation elements. `PdfPageRenderer` renders PDF.js into the canvas with the built-in annotation layer disabled, runs the PDF.js TextLayer separately, and draws only persisted Shelf annotation markers in the annotation overlay. The package stylesheet implements PDF.js TextLayer positioning and selection rules inside Shelf's isolated page classes. Text selection therefore remains independent from saved bookmarks/highlights/notes and no global PDF.js viewer stylesheet is required.
 
 The canvas pixel budget defaults to 16,777,216 pixels. Page scale is capped at 8 and device pixel ratio at 4. Render tasks and text streams can be cancelled before a virtual page is unmounted. The renderer also rejects allocations above the configured pixel budget before touching canvas memory.
 
@@ -64,12 +64,12 @@ The UI owns the scroll container and calls `getWindow` as it scrolls; only the r
 ## Runtime assets
 
 The web build copies the pinned PDF.js worker and auxiliary assets into same-origin `dist/web/assets/pdfjs` paths:
-- `pdf.worker.min.mjs`
+- `build/pdf.worker.min.mjs` (kept in its original relative directory)
 - CMaps and ICC profiles
-- standard fonts and WebAssembly decoders
+- image decoders, standard fonts, and WebAssembly decoders
 - the upstream Apache-2.0 license and per-asset license notices
 
-It also copies PDF.js's text-layer stylesheet and Shelf's layer stylesheet. `resolvePdfJsAssetUrls`/`createPdfDocumentAdapter` resolve the worker and auxiliary data relative to the web base URL. Serve the copied assets with the application and permit same-origin workers and WebAssembly compilation in the Content Security Policy.
+It copies Shelf's isolated page-layer/TextLayer stylesheet. `resolvePdfJsAssetUrls`/`createPdfDocumentAdapter` resolve the worker and auxiliary data relative to the web base URL. Serve the copied assets with the application and permit same-origin workers and WebAssembly compilation in the Content Security Policy.
 
 ## Tests
 
