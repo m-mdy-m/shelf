@@ -1,4 +1,5 @@
 export type {
+  DocumentLocatorStorePort,
   DocumentPermissionPort,
   DocumentPermissionState,
   DocumentSourcePort,

@@ -1,3 +1,6 @@
+import type { ReaderError } from "./errors.js";
+import type { Result } from "./result.js";
+
 /** A nominal string ID; each entity kind is intentionally non-interchangeable. */
 export type OpaqueId<Kind extends string> = string & {
   readonly __opaqueId: Kind;
@@ -13,14 +16,30 @@ export type NotificationId = OpaqueId<"NotificationId">;
 export type CredentialKey = OpaqueId<"CredentialKey">;
 export type DocumentFingerprint = OpaqueId<"DocumentFingerprint">;
 
-/**
- * Branded constructors reject empty values at trust boundaries. ID generation
- * remains the responsibility of an IdGeneratorPort implementation.
- */
-export function toOpaqueId<Kind extends string>(value: string): OpaqueId<Kind> {
+/** Parse IDs received from untrusted platform or persistence boundaries. */
+export function parseOpaqueId<Kind extends string>(
+  value: string,
+): Result<OpaqueId<Kind>, ReaderError> {
   if (value.trim().length === 0) {
-    throw new TypeError("An opaque identifier must not be empty.");
+    return {
+      ok: false,
+      error: {
+        code: "invalid-input",
+        message: "Identifier must not be empty.",
+        retryable: false,
+      },
+    };
   }
 
-  return value as OpaqueId<Kind>;
+  return { ok: true, value: value as OpaqueId<Kind> };
+}
+
+/**
+ * Trusted-input convenience constructor. Throws TypeError for empty values;
+ * use parseOpaqueId when handling untrusted input inside Result-based flows.
+ */
+export function toOpaqueId<Kind extends string>(value: string): OpaqueId<Kind> {
+  const parsed = parseOpaqueId<Kind>(value);
+  if (!parsed.ok) throw new TypeError(parsed.error.message);
+  return parsed.value;
 }

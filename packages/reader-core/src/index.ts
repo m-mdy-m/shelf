@@ -1,8 +1,10 @@
-export { toOpaqueId } from "./domain/ids.js";
-export { toDisplayPageNumber, toPageIndex } from "./domain/page-index.js";
+export { toOpaqueId, parseOpaqueId } from "./domain/ids.js";
+export { toDisplayPageNumber, toPageIndex, parsePageIndex } from "./domain/page-index.js";
+export { MAX_DOCUMENT_READ_BYTES, parseByteRange } from "./domain/byte-range.js";
 
 export type * from "./domain/annotation.js";
 export type * from "./domain/bookmark.js";
+export type * from "./domain/byte-range.js";
 export type * from "./domain/document.js";
 export type * from "./domain/errors.js";
 export type * from "./domain/ids.js";
