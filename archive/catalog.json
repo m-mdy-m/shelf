@@ -1,0 +1,3150 @@
+{
+  "version": "1.0",
+  "meta": {
+    "name": "techShelf",
+    "description": "A personal library catalog — books, papers, and ideas worth keeping.",
+    "last_updated": "2026-02-17"
+  },
+  "books": [
+    {
+      "id": "writing-a-compiler-in-go",
+      "title": "Writing A Compiler In Go",
+      "author": ["Thorsten Ball"],
+      "category": "programming",
+      "subcategory": "compilers",
+      "year_published": 2018,
+      "language": "English",
+      "tags": [
+        "compiler",
+        "virtual machine",
+        "go",
+        "programming languages",
+        "bytecode"
+      ],
+      "level": "intermediate",
+      "description": "A hands-on guide to building a bytecode compiler and virtual machine in Go from scratch, extending the Monkey language to compile and execute code. It emphasizes working, tested code and practical implementation over theory. :contentReference[oaicite:0]{index=0}",
+      "why_read": "If you want to understand how compilers and virtual machines work by building one yourself, this book gives a clear, motivated, and practical path using real code. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After completing a basics compiler or interpreter tutorial, or after reading 'Writing An Interpreter In Go', because this book continues from that foundation. :contentReference[oaicite:2]{index=2}",
+      "importance": "A great bridge between beginner compiler tutorials and more advanced texts — it gives practical skills and deeper insight into the nuts and bolts of compiler construction. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "writing-an-interpreter-in-go",
+        "basic Go programming",
+        "parsing fundamentals"
+      ],
+      "pairs_well_with": [
+        "crafting-interpreters",
+        "modern-compiler-implementation"
+      ],
+      "source": {
+        "online_url": "https://dokumen.pub/writing-a-compiler-in-go.html",
+        "file_path": "books/writing-a-compiler-in-go_compress.pdf"
+      },
+      "status": "unread"
+    },
+    {
+      "id": "psychology-of-money",
+      "title": "The Psychology of Money: Timeless Lessons on Wealth, Greed, and Happiness",
+      "author": ["Morgan Housel"],
+      "category": "personal-finance",
+      "subcategory": "behavioral-finance",
+      "year_published": 2020,
+      "language": "English",
+      "tags": [
+        "personal finance",
+        "behavioral finance",
+        "wealth",
+        "investing",
+        "psychology"
+      ],
+      "level": "general",
+      "description": "A thought-provoking exploration of how human psychology influences financial decisions, arguing that success with money depends more on behavior, perspective, patience, and emotional discipline than technical expertise. The book uses stories and examples to teach timeless lessons on wealth, greed, happiness, and how people relate to money.",
+      "why_read": "It reframes money management as a behavioral challenge rather than a technical one, offering insights that help improve financial decision-making, savings habits, and long-term planning. It’s highly recommended for anyone who wants to understand how emotion and mindset shape financial outcomes. :contentReference[oaicite:0]{index=0}",
+      "when_to_read": "Great for after learning basic budgeting or investing concepts, or anytime you feel stuck in financial habits or decision-making. :contentReference[oaicite:1]{index=1}",
+      "importance": "A modern classic in personal finance and behavioral economics that’s influenced millions of readers and is recommended on top reading lists for long-term financial mindset development. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": ["basic personal finance"],
+      "pairs_well_with": ["the-intelligent-investor", "thinking-fast-and-slow"],
+      "source": {
+        "online_url": "https://tiue.uz/wp-content/uploads/2024/02/The-Psychology-of-Money-Morgan-Housel.pdf",
+        "file_path": "books/The-Psychology-of-Money-Morgan-Housel.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-laws-of-human-nature",
+      "title": "The Laws of Human Nature",
+      "author": ["Robert Greene"],
+      "category": "psychology",
+      "subcategory": "behavioral-science",
+      "year_published": 2018,
+      "language": "English",
+      "tags": [
+        "human behavior",
+        "psychology",
+        "social intelligence",
+        "self understanding",
+        "relationships"
+      ],
+      "level": "general",
+      "description": "An in-depth exploration of human drives, motivations, and biases — Greene breaks down 18 core \"laws\" of human behavior using historical examples and psychological insight to help readers better understand themselves and others. :contentReference[oaicite:1]{index=1}",
+      "why_read": "It offers a strategic framework for interpreting behaviors, improving empathy, and navigating social dynamics more successfully in personal and professional contexts. :contentReference[oaicite:2]{index=2}",
+      "when_to_read": "After you've read some introductory psychology or books on social dynamics and want a broad, integrative perspective on human nature. ",
+      "importance": "Considered one of Greene’s most comprehensive works, blending history, psychology, and philosophy to give readers practical tools for understanding behavior. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic psychology",
+        "social cognition"
+      ],
+      "pairs_well_with": [
+        "48-laws-of-power",
+        "mastery"
+      ],
+      "source": {
+        "online_url": "https://centralcollegegh.com/wp-content/uploads/2023/09/The-Laws-of-Human-Nature-by-Robert-Greene-z-lib.org_.pdf",
+        "file_path": "books/The-Laws-of-Human-Nature-by-Robert-Greene-z-lib.org_.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-idea-of-justice",
+      "title": "The Idea of Justice",
+      "author": ["Amartya Sen"],
+      "category": "philosophy",
+      "subcategory": "political-philosophy",
+      "year_published": 1933,
+      "language": "English",
+      "tags": [
+        "justice",
+        "political philosophy",
+        "ethics",
+        "capability approach",
+        "social choice theory",
+        "rawls",
+        "economics"
+      ],
+      "level": "advanced",
+      "description": "A major work in political philosophy arguing for a comparative, realization-focused theory of justice rather than a transcendental search for perfectly just institutions. Sen critiques Rawls and develops the capability approach as a practical framework for evaluating justice.",
+      "why_read": "It bridges philosophy and economics, offering a powerful alternative to ideal-theory models of justice and grounding moral reasoning in real-world human capabilities.",
+      "when_to_read": "After familiarity with basic political philosophy, especially Rawls' theory of justice, or when exploring ethics, welfare economics, and development theory.",
+      "importance": "One of the most influential contemporary works on justice theory and development ethics.",
+      "prerequisites": [
+        "basic political philosophy",
+        "familiarity with Rawls' theory of justice",
+        "introductory ethics"
+      ],
+      "pairs_well_with": [
+        "a-theory-of-justice",
+        "development-as-freedom"
+      ],
+      "source": {
+        "online_url": "https://www.jsscacs.edu.in/sites/default/files/Files/The_idea_of_justice_Amartya_Sen.pdf",
+        "file_path": "books/The_idea_of_justice_Amartya_Sen.pdf"
+      },
+      "status": "unread",
+      "notes": "Pay attention to the critique of transcendental institutionalism and the development of the capability framework.",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "organon-aristotle",
+      "title": "The Organon",
+      "author": ["Aristotle"],
+      "category": "philosophy",
+      "subcategory": "logic",
+      "year_published": -350,
+      "language": "English",
+      "tags": [
+        "logic",
+        "syllogism",
+        "classical philosophy",
+        "epistemology",
+        "reasoning",
+        "foundations of logic"
+      ],
+      "level": "advanced",
+      "description": "A collection of Aristotle’s works on logic, including Categories, On Interpretation, Prior Analytics, Posterior Analytics, Topics, and On Sophistical Refutations. It lays the foundation of formal logic and systematic reasoning in Western philosophy.",
+      "why_read": "It establishes the first formal system of logic in history and shapes centuries of philosophical, theological, and scientific thought.",
+      "when_to_read": "When you want to understand the roots of formal reasoning and the historical foundations of logic before modern symbolic logic.",
+      "importance": "Foundational work in the history of logic and philosophy; influenced intellectual traditions for over two millennia.",
+      "prerequisites": [
+        "basic philosophical terminology",
+        "introductory logic concepts"
+      ],
+      "pairs_well_with": [
+        "a-mathematical-introduction-to-logic-enderton",
+        "meditations-marcus-aurelius"
+      ],
+      "source": {
+        "online_url": "https://www.rbjones.com/rbjpub/philos/classics/aristotl/obook_draft.pdf",
+        "file_path": "books/The Organon.pdf"
+      },
+      "status": "unread",
+      "notes": "Focus especially on Prior Analytics and Posterior Analytics for formal logical structure.",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-mathematical-analysis-of-logic",
+      "title": "The Mathematical Analysis of Logic: Being an Essay Towards a Calculus of Deductive Reasoning",
+      "author": ["George Boole"],
+      "category": "logic",
+      "subcategory": "history-of-logic",
+      "year_published": 1948,
+      "language": "English",
+      "tags": [
+        "mathematical logic",
+        "symbolic logic",
+        "deductive reasoning",
+        "history of logic",
+        "Boolean algebra"
+      ],
+      "level": "advanced",
+      "description": "In this seminal 1847 work, Boole argues that logic can be treated mathematically, establishing a calculus for deductive reasoning that laid foundations for modern symbolic logic. Unlike Aristotelian logic, Boole’s system represents logical propositions and operations using algebraic forms, paving the way for later developments in logic and computation.:contentReference[oaicite:0]{index=0}",
+      "why_read": "It’s one of the first works to treat logic with algebraic methods, foundational for computer science, Boolean algebra, and modern symbolic logic.:contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After gaining basic familiarity with classical logic and algebraic notation, to appreciate the historical and mathematical leap Boole made. ",
+      "importance": "Historically significant as the first rigorous mathematical treatment of logic, precursor to Boolean algebra and fundamental to digital logic.:contentReference[oaicite:2]{index=2}",
+      "prerequisites": [
+        "basic logic",
+        "algebraic notation"
+      ],
+      "pairs_well_with": [
+        "laws-of-thought"
+      ],
+      "source": {
+        "online_url": "https://dn720004.ca.archive.org/0/items/mathematicalanal00booluoft/mathematicalanal00booluoft.pdf",
+        "file_path": "books/The%20Mathematical%20Analysis%20of%20Logic%20-%20George%20Boole%20(1847).pdf"
+      },
+      "status": "unread"
+    },
+    {
+      "id": "the-elements-of-computing-systems",
+      "title": "The Elements of Computing Systems: Building a Modern Computer from First Principles",
+      "author": ["Noam Nisan", "Shimon Schocken"],
+      "category": "computer-science",
+      "subcategory": "computer-architecture",
+      "year_published": 2005,
+      "language": "English",
+      "tags": [
+        "computer architecture",
+        "nand2tetris",
+        "hardware",
+        "compilers",
+        "operating systems",
+        "systems design",
+        "low-level computing"
+      ],
+      "level": "intermediate",
+      "description": "A hands-on guide to building a complete modern computer system from the ground up — starting from NAND logic gates and progressing through CPU design, memory, assembler, virtual machine, compiler, and a simple operating system.",
+      "why_read": "It gives a rare end-to-end understanding of how computers actually work. By building each layer yourself, you internalize the full stack — from hardware logic to high-level software.",
+      "when_to_read": "When you want to deeply understand how software translates into hardware, or before diving into advanced systems programming, compilers, or OS development.",
+      "importance": "Considered a classic in computer systems education. Widely used in universities and known through the 'Nand2Tetris' course.",
+      "prerequisites": [
+        "basic programming",
+        "binary and logic gates fundamentals"
+      ],
+      "pairs_well_with": [
+        "introduction-to-algorithms",
+        "modern-operating-systems",
+        "structure-and-interpretation-of-computer-programs"
+      ],
+      "source": {
+        "online_url": "http://f.javier.io/rep/books/The%20Elements%20of%20Computing%20Systems.pdf",
+        "file_path": "books/The%20Elements%20of%20Computing%20Systems.pdf"
+      },
+      "status": "unread",
+      "notes": "Work through all projects. The hardware simulator and VM implementation are key to real understanding.",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-c-programming-language",
+      "title": "The C Programming Language",
+      "author": ["Brian W. Kernighan", "Dennis M. Ritchie"],
+      "category": "computer-science",
+      "subcategory": "programming-languages",
+      "year_published": 1988,
+      "language": "English",
+      "tags": [
+        "c language",
+        "systems programming",
+        "unix",
+        "low-level programming",
+        "classic"
+      ],
+      "level": "intermediate",
+      "description": "The classic and authoritative introduction to the C programming language, written by the language's creator Dennis Ritchie and long-time collaborator Brian Kernighan. The book presents the language concisely while emphasizing clarity, efficiency, and practical programming style.",
+      "why_read": "It teaches C the way it was meant to be understood — minimal, precise, and close to the machine. Essential for understanding systems programming, compilers, and modern languages that evolved from C.",
+      "when_to_read": "When you want to deeply understand memory, pointers, and low-level program structure — especially before diving into operating systems, embedded systems, or performance-critical software.",
+      "importance": "Foundational. Often referred to as 'K&R', it defined C programming style and influenced decades of systems software development.",
+      "prerequisites": [
+        "basic programming concepts",
+        "variables and control flow"
+      ],
+      "pairs_well_with": [
+        "modern-operating-systems",
+        "computer-systems-a-programmers-perspective"
+      ],
+      "source": {
+        "online_url": "https://colorcomputerarchive.com/repo/Documents/Books/The%20C%20Programming%20Language%20%28Kernighan%20Ritchie%29.pdf",
+        "file_path": "books/The%20C%20Programming%20Language%20(Kernighan%20Ritchie).pdf"
+      },
+      "status": "unread",
+      "notes": "Focus on pointers, manual memory management, and the style conventions demonstrated in examples.",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-awk-programming-language",
+      "title": "The AWK Programming Language",
+      "author": [
+        "Alfred V. Aho",
+        "Brian W. Kernighan",
+        "Peter J. Weinberger"
+      ],
+      "category": "computer-science",
+      "subcategory": "programming-languages",
+      "year_published": 1988,
+      "language": "English",
+      "tags": [
+        "awk",
+        "unix",
+        "text processing",
+        "scripting",
+        "programming languages",
+        "pattern scanning"
+      ],
+      "level": "intermediate",
+      "description": "The original and authoritative guide to the AWK programming language, written by its creators. The book covers pattern scanning, text processing, data transformation, regular expressions, and scripting techniques within the Unix environment.",
+      "why_read": "It teaches a minimalist yet extremely powerful way of thinking about data processing. Essential for understanding Unix philosophy, pipelines, and text-centric computing.",
+      "when_to_read": "When you start working seriously with Unix/Linux systems, shell scripting, log processing, or large text datasets.",
+      "importance": "A foundational work in Unix tooling and scripting culture, written by the language's original designers.",
+      "prerequisites": [
+        "basic command line usage",
+        "regular expressions",
+        "fundamental programming concepts"
+      ],
+      "pairs_well_with": [
+        "the-unix-programming-environment",
+        "the-c-programming-language"
+      ],
+      "source": {
+        "online_url": "https://dn790008.ca.archive.org/0/items/pdfy-MgN0H1joIoDVoIC7/The_AWK_Programming_Language.pdf",
+        "file_path": "books/The%20AWK%20Programming%20Language.pdf"
+      },
+      "status": "unread",
+      "notes": "Pay special attention to the pattern-action model and how AWK fits into Unix pipelines.",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-art-of-thinking-clearly",
+      "title": "The Art of Thinking Clearly",
+      "author": ["Rolf Dobelli"],
+      "category": "psychology",
+      "subcategory": "cognitive-biases",
+      "year_published": 2013,
+      "language": "English",
+      "tags": [
+        "cognitive biases",
+        "decision making",
+        "psychology",
+        "thinking",
+        "behavioral science"
+      ],
+      "level": "general",
+      "description": "A collection of short chapters exploring common errors in human thinking and judgment—known as cognitive biases—and how they distort decision-making. Dobelli distills concepts from psychology and behavioral science into practical insights for clearer thinking and better choices in daily life.", 
+      "why_read": "It offers a practical mental toolkit to recognize and mitigate systematic thinking errors that everyone experiences, improving decisions in personal and professional contexts.", 
+      "when_to_read": "After you have some exposure to psychology or decision theory and want a practical, accessible guide to common thinking pitfalls.",
+      "importance": "One of the bestselling books on cognitive biases, widely translated and influential in discussions about human judgment and rational decision-making.",
+      "prerequisites": ["basic familiarity with cognitive psychology"],
+      "pairs_well_with": [
+        "thinking-fast-and-slow",
+        "predictably-irrational"
+      ],
+      "source": {
+        "online_url": "https://dn720002.ca.archive.org/0/items/HarborLibrary-Psychology/%E7%BD%97%E5%B0%94%E5%A4%AB%C2%B7%E5%A4%9A%E8%B4%9D%E9%87%8C%EF%BC%9AThe%20Art%20of%20Thinking%20Clearly.pdf",
+        "file_path": "books/The Art of Thinking Clearly.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-philosophy-of-logical-atomism",
+      "title": "The Philosophy of Logical Atomism",
+      "author": ["Bertrand Russell"],
+      "category": "philosophy",
+      "subcategory": "logic-and-language",
+      "year_published": 1918,
+      "language": "English",
+      "tags": [
+        "logical atomism",
+        "analytic philosophy",
+        "metaphysics",
+        "philosophy of language",
+        "Russell"
+      ],
+      "level": "advanced",
+      "description": "A foundational work in analytic philosophy in which Russell lays out his theory of logical atomism — the view that the world consists of atomic facts and that language and logic reveal this structure. The lectures define propositions, facts, and relations, and argue for analyzing complex ideas into simple logical components. :contentReference[oaicite:0]{index=0}",
+      "why_read": "It’s a classic text that influenced 20th-century philosophy of logic and language and shaped much of analytic philosophy. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After introductory texts in logic and analytic philosophy; ideal once you have some grounding in early 20th-century philosophy. ",
+      "importance": "One of the key early works of analytic philosophy and a major statement of Russell’s metaphysics and philosophy of language. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": [
+        "basic logic",
+        "analytic philosophy concepts"
+      ],
+      "pairs_well_with": [
+        "principia-mathematica",
+        "tractatus-logico-philosophicus"
+      ],
+      "source": {
+        "online_url": "https://sites.ualberta.ca/~francisp/NewPhil448/RussellPhilLogicalAtomismPears.pdf",
+        "file_path": "books/Russell-The%20Philosophy%20of%20Logical%20Atomism--Pears.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "write-great-code-ii",
+      "title": "Write Great Code II - Thinking Low Level, Writing High Level",
+      "author": ["Randall Hyde"],
+      "category": "computer-science",
+      "subcategory": "programming",
+      "year_published": 2005,
+      "language": "English",
+      "tags": ["assembly", "low-level", "high-level", "programming", "code optimization"],
+      "level": "intermediate",
+      "description": "Covers how to write efficient, maintainable code by understanding what happens at the low-level (assembly) while still programming in high-level languages. Focuses on performance, memory, and processor architecture.",
+      "why_read": "It bridges the gap between low-level hardware understanding and high-level programming, helping you write more efficient and robust code.",
+      "when_to_read": "After learning the basics of a high-level language and some understanding of computer architecture.",
+      "importance": "Essential for programmers who want to deeply understand how high-level code translates to machine-level operations.",
+      "prerequisites": ["basic programming", "intro to computer architecture"],
+      "pairs_well_with": ["computer-organization", "modern-compiler-design"],
+      "source": {
+        "online_url": "https://theswissbay.ch/pdf/Gentoomen%20Library/Programming/Assembly/WRITE%20GREAT%20CODE%2C%20Vol.%202%20Thinking%20Low-Level%2C%20Writing%20High-Level.pdf",
+        "file_path": "books/Randall%20Hyde%20-%20Write%20Great%20Code%20II%20-%20Thinking%20Low%20Level,%20Writing%20High%20Level.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-art-of-assembly-language-2nd-edition",
+      "title": "The Art of Assembly Language, 2nd Edition",
+      "author": ["Randall Hyde"],
+      "category": "computer-science",
+      "subcategory": "systems-programming",
+      "year_published": 2010,
+      "language": "English",
+      "tags": [
+        "assembly",
+        "x86",
+        "low-level",
+        "HLA",
+        "systems programming",
+        "computer architecture"
+      ],
+      "level": "intermediate",
+      "description": "A comprehensive and patient introduction to 32‑bit x86 assembly language programming using the High Level Assembler (HLA) as a teaching tool. It combines low‑level theory with practical coding examples, making assembly concepts accessible even to programmers familiar primarily with high‑level languages. Updated to support Linux, macOS, and FreeBSD. :contentReference[oaicite:0]{index=0}",
+      "why_read": "Great for understanding how computers work at the lowest levels and bridging the gap between high‑level languages and machine execution. Teaches both theory and practical assembly skills. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you have experience with at least one high‑level language like C or C++, and want to dive into how code translates to machine instructions. :contentReference[oaicite:2]{index=2}",
+      "importance": "One of the most thorough and referenced assembly language books for the classic x86 architecture, widely used in systems programming study. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic programming concepts",
+        "experience with a high‑level language (e.g., C/C++)",
+        "computer architecture fundamentals"
+      ],
+      "pairs_well_with": [
+        "computer-architecture",
+        "design-patterns",
+        "operating-systems"
+      ],
+      "source": {
+        "online_url": "https://colorcomputerarchive.com/repo/Documents/Books/The%20Art%20of%20Assembly%20Language%202nd%20Edition%20(Randall%20Hyde).pdf",
+        "file_path": "books/Randall%20Hyde%20-%20The%20Art%20of%20Assembly%20Language,%202nd%20Edition.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "programming-from-the-ground-up",
+      "title": "Programming from the Ground Up",
+      "author": ["Jonathan Bartlett", "Dominick Bruno Jr."],
+      "category": "computer-science",
+      "subcategory": "assembly-language",
+      "year_published": 2004,
+      "language": "English",
+      "tags": [
+        "assembly",
+        "linux",
+        "low-level programming",
+        "computer architecture",
+        "systems"
+      ],
+      "level": "beginner",
+      "description": "An introductory book that teaches programming and computer fundamentals through Linux assembly language, covering how processors view memory, how programs interact with the OS, and optimization techniques. :contentReference[oaicite:0]{index=0}",
+      "why_read": "It gives deep insight into how computers work under the hood — ideal for programmers who want a strong foundation in low-level concepts. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "Early in your learning path, after basic programming familiarity but before systems or OS-level courses.",
+      "importance": "Considered a classic for understanding assembly and systems fundamentals, even used in university courses. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": ["basic programming concepts"],
+      "pairs_well_with": ["computer-architecture", "operating-systems"],
+      "source": {
+        "online_url": "https://download-mirror.savannah.gnu.org/releases/pgubook/ProgrammingGroundUp-1-0-booksize.pdf",
+        "file_path": "books/Programming_from_the_Ground_Up.pdf"
+      },
+      "status": "unread"
+    },
+    {
+      "id": "principia-mathematica-russell-whitehead",
+      "title": "Principia Mathematica",
+      "author": ["Bertrand Russell", "Alfred North Whitehead"],
+      "category": "mathematics",
+      "subcategory": "foundations-of-mathematics",
+      "year_published": 1910,
+      "language": "English",
+      "tags": [
+        "logic",
+        "foundations of mathematics",
+        "symbolic logic",
+        "logicism",
+        "history of math"
+      ],
+      "level": "advanced",
+      "description": "A monumental three‑volume work attempting to derive large swaths of classical mathematics from purely logical axioms and formal inference rules. It develops a ramified theory of types and formal symbolic logic to reduce mathematics to logic — a core statement of the logicist thesis. First published in three volumes between 1910 and 1913, Principia Mathematica is regarded as one of the most influential works in mathematical logic and analytic philosophy.:contentReference[oaicite:0]{index=0}",
+      "why_read": "It is historically significant as a foundational attempt to connect logic and mathematics in a formal system, shaping the development of symbolic logic and influencing later figures like Gödel, Church, and Turing.:contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After studying formal logic and set theory basics and if you’re ready to tackle a dense, foundational classic in the philosophy of mathematics.",
+      "importance": "Considered one of the central works in the history of mathematical logic and foundational mathematics.:contentReference[oaicite:2]{index=2}",
+      "prerequisites": [
+        "basic logic",
+        "set theory",
+        "philosophy of mathematics"
+      ],
+      "pairs_well_with": [
+        "metalogic textbooks",
+        "Gödel’s incompleteness theorems writings"
+      ],
+      "source": {
+        "online_url": "https://www.uhu.es/francisco.moreno/gii_mac/docs/Principia_Mathematica_vol1.pdf",
+        "file_path": "books/Principia%20Mathematica%20-%20Russell%20&%20Whitehead%20(1910-1913).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "plato-the-republic-ferrari-griffith",
+      "title": "Plato: The Republic",
+      "author": ["Plato", "G. R. F. Ferrari", "Tom Griffith"],
+      "category": "philosophy",
+      "subcategory": "ancient-philosophy",
+      "year_published": 2000,
+      "language": "English",
+      "tags": [
+        "political philosophy",
+        "justice",
+        "ideal state",
+        "Socratic dialogue",
+        "classics"
+      ],
+      "level": "advanced",
+      "description": "One of the foundational works of Western philosophy, *The Republic* is Plato’s Socratic dialogue on justice, the ideal state, the nature of the soul, and the philosopher’s role in society. This edition is edited by G. R. F. Ferrari and translated by Tom Griffith, with an introduction, notes, glossary, and guide to further reading — making it accessible yet rigorous. :contentReference[oaicite:0]{index=0}",
+      "why_read": "Because it’s a pillar of political and moral philosophy that explores questions about justice, society, knowledge, and human nature — themes that still shape modern thought. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you’ve read some introductory philosophy (like Socratic dialogues or introductory ethics) and want to dive deeper into political theory and foundational philosophical arguments.",
+      "importance": "One of the most influential philosophical works in history; foundational to Western political and ethical thought. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": ["ancient-greek-philosophy-basics", "socratic-dialogues"],
+      "pairs_well_with": ["plato-the-dialogues", "aristotle-politics"],
+      "source": {
+        "online_url": "https://ia802802.us.archive.org/20/items/PlatoTheRepublicCambridgeTomGriffith/Plato%20The%20Republic%20(Cambridge%2C%20Tom%20Griffith).pdf",
+        "file_path": "books/Plato%20The%20Republic%20(Cambridge,%20Tom%20Griffith).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "theories-of-personality-schultz",
+      "title": "Theories of Personality",
+      "author": ["Duane P. Schultz", "Sydney Ellen Schultz"],
+      "category": "psychology",
+      "subcategory": "personality-theory",
+      "year_published": 2016,
+      "language": "English",
+      "tags": [
+        "personality",
+        "psychology",
+        "theory",
+        "behavior",
+        "education"
+      ],
+      "level": "general",
+      "description": "A comprehensive introduction to major theories of personality, exploring historic and contemporary approaches (psychoanalytic, humanistic, behavioral, cognitive, trait, and social-learning), and showing how researchers and theorists conceptualize human personality and its development. Covers core theorists and integrates modern findings and cross-cultural considerations. ",
+      "why_read": "This is a foundational textbook for anyone studying personality psychology — it systematically compares major theoretical perspectives and shows how personality theories explain human behavior.",
+      "when_to_read": "Best read when starting a course on personality or psychological theory after basic introductory psychology.",
+      "importance": "One of the most widely adopted textbooks in personality psychology courses worldwide.",
+      "prerequisites": [
+        "introduction to psychology"
+      ],
+      "pairs_well_with": [
+        "personality-psychology"
+      ],
+      "source": {
+        "online_url": "https://staff.oouagoiwoye.edu.ng/uploads/579_COURSES_Personality_Theories_6779.pdf",
+        "file_path": "books/Personality_Theories_6779.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "on-computable-numbers-with-an-application-to-the-entscheidungsproblem",
+      "title": "On Computable Numbers, with an Application to the Entscheidungsproblem",
+      "author": ["A. M. Turing"],
+      "category": "computer-science",
+      "subcategory": "theory-of-computation",
+      "year_published": 1936,
+      "language": "English",
+      "tags": [
+        "computability",
+        "turing machine",
+        "undecidability",
+        "entscheidungsproblem",
+        "foundations"
+      ],
+      "level": "advanced",
+      "description": "A foundational research paper by Alan M. Turing in which he introduces the notion of computable numbers and the abstract 'Turing machine', and uses this framework to show that the Entscheidungsproblem (decision problem) is unsolvable — there exists no general mechanical procedure to determine the truth of arbitrary mathematical statements. Turing's computation model became the theoretical basis for modern computer science and algorithmic logic. :contentReference[oaicite:0]{index=0}",
+      "why_read": "It's one of the most important works in theoretical computer science, laying the groundwork for the concept of computation, algorithms, and undecidability — essential for anyone studying computation theory or the limits of algorithmic problem‑solving. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After gaining basic familiarity with automata, algorithms, and logic — ideally alongside an introductory course on computability or the theory of computation. :contentReference[oaicite:2]{index=2}",
+      "importance": "Seminal; this paper essentially **defined** what it means for a function or number to be computable and proved deep limits on what can be decided algorithmically. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic logic",
+        "finite automata",
+        "formal languages"
+      ],
+      "pairs_well_with": [
+        "introduction-to-theory-of-computation",
+        "recursive-function-theory"
+      ],
+      "source": {
+        "online_url": "https://www.cs.virginia.edu/~robins/Turing_Paper_1936.pdf",
+        "file_path": "books/On%20Computable%20Numbers%20-%20Alan%20Turing%20(1936).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "novum-organum",
+      "title": "Novum Organum",
+      "author": ["Francis Bacon"],
+      "category": "philosophy",
+      "subcategory": "philosophy-of-science",
+      "year_published": 1620,
+      "language": "Latin",
+      "tags": [
+        "philosophy",
+        "scientific-method",
+        "empiricism",
+        "inductive-reasoning",
+        "epistemology"
+      ],
+      "level": "advanced",
+      "description": "Novum Organum (Latin: 'New Organon') is a philosophical work by Francis Bacon proposing a new scientific methodology based on induction and systematic observation, challenging traditional Aristotelian logic and contributing to the foundations of the modern scientific method. It is composed in aphorisms and outlines both critique of older approaches and a constructive inductive method for studying nature. Its ideas were highly influential in shaping early modern science and empiricism. ",
+      "why_read": "It’s one of the key texts in the history of the scientific method and philosophy of science — essential for understanding the shift toward empirical and experimental approaches in Western thought. ",
+      "when_to_read": "After gaining some familiarity with basic logic and philosophy, especially if you’re interested in how modern science’s methods emerged historically. ",
+      "importance": "A foundational classic in philosophy and epistemology; marks a turning point in how systematic inquiry and knowledge generation are conceived. ",
+      "prerequisites": ["basic logic", "history-of-philosophy"],
+      "pairs_well_with": ["history-of-science", "empiricism-intro"],
+      "source": {
+        "online_url": "https://oll-resources.s3.us-east-2.amazonaws.com/oll3/store/titles/1432/0415_Bk.pdf",
+        "file_path": "books/Novum%20Organum%20-%20Francis%20Bacon.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "frege-philosophy-of-language",
+      "title": "Frege: Philosophy of Language",
+      "author": ["Michael Dummett"],
+      "category": "philosophy",
+      "subcategory": "philosophy-of-language",
+      "year_published": 1973,
+      "language": "English",
+      "tags": [
+        "philosophy",
+        "philosophy of language",
+        "Frege",
+        "analytic philosophy",
+        "semantics"
+      ],
+      "level": "advanced",
+      "description": "A comprehensive study of the philosophy of language and logic as developed by Gottlob Frege, tracing his influence on analytic philosophy and explaining his fundamental views on meaning, sense, reference, and the structure of language. Michael Dummett’s work is one of the most important interpretations of Frege’s philosophy and has been highly influential in contemporary debates in semantics and the theory of meaning. :contentReference[oaicite:0]{index=0}",
+      "why_read": "It’s a classic in philosophical literature on language and meaning, essential for anyone wanting to deeply understand Frege’s role in analytic philosophy and the foundations of semantics. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After getting familiar with basic analytic philosophy concepts or introductory philosophy of language texts. Best approached with some grounding in logic and semantics. ",
+      "importance": "This book is considered a seminal secondary work on Frege’s philosophy of language and remains highly cited in philosophical discussions on meaning and reference. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": [
+        "basic logic",
+        "introductory philosophy of language"
+      ],
+      "pairs_well_with": [
+        "frege-philosophy-of-mathematics",
+        "concepts-in-language-philosophy"
+      ],
+      "source": {
+        "online_url": "http://www.spiritual-minds.com/philosophy/assorted/Michael%20Dummett%20-%20Frege,%20Philosophy%20of%20Language[Harper&Row,%20719p].pdf",
+        "file_path": "books/Michael%20Dummett%20-%20Frege,%20Philosophy%20of%20Language[Harper&Row,%20719p].pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-meditations-of-marcus-aurelius-1887-collier-zimmern",
+      "title": "The Meditations of Marcus Aurelius",
+      "author": [
+        "Marcus Aurelius",
+        "Jeremy Collier",
+        "Alice Zimmern"
+      ],
+      "category": "philosophy",
+      "subcategory": "stoicism",
+      "year_published": 1887,
+      "language": "English",
+      "tags": [
+        "stoicism",
+        "philosophy",
+        "ancient",
+        "ethics",
+        "self-reflection",
+        "classics"
+      ],
+      "level": "advanced",
+      "description": "A classic collection of personal reflections and philosophical insights by Roman Emperor Marcus Aurelius (121–180 AD), translated from the original Greek by Jeremy Collier and revised with an introduction and notes by Alice Zimmern. The Meditations consists of twelve books of moral guidance and Stoic philosophy, originally written as private notes to himself but now regarded as one of the foundational texts of Stoic thought. This 1887 London edition was published by Walter Scott, including Zimmern’s introductory context and explanatory notes to help readers engage with Aurelius’s ideas. ",
+      "why_read": "Meditations offers profound insight into Stoic ethics, self-discipline, and leadership drawn from the mind of one of history’s most thoughtful rulers, making it essential reading for anyone interested in philosophy, personal growth, or reflective practice.",
+      "when_to_read": "After you've been introduced to basic ethical philosophy and want to deepen your understanding of personal resilience, virtue, and inner life.",
+      "importance": "Considered one of the greatest works of ancient philosophy, Meditations has influenced thinkers, leaders, and readers for centuries and remains central to Stoic and ethical literature. ",
+      "prerequisites": [
+        "Introduction to classical philosophy",
+        "Basic knowledge of Stoicism"
+      ],
+      "pairs_well_with": [
+        "niebuhr-on-the-nature-and-authority-of-ethical-laws",
+        "seneca-moral-letters-to-lucilius"
+      ],
+      "source": {
+        "online_url": "https://dn720006.ca.archive.org/0/items/meditationsofmar00marc/meditationsofmar00marc.pdf",
+        "file_path": "books/meditationsofmar00marc.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "mathematical-logic",
+      "title": "Mathematical Logic",
+      "author": ["Joseph Shoenfield"],
+      "category": "mathematics",
+      "subcategory": "logic",
+      "year_published": 1967,
+      "language": "English",
+      "tags": [
+        "logic",
+        "mathematical logic",
+        "proof theory",
+        "model theory",
+        "recursion theory"
+      ],
+      "level": "advanced",
+      "description": "A foundational text in mathematical logic covering propositional and first-order logic, completeness, compactness, recursive functions, and model theory. The book develops both syntax and semantics rigorously, with emphasis on formal proofs and foundational results.",
+      "why_read": "It’s a classic reference in formal logic and computability theory, essential for understanding the mathematical underpinnings of proofs and models in computer science and mathematics.",
+      "when_to_read": "After mastering basic discrete mathematics and elementary logic; ideal for graduate-level study or deep self-study in logic.",
+      "importance": "One of the definitive texts on mathematical logic, widely cited and used in both mathematics and theoretical computer science.",
+      "prerequisites": [
+        "discrete mathematics",
+        "elementary set theory",
+        "basic proof techniques"
+      ],
+      "pairs_well_with": [
+        "a-mathematical-introduction-to-logic-enderton-1972",
+        "computability-and-logic-soare-2016"
+      ],
+      "source": {
+        "online_url": "https://www.karlin.mff.cuni.cz/~krajicek/shoenfield.pdf",
+        "file_path": "books/Mathematical%20Logic%20-%20Joseph%20Shoenfield%20(1967)%20pdf.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "mastering-assembly-programming-intel",
+      "title": "Mastering Assembly Programming: From Instruction Set to Kernel Module with Intel Processor",
+      "author": ["Alexey Lyashko"],
+      "category": "computer-science",
+      "subcategory": "programming-languages",
+      "year_published": 2017,
+      "language": "English",
+      "tags": [
+        "assembly",
+        "x86",
+        "programming",
+        "intel-architecture",
+        "low-level"
+      ],
+      "level": "intermediate",
+      "description": "A comprehensive guide to assembly programming on Intel processors, walking from basic instruction sets and CPU internals through development setups, memory addressing, and integration with high‑level languages, all the way to creating efficient assembly routines and kernel modules.",
+      "why_read": "Helps deepen understanding of how high‑level code translates to machine instructions, how CPUs execute them, and gives practical skills to write and integrate assembly code with other languages — useful for systems programmers and reverse engineers alike.",
+      "when_to_read": "After learning basic C/C++ and with some exposure to systems concepts (e.g., OS, memory management), before diving into OS internals or compiler development.",
+      "importance": "An intermediate level book that bridges theory and practical assembly coding specifically focused on Intel architectures — valuable as both reference and applied learning resource.",
+      "prerequisites": [
+        "basic C/C++ programming",
+        "computer architecture fundamentals"
+      ],
+      "pairs_well_with": [
+        "modern-x86-64-assembly-language-programming",
+        "art-of-assembly-language"
+      ],
+      "source": {
+        "online_url": "https://api.pageplace.de/preview/DT0400.9781787120075_A30943377/preview-9781787120075_A30943377.pdf",
+        "file_path": "books/mastering-assembly-programming-1nbsped-9781787287488_compress.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-communist-manifesto",
+      "title": "The Communist Manifesto",
+      "author": ["Karl Marx", "Friedrich Engels"],
+      "category": "political-science",
+      "subcategory": "political-theory",
+      "year_published": 1848,
+      "language": "English",
+      "tags": [
+        "communism",
+        "political theory",
+        "class struggle",
+        "socialism",
+        "economics"
+      ],
+      "level": "general",
+      "description": "A political pamphlet originally commissioned by the Communist League and first published in London in 1848. It presents Marx and Engels' materialist conception of history and argues that class struggle drives societal change, advocating for the proletariat to overthrow capitalist systems and establish a classless society. It opens with the famous line about a \"spectre haunting Europe—the spectre of communism\" and ends with a call for workers' solidarity. :contentReference[oaicite:0]{index=0}",
+      "why_read": "It is one of the most influential political documents in modern history, foundational to Marxist thought and debates about capitalism, class, and revolutionary politics. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "Early in your studies of political philosophy or economic history to grasp foundational critiques of capitalism and class relations. :contentReference[oaicite:2]{index=2}",
+      "importance": "A cornerstone text in modern political thought, shaping socialist, communist, and critical theory traditions globally. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "History of capitalism",
+        "Basic political philosophy"
+      ],
+      "pairs_well_with": [
+        "das-kapital" 
+      ],
+      "source": {
+        "online_url": "https://ect.humspace.ucla.edu/wp-content/uploads/2025/04/Marx-and-Engels-Communist-Manifesto.pdf",
+        "file_path": "books/Marx-and-Engels-Communist-Manifesto.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "macroeconomics-mankiw",
+      "title": "Macroeconomics",
+      "author": ["N. Gregory Mankiw"],
+      "category": "economics",
+      "subcategory": "macro",
+      "year_published": 2021,
+      "language": "English",
+      "tags": [
+        "macroeconomics",
+        "economic theory",
+        "policy",
+        "growth",
+        "inflation",
+        "unemployment"
+      ],
+      "level": "intermediate",
+      "description": "A widely used textbook introducing the principles and modern applications of macroeconomic theory, covering topics such as national income, monetary and fiscal policy, economic growth, inflation, and unemployment.",
+      "why_read": "It provides a clear, authoritative overview of macroeconomics that is standard in many undergraduate courses and is useful for both students and practitioners wanting a coherent foundation.",
+      "when_to_read": "After completing introductory microeconomics and basic economic principles courses.",
+      "importance": "Considered one of the standard introductory textbooks in macroeconomics, used in universities worldwide.",
+      "prerequisites": [
+        "basic economics principles"
+      ],
+      "pairs_well_with": [
+        "principles-of-microeconomics"
+      ],
+      "source": {
+        "online_url": "https://www.econpage.com/302/mankiw.pdf",
+        "file_path": "books/MACROECONOMICS.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-prince-machiavelli",
+      "title": "The Prince",
+      "author": ["Niccolò Machiavelli"],
+      "category": "philosophy",
+      "subcategory": "renaissance-era",
+      "year_published": 1532,
+      "language": "Italian",
+      "tags": [
+        "political theory",
+        "power",
+        "statecraft",
+        "leadership",
+        "renaissance"
+      ],
+      "level": "advanced",
+      "description": "A seminal political treatise by Niccolò Machiavelli offering pragmatic and often controversial advice on acquiring and maintaining power as a ruler. It was written in 1513 and published posthumously in 1532, and has since become foundational in the study of political philosophy and realpolitik. Themes include statecraft, military strategy, human nature, and governance through practical realism rather than moral idealism. :contentReference[oaicite:0]{index=0}",
+      "why_read": "Because it remains one of the most influential works on political strategy and leadership, shaping modern concepts of governance, power dynamics, and political realism. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you have a basic understanding of political systems or philosophy and want to deepen your grasp of real-world political strategy and power dynamics. ◆",
+      "importance": "Considered one of the earliest and most important works of modern political philosophy, introducing ideas that directly challenge idealistic approaches to governance and influencing centuries of political thought. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": [
+        "political-theory-basics",
+        "renaissance-history"
+      ],
+      "pairs_well_with": [
+        "discourses-on-livy",
+        "leviathan"
+      ],
+      "source": {
+        "online_url": "https://apeiron.iulm.it/retrieve/handle/10808/4129/46589/Machiavelli%2C%20The%20Prince.pdf",
+        "file_path": "books/Machiavelli,+The+Prince.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "logic-in-computer-science-modelling-and-reasoning-about-systems",
+      "title": "Logic in Computer Science: Modelling and Reasoning about Systems",
+      "author": [
+        "Michael Huth",
+        "Mark Ryan"
+      ],
+      "category": "computer-science",
+      "subcategory": "formal-methods",
+      "year_published": 2004,
+      "language": "English",
+      "tags": [
+        "logic",
+        "formal reasoning",
+        "model checking",
+        "program verification",
+        "computer science theory"
+      ],
+      "level": "intermediate",
+      "description": "A foundational textbook introducing logic as used in computer science, covering propositional logic, predicate logic, verification by model checking, program verification, modal logics, and binary decision diagrams with worked exercises and examples. It focuses on modelling and reasoning about computer systems using logic-based methods. :contentReference[oaicite:0]{index=0}",
+      "why_read": "Provides a rigorous yet clear grounding in formal logic and verification techniques that are essential for understanding system correctness, model checking, and formal proofs in computing. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After gaining basic experience in discrete mathematics and introductory computing theory, when you’re ready to dive into formal methods and logic-based system analysis. :contentReference[oaicite:2]{index=2}",
+      "importance": "A widely used textbook in undergraduate/graduate courses on logic in computer science, influential for those studying verification, formal methods, and theoretical foundations of computing. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "discrete-math-basics",
+        "intro-to-algorithms"
+      ],
+      "pairs_well_with": [
+        "artificial-intelligence",
+        "software-verification"
+      ],
+      "source": {
+        "online_url": "http://staff.ustc.edu.cn/~huangwc/book/LogicInCS.pdf",
+        "file_path": "books/Logic%20in%20Computer%20Science%20-%20Huth%20&%20Ryan%20(2004).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "a-theory-of-justice-revised-edition",
+      "title": "A Theory of Justice: Revised Edition",
+      "author": ["John Rawls"],
+      "category": "philosophy",
+      "subcategory": "political-philosophy",
+      "year_published": 1999,
+      "language": "English",
+      "tags": [
+        "justice",
+        "political philosophy",
+        "ethics",
+        "social contract",
+        "distributive justice"
+      ],
+      "level": "advanced",
+      "description": "A foundational work of modern political philosophy proposing 'justice as fairness' — a theory of justice based on principles that rational, free individuals would choose from an original position of equality (behind a 'veil of ignorance'). It challenges utilitarianism and offers a normative framework for basic rights, liberties, and the structure of society. This revised edition includes significant clarifications and updates by the author. :contentReference[oaicite:0]{index=0}",
+      "why_read": "Widely regarded as one of the most influential works in 20th‑century political philosophy, this book provides deep conceptual tools to think about fairness, rights, and equality in society. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you’ve explored general political theory (e.g., liberalism, utilitarianism) and are ready to tackle dense philosophical arguments about justice. :contentReference[oaicite:2]{index=2}",
+      "importance": "A cornerstone text in modern political philosophy and ethics, foundational for debates on justice, rights, and liberal democratic theory. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic political philosophy concepts",
+        "utilitarianism vs deontology",
+        "social contract theory"
+      ],
+      "pairs_well_with": [
+        "justice: what's the right thing to do? (for a more accessible intro)",
+        "the-constitution-of-liberty (for contrasting liberal views)",
+        "the-idea-of-justice (Amartya Sen’s critique)"
+      ],
+      "source": {
+        "online_url": "https://www.cita.or.id/wp-content/uploads/2016/06/John-Rawls-A-Theory-of-Justice-Belknap-Press-1999.pdf",
+        "file_path": "books/John-Rawls-A-Theory-of-Justice-Belknap-Press-1999.pdf"
+      },
+      "status": "unread"
+    },
+    {
+      "id": "introduction-to-mathematical-philosophy",
+      "title": "Introduction to Mathematical Philosophy",
+      "author": ["Bertrand Russell"],
+      "category": "philosophy",
+      "subcategory": "foundations-of-mathematics",
+      "year_published": 1919,
+      "language": "English",
+      "tags": [
+        "logic",
+        "philosophy",
+        "mathematics",
+        "foundations",
+        "number theory",
+        "infinity"
+      ],
+      "level": "intermediate",
+      "description": "An accessible introduction to the foundational ideas of mathematical logic and the philosophy of mathematics, explaining concepts such as number, order, infinity, and classes without requiring advanced mathematical background. It was written to offer a clear understanding of how mathematics and logic intertwine, aimed at readers with minimal prior training.:contentReference[oaicite:1]{index=1}",
+      "why_read": "This book is historically significant as one of the first to present the logicist program and foundational mathematics in a manner intended for non-specialists, making complex topics approachable.:contentReference[oaicite:2]{index=2}",
+      "when_to_read": "After gaining basic exposure to logic and set theory, this is a good next step before diving into more technical texts on mathematical foundations.:contentReference[oaicite:3]{index=3}",
+      "importance": "A classic work in the philosophy of mathematics that influenced the development of logic and set theory in the 20th century.:contentReference[oaicite:4]{index=4}",
+      "prerequisites": [
+        "basic logic",
+        "elementary set theory"
+      ],
+      "pairs_well_with": [
+        "principia-mathematica",
+        "principles-of-mathematics",
+        "philosophy-of-mathematics-entry-plato"
+      ],
+      "source": {
+        "online_url": "https://people.umass.edu/klement/imp/imp-ebk.pdf",
+        "file_path": "books/Introduction%20to%20Mathematical%20Philosophy%20--%20BERTRAND%20RUSSELL.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "introduction-to-automata-theory-languages-and-computation",
+      "title": "Introduction to Automata Theory, Languages, and Computation",
+      "author": [
+        "John E. Hopcroft",
+        "Rajeev Motwani",
+        "Jeffrey D. Ullman"
+      ],
+      "category": "computer-science",
+      "subcategory": "theory-of-computation",
+      "year_published": 2006,
+      "language": "English",
+      "tags": [
+        "automata theory",
+        "formal languages",
+        "computability",
+        "complexity",
+        "theoretical computer science"
+      ],
+      "level": "advanced",
+      "description": "A foundational textbook on formal languages, automata, computability, and complexity theory. It introduces the theory of finite automata, context‑free grammars, Turing machines, decidability, and complexity classes with rigorous mathematical depth and exercises.",
+      "why_read": "It’s one of the most influential and widely used theoretical computer science textbooks, shaping decades of curricula on automata and computation theory.",
+      "when_to_read": "After completing introductory computer science and discrete mathematics courses, when you want a deep theoretical foundation.",
+      "importance": "Highly significant in formal language and computation theory; a standard reference in advanced CS education.",
+      "prerequisites": [
+        "discrete mathematics",
+        "proof techniques",
+        "basic algorithms"
+      ],
+      "pairs_well_with": [
+        "introduction-to-the-theory-of-computation-sipser",
+        "automata-and-computability-kozen"
+      ],
+      "source": {
+        "online_url": "https://www-2.dc.uba.ar/staff/becher/Hopcroft-Motwani-Ullman-2001.pdf",
+        "file_path": "books/Introduction to Automata Theory, Languages, and Computation.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "introductio-in-analysin-infinitorum",
+      "title": "Introductio in Analysin Infinitorum",
+      "author": ["Leonhard Euler"],
+      "category": "mathematics",
+      "subcategory": "analysis",
+      "year_published": 1748,
+      "language": "Latin",
+      "tags": [
+        "analysis",
+        "history of mathematics",
+        "function concept",
+        "infinite series",
+        "trigonometry",
+        "logarithms"
+      ],
+      "level": "advanced",
+      "description": "A foundational work in mathematical analysis by Leonhard Euler, this two‑volume Latin text lays the modern groundwork for analysis. Euler introduces the concept of function and uses infinite series, exponentials, logarithms, and trigonometric functions in ways that shaped later development of calculus and analytic geometry, without relying on formal differential or integral calculus. :contentReference[oaicite:0]{index=0}",
+      "why_read": "It’s considered one of the first modern textbooks in mathematics, often compared in importance to Euclid’s Elements for its role in defining analytic methods and notation still in use today. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After a solid foundation in algebra and pre‑calculus concepts, and ideally before or alongside formal calculus study to appreciate the historical development of analysis.",
+      "importance": "This work formalized the concept of mathematical functions and influenced centuries of analysis and function theory, establishing ideas still core to modern mathematics. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": ["basic algebra", "infinite series"],
+      "pairs_well_with": ["calculus-textbook", "history-of-math"],
+      "source": {
+        "online_url": "https://ia800203.us.archive.org/21/items/bub_gb_jQ1bAAAAQAAJ/bub_gb_jQ1bAAAAQAAJ.pdf",
+        "file_path": "books/Introductio%20in%20Analysin%20Infinitorum%20-%20Leonhard%20Euler%20(1748).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "godel-escher-bach",
+      "title": "Gödel, Escher, Bach: An Eternal Golden Braid",
+      "author": ["Douglas Hofstadter"],
+      "category": "computer-science",
+      "subcategory": "cognitive-science",
+      "year_published": 1979,
+      "language": "English",
+      "tags": [
+        "mathematics",
+        "logic",
+        "cognition",
+        "art",
+        "music",
+        "self-reference",
+        "formal systems"
+      ],
+      "level": "advanced",
+      "description": "Explores deep connections between the works of logician Gödel, artist Escher, and composer Bach, tying mathematics, symmetry, and cognition together in a playful yet rigorous narrative.",
+      "why_read": "A mind-expanding classic that blends logic, art, and music to understand self-reference, consciousness, and the foundations of thought.",
+      "when_to_read": "After having some exposure to logic, mathematics, or computer science, ideally when interested in philosophy of mind or cognitive science.",
+      "importance": "Highly influential in AI, cognitive science, philosophy, and mathematical logic. A modern classic that inspires interdisciplinary thinking.",
+      "prerequisites": [
+        "basic logic",
+        "mathematics fundamentals"
+      ],
+      "pairs_well_with": [
+        "structure-and-interpretation-of-computer-programs",
+        "a-mind-for-numbers"
+      ],
+      "source": {
+        "online_url": "https://theswissbay.ch/pdf/Gentoomen%20Library/Extra/Douglas_R._Hofstadter-G%C3%B6del%2C_Escher%2C_Bach__An_Eternal_Golden_Braid_%28Twentieth-Anniversary_Edition%29-Basic_Books%281999%29.pdf",
+        "file_path": "books/Gödel,%20Escher,%20Bach%20-%20Douglas%20Hofstadter%20(1979).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "git-internals",
+      "title": "Git-Internals",
+      "author": ["Scott Chacon"],
+      "category": "computer-science",
+      "subcategory": "version-control",
+      "year_published": 2009,
+      "language": "English",
+      "tags": [
+        "git",
+        "version control",
+        "source control",
+        "programming tools",
+        "development"
+      ],
+      "level": "intermediate",
+      "description": "Deep dive into Git’s internal architecture: objects, references, packs, indexing, and low-level commands. Essential for understanding how Git really works under the hood.",
+      "why_read": "Understanding Git internals helps debug tricky issues, optimize workflows, and become a more confident developer.",
+      "when_to_read": "After learning basic Git commands and workflow, or when wanting to understand advanced operations like rebasing, merging, and object manipulation.",
+      "importance": "One of the definitive guides on Git internals, widely cited and recommended by experienced developers.",
+      "prerequisites": [
+        "basic Git usage",
+        "command-line familiarity"
+      ],
+      "pairs_well_with": [
+        "pro-git"
+      ],
+      "source": {
+        "online_url": "https://github.com/pluralsight/git-internals-pdf/raw/master/drafts/peepcode-git.pdf",
+        "file_path": "books/Git-Internals.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "games-people-play",
+      "title": "Games People Play",
+      "author": ["Eric Berne"],
+      "category": "psychology",
+      "subcategory": "relationships",
+      "year_published": 1964,
+      "language": "English",
+      "tags": [
+        "psychology",
+        "human relationships",
+        "transactional analysis",
+        "behavior"
+      ],
+      "level": "general",
+      "description": "A classic psychology book introducing Eric Berne’s theory of transactional analysis and identifying unconscious ‘games’ people play in social interactions — behavioral patterns with hidden motivations that shape everyday relationships and communication. It popularized models like Parent–Adult–Child ego states and explores how these games influence our interactions.:contentReference[oaicite:0]{index=0}",
+      "why_read": "This book provides a foundational framework for understanding patterns in human behavior and communication, especially in relationships and everyday social interactions.:contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After gaining some basic interest in psychology and wanting to deepen your understanding of social dynamics and interpersonal behavior.:contentReference[oaicite:2]{index=2}",
+      "importance": "One of the most influential popular psychology books of the 20th century; it brought transactional analysis to a broad audience and remains widely cited.:contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic concepts in psychology",
+        "interest in human behavior"
+      ],
+      "pairs_well_with": [
+        "im-ok-youre-ok",
+        "influence",
+        "nonviolent-communication"
+      ],
+      "source": {
+        "online_url": "https://cdn.bookey.app/files/pdf/book/en/games-people-play.pdf",
+        "file_path": "books/Games%20People%20Play%20PDF.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "fundamentals-of-data-structures-horowitz-sahni",
+      "title": "Fundamentals of Data Structures",
+      "author": ["Ellis Horowitz", "Sartaj Sahni"],
+      "category": "computer-science",
+      "subcategory": "data-structures",
+      "year_published": 1983,
+      "language": "English",
+      "tags": [
+        "data structures",
+        "algorithms",
+        "arrays",
+        "linked lists",
+        "trees",
+        "graphs",
+        "sorting",
+        "symbol tables",
+        "files"
+      ],
+      "level": "intermediate",
+      "description": "A classic textbook covering fundamental data structures such as arrays, stacks, queues, linked lists, trees, graphs, internal and external sorting, symbol tables, and file organization, with detailed explanations and analyses of algorithms. It provides both conceptual and practical insights into implementation and analysis of data structures. :contentReference[oaicite:0]{index=0}",
+      "why_read": "It’s one of the foundational texts in data structures education, giving a broad base in both how common structures work and how to analyze them, making it ideal for students and developers seeking deep understanding of core CS concepts. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you’ve learned basic programming and want a structured, comprehensive introduction to core data structure concepts usually taught in a CS curriculum. :contentReference[oaicite:2]{index=2}",
+      "importance": "Considered a standard reference in data structure courses for decades, widely used by universities and in engineering programs. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic programming",
+        "algorithm analysis",
+        "mathematical reasoning"
+      ],
+      "pairs_well_with": [
+        "introduction-to-algorithms",
+        "data-structures-and-algorithms-in-c"
+      ],
+      "source": {
+        "online_url": "https://lpuguidecom.wordpress.com/wp-content/uploads/2017/04/fundamentals-of-data-structures-ellis-horowitz-sartaj-sahni.pdf",
+        "file_path": "books/fundamentals-of-data-structures-ellis-horowitz-sartaj-sahni.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "fundamentals-of-computer-algorithms",
+      "title": "Fundamentals of Computer Algorithms",
+      "author": [
+        "Ellis Horowitz",
+        "Sartaj Sahni",
+        "Sanguthevar Rajasekaran"
+      ],
+      "category": "computer-science",
+      "subcategory": "algorithms",
+      "year_published": 2008,
+      "language": "English",
+      "tags": [
+        "algorithms",
+        "design techniques",
+        "dynamic programming",
+        "greedy",
+        "backtracking",
+        "probabilistic",
+        "parallel algorithms"
+      ],
+      "level": "advanced",
+      "description": "A comprehensive, programming language‑independent text covering algorithm design techniques such as divide and conquer, greedy methods, dynamic programming, backtracking, branch and bound, probabilistic and parallel algorithms, with detailed analysis and examples. It has been a core textbook for upper‑level undergraduate and graduate courses in algorithms. :contentReference[oaicite:0]{index=0}",
+      "why_read": "It presents algorithm design and analysis deeply and broadly — helping to understand not just specific algorithms but the design paradigms that underlie them. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After getting comfortable with basic data structures and introductory algorithms (e.g., from CLRS or similar), before or alongside advanced design and analysis topics. :contentReference[oaicite:2]{index=2}",
+      "importance": "Considered a classic and foundational book in algorithm design and analysis, influential in both academic and professional CS education. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic-data-structures",
+        "intro-to-algorithms"
+      ],
+      "pairs_well_with": [
+        "introduction-to-algorithms",
+        "algorithm-design-manual"
+      ],
+      "source": {
+        "online_url": "https://kailash392.wordpress.com/wp-content/uploads/2019/02/fundamentalsof-computer-algorithms-by-ellis-horowitz.pdf",
+        "file_path": "books/fundamentalsof-computer-algorithms-by-ellis-horowitz.pdf"
+      },
+      "status": "unread"
+    },
+    {
+      "id": "foundations-of-geometry",
+      "title": "Foundations of Geometry",
+      "author": ["David Hilbert", "Wilhelm Ackermann"],
+      "category": "mathematics",
+      "subcategory": "geometry",
+      "year_published": 1899,
+      "language": "English",
+      "tags": [
+        "geometry",
+        "axiomatic method",
+        "foundations",
+        "mathematics",
+        "euclidean geometry"
+      ],
+      "level": "advanced",
+      "description": "A landmark work in mathematics that rigorously develops the axiomatic foundations of Euclidean geometry. Hilbert introduces a modern axiom system for geometry that influenced the development of formal methods across mathematics, clarifying how geometric truths can be derived purely from logical principles. The contribution firmly established the axiomatic method in mathematics. :contentReference[oaicite:0]{index=0}",
+      "why_read": "This text is foundational for understanding how geometry and, more broadly, mathematics can be systematically built from axioms. It's essential for those interested in mathematical logic, structure, and the evolution of rigorous thinking in mathematics. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "Once you have a solid grounding in basic high‑school geometry and some exposure to proofs and logic — ideally after introductory abstract algebra or logic courses. :contentReference[oaicite:2]{index=2}",
+      "importance": "Historically significant — Hilbert’s axiomatization reshaped the study of geometry and laid groundwork for modern formal mathematics. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic Euclidean geometry",
+        "mathematical proofs",
+        "intro to logic"
+      ],
+      "pairs_well_with": [
+        "elements-of-euclid"
+      ],
+      "source": {
+        "online_url": "https://archive.org/details/in.ernet.dli.2015.75965/page/n7/mode/2up",
+        "file_path": "books/Foundations%20of%20Mathematics%20-%20%20David%20Hilbert%20and%20Wilhelm%20Ackermann%20(1896-1962).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "two-treatises-on-the-astrolabe-biruni",
+      "title": "Two Treatises on the Astrolabe",
+      "author": ["Abu Rayhan Muhammad ibn Ahmad Biruni"],
+      "category": "history-of-science",
+      "subcategory": "astronomy",
+      "year_published": 2020,
+      "language": "English",
+      "tags": [
+        "astronomy",
+        "astrolabe",
+        "history of science",
+        "Islamic Golden Age",
+        "medieval astronomy"
+      ],
+      "level": "advanced",
+      "description": "Critical edition and translation of two medieval Arabic treatises by the 11th‑century polymath Abu Rayhan al‑Bīrūnī on the astrolabe — a detailed exploration of both elementary and advanced aspects of the instrument and its use in astronomy, with introductions, commentaries, and historical context. :contentReference[oaicite:0]{index=0}",
+      "why_read": "It gives rare, direct insight into medieval scientific thinking and practical astronomical tools from one of history’s greatest polymaths. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After having some exposure to the history of astronomy or scientific instruments, or when exploring non‑Western scientific traditions. ",
+      "importance": "Significant because it preserves and translates two original Arabic texts into modern scholarly format, shedding light on medieval Islamic astronomy. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": [
+        "basic astronomy",
+        "general history of science"
+      ],
+      "pairs_well_with": [
+        "astronomy-history",
+        "astrolabe-technical-studies"
+      ],
+      "source": {
+        "online_url": "https://dspace.library.uu.nl/bitstream/handle/1874/381551/finalversion.pdf?sequence=1&isAllowed=y",
+        "file_path": "books/finalversion.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "euclids-elements-of-geometry",
+      "title": "Euclid’s Elements of Geometry",
+      "author": ["Euclid"],
+      "category": "mathematics",
+      "subcategory": "geometry",
+      "year_published": -300,
+      "language": "Ancient Greek",
+      "tags": [
+        "geometry",
+        "mathematics",
+        "classics",
+        "axiomatic method",
+        "number theory"
+      ],
+      "level": "advanced",
+      "description": "A foundational mathematical treatise on geometry and number theory, consisting of 13 books that systematically present definitions, postulates, propositions, and proofs forming the basis of Euclidean geometry. Its logical axiomatic approach influenced mathematical thought for more than two millennia. Originally compiled around 300 BCE by the Greek mathematician Euclid in Alexandria. :contentReference[oaicite:1]{index=1}",
+      "why_read": "It’s one of the most influential works in the history of mathematics — arguably the definitive classical text on geometry and deductive reasoning. :contentReference[oaicite:2]{index=2}",
+      "when_to_read": "After gaining familiarity with basic algebra and plane geometry concepts, to deepen understanding of the axiomatic foundations and historical development of mathematics.",
+      "importance": "Second only to foundational religious texts in the number of editions printed historically and essential to the development of modern mathematics and logic. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic geometry",
+        "mathematical proofs"
+      ],
+      "pairs_well_with": [
+        "foundations-of-geometry",
+        "history-of-mathematics"
+      ],
+      "source": {
+        "online_url": "https://farside.ph.utexas.edu/Books/Euclid/Elements.pdf",
+        "file_path": "books/Elements%20-%20Euclid%20(300%20BCE)2.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "effective-c-an-introduction-to-professional-c-programming",
+      "title": "Effective C: An Introduction to Professional C Programming",
+      "author": ["Robert C. Seacord"],
+      "category": "computer-science",
+      "subcategory": "programming-languages",
+      "year_published": 2020,
+      "language": "English",
+      "tags": [
+        "C",
+        "programming",
+        "software engineering",
+        "secure coding",
+        "best practices",
+        "systems programming"
+      ],
+      "level": "intermediate",
+      "description": "A modern introduction to professional C programming that teaches readers how to write portable, secure, and robust C code — covering C language constructs, the C Standard Library, debugging, testing, and best practices for real-world use. Developed with input from C Standards committee experts, it emphasizes correct and professional-quality code. :contentReference[oaicite:0]{index=0}",
+      "why_read": "This book bridges the gap between academic C tutorials and real-world professional C programming, teaching you not just syntax but how to write safe, maintainable, and portable code. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you know basic C syntax and have written small programs — ideal when you want to learn how to build real systems and avoid common pitfalls in C programming. :contentReference[oaicite:2]{index=2}",
+      "importance": "A respected modern reference for professional C programmers that reflects current standards and best practices in the C community. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic C syntax",
+        "programming fundamentals"
+      ],
+      "pairs_well_with": [
+        "the-c-programming-language",
+        "modern-c"
+      ],
+      "source": {
+        "online_url": "http://103.203.175.90:81/fdScript/RootOfEBooks/E%20Book%20collection%20-%202023%20-%20G/CSE%20%20IT%20AIDS%20ML/Effective_C_An_Introduction_to_Professional_C_Programming_by_Robert.pdf",
+        "file_path": "books/effective-c-an-introduction-to-professional-c-programming.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "art-of-computer-programming-vol-2",
+      "title": "The Art of Computer Programming, Volume 2: Seminumerical Algorithms",
+      "author": ["Donald E. Knuth"],
+      "category": "computer-science",
+      "subcategory": "algorithms",
+      "year_published": 1997,
+      "language": "English",
+      "tags": [
+        "algorithms",
+        "seminumerical algorithms",
+        "random numbers",
+        "arithmetic",
+        "analysis"
+      ],
+      "level": "advanced",
+      "description": "The second volume in Donald Knuth’s seminal series on algorithms, focusing on seminumerical algorithms with detailed chapters on random number generation and arithmetic. It balances mathematical rigor with algorithmic insight, making it foundational for deep understanding of algorithm design and analysis. :contentReference[oaicite:0]{index=0}",
+      "why_read": "This volume is considered a classic reference for anyone serious about algorithm design, pseudorandom sequences, and precise performance analysis. It has shaped generations of computer scientists and engineers. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After solid grounding in basic algorithms and discrete mathematics, ideally during or after intermediate computer science coursework. :contentReference[oaicite:2]{index=2}",
+      "importance": "One of the most influential works on algorithm theory and analysis; a must‑have reference in any serious technical library. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "fundamental algorithms",
+        "discrete mathematics"
+      ],
+      "pairs_well_with": [
+        "art-of-computer-programming-vol-1",
+        "art-of-computer-programming-vol-3"
+      ],
+      "source": {
+        "online_url": "https://kolegite.com/EE_library/books_and_lectures/%D0%9F%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%B8%D1%80%D0%B0%D0%BD%D0%B5/The_Art_of_Computer_Programming/The%20art%20of%20computer%20programming.%20Vol.2.%20Seminumerical%20algorithms%20%28Knuth%2C%20Donald%20E%29%20%28z-lib.org%29.pdf",
+        "file_path": "books/Donald.E.Knuth.The.Art.of.Computer.Programming.Volume.2.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "a-discourse-on-method-meditations-principles",
+      "title": "A Discourse on Method; Meditations on the First Philosophy; Principles of Philosophy",
+      "author": ["René Descartes", "John Veitch (translator)", "A. D. Lindsay (introduction)"],
+      "category": "philosophy",
+      "subcategory": "modern-philosophy",
+      "year_published": 1912,
+      "language": "English",
+      "tags": [
+        "philosophy",
+        "epistemology",
+        "metaphysics",
+        "scientific-method",
+        "Cartesianism",
+        "Descartes"
+      ],
+      "level": "advanced",
+      "description": "This edition brings together three foundational works by René Descartes — *Discourse on Method*, *Meditations on the First Philosophy*, and *Principles of Philosophy* — translated by John Veitch with an introduction by A. D. Lindsay. Descartes’ *Discourse on Method* introduces his method for achieving true knowledge through reason and skepticism, while *Meditations* explores the nature of mind, existence, and God, and *Principles of Philosophy* systematically presents his metaphysical and natural-philosophical framework. :contentReference[oaicite:0]{index=0}",
+      "why_read": "These works are cornerstones of modern Western philosophy and the scientific revolution — they reshape how we think about knowledge, doubt, mind-body relations, and the foundations of science. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you’ve read some introductory philosophy or at least are comfortable with abstract reasoning. They reward careful, slow reading and reflection. :contentReference[oaicite:2]{index=2}",
+      "importance": "Descartes’ method laid the groundwork for modern epistemology and science; his famous cogito argument remains one of philosophy’s most discussed ideas. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "introductory epistemology",
+        "basic metaphysics"
+      ],
+      "pairs_well_with": [
+        "meditations-on-first-philosophy",
+        "principles-of-philosophy"
+      ],
+      "source": {
+        "online_url": "https://archive.org/details/discourseonmetho1912desc",
+        "file_path": "books/Discourse%20on%20Method%20-%20René%20Descartes%20(1637).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "digital-design-and-computer-architecture-risc-v-edition",
+      "title": "Digital Design and Computer Architecture, RISC-V Edition",
+      "author": ["Sarah L. Harris", "David Money Harris"],
+      "category": "computer-architecture",
+      "subcategory": "hardware-design",
+      "year_published": 2021,
+      "language": "English",
+      "tags": [
+        "digital design",
+        "computer architecture",
+        "RISC-V",
+        "logic design",
+        "VHDL",
+        "SystemVerilog"
+      ],
+      "level": "intermediate",
+      "description": "A comprehensive textbook that introduces digital logic fundamentals and guides the reader through the design of a RISC-V microprocessor, integrating SystemVerilog and VHDL examples and practical design techniques. It combines theory with hands-on processor design projects and companion resources.", 
+      "why_read": "It’s one of the most practical and up‑to‑date books for learning digital logic and computer architecture with a focus on RISC‑V, useful for students and engineers building real processors.", 
+      "when_to_read": "After learning basic digital logic and introductory computer organization.", 
+      "importance": "Highly regarded in hardware & architecture curricula; bridges digital logic and full processor design.", 
+      "prerequisites": [
+        "basic digital logic",
+        "intro to computer architecture"
+      ],
+      "pairs_well_with": [
+        "computer-organization",
+        "risc-v-specification"
+      ],
+      "source": {
+        "online_url": "http://www.r-5.org/files/books/computers/hw-layers/hardware/digital-desigh/David_Harris_Sarah_Harris-Digital_Design_and_Computer_Architecture-EN.pdf",
+        "file_path": "books/Digital-Design-and-Computer-Architecture-RISC-V-Edition.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "designing-data-intensive-applications",
+      "title": "Designing Data-Intensive Applications",
+      "author": ["Martin Kleppmann"],
+      "category": "computer-science",
+      "subcategory": "data-systems",
+      "year_published": 2017,
+      "language": "English",
+      "tags": [
+        "distributed systems",
+        "databases",
+        "scalability",
+        "reliability",
+        "system design",
+        "data engineering"
+      ],
+      "level": "advanced",
+      "description": "A deep, practical exploration of the big ideas behind reliable, scalable, and maintainable modern data systems. Covers fundamentals of data models, storage engines, replication, partitioning, transactions, consistency, and both batch and stream processing — helping engineers make informed architectural decisions rather than just follow buzzwords. :contentReference[oaicite:0]{index=0}",
+      "why_read": "This book bridges theory and practice: it explains both how and why modern data systems work the way they do, and the trade-offs involved in choosing between different database and processing technologies. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you have a decent understanding of databases and basic system design concepts — ideally once you're comfortable with SQL, key‑value stores, and distributed computing basics. :contentReference[oaicite:2]{index=2}",
+      "importance": "Considered the definitive guide for engineers working on data‑intensive systems and a go‑to resource for understanding the core principles of distributed data architectures. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic databases",
+        "SQL",
+        "system design fundamentals"
+      ],
+      "pairs_well_with": [
+        "distributed-systems-patterns",
+        "site-reliability-engineering"
+      ],
+      "source": {
+        "online_url": "https://unidel.edu.ng/focelibrary/books/Designing%20Data-Intensive%20Applications%20The%20Big%20Ideas%20Behind%20Reliable,%20Scalable,%20and%20Maintainable%20Systems%20by%20Martin%20Kleppmann%20(z-lib.org).pdf",
+        "file_path": "books/Designing%20Data-Intensive%20Applications.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "data-and-computer-communications-stallings",
+      "title": "Data and Computer Communications (Eighth Edition)",
+      "author": ["William Stallings"],
+      "category": "computer-science",
+      "subcategory": "networking",
+      "year_published": 2007,
+      "language": "English",
+      "tags": [
+        "data communications",
+        "computer networks",
+        "protocols",
+        "network design",
+        "Ethernet",
+        "WiFi",
+        "TCP/IP"
+      ],
+      "level": "intermediate",
+      "description": "A comprehensive and modular survey of the field of data communications and computer networking, covering fundamental principles, media, protocols, LANs, WANs, internetworking, and network applications. The Eighth Edition includes updated topics such as Gigabit and 10 Gbps Ethernet, IEEE 802.11 wireless LANs, and performance considerations in design. :contentReference[oaicite:0]{index=0}",
+      "why_read": "This book is one of the classic academic textbooks in data communications and computer networks, ideal for understanding both essential theory and practical protocol design that underpins modern networks. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you’ve learned the basics of networking (like OSI and TCP/IP fundamentals) and want a deep, structured understanding of communication systems and protocols. :contentReference[oaicite:2]{index=2}",
+      "importance": "A widely adopted textbook and reference in computer networking courses in CS, CIS, and electrical engineering; influential in both education and professional reference. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "OSI model fundamentals",
+        "Basic TCP/IP concepts"
+      ],
+      "pairs_well_with": [
+        "computer-networks-textbook" 
+      ],
+      "source": {
+        "online_url": "https://sisfo.itp.ac.id/bahanajar/BahanAjar/AswirPremadi/Bahan%20Ajar%20Jaringan%20Komunikasi%20Data/Data%20and%20Computer%20Communications%20by%20William%20Stallings.pdf",
+        "file_path": "books/Data%20and%20Computer%20Communications%20by%20William%20Stallings.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "modern-x86-assembly-language-programming",
+      "title": "Modern X86 Assembly Language Programming: 32-bit, 64-bit, SSE, and AVX",
+      "author": ["Daniel Kusswurm"],
+      "category": "computer-science",
+      "subcategory": "assembly-language",
+      "year_published": 2014,
+      "language": "English",
+      "tags": [
+        "x86",
+        "assembly",
+        "SSE",
+        "AVX",
+        "SIMD",
+        "low-level programming",
+        "system programming"
+      ],
+      "level": "advanced",
+      "description": "A comprehensive guide to x86 assembly programming covering both 32‑bit and 64‑bit architectures, core instruction sets, SIMD extensions (SSE and AVX), registers, memory modes, and optimization techniques. It’s designed to help the reader quickly understand x86 assembly and the computational capabilities of the platform using structured examples and sample code. Topics include core architecture, floating point units, MMX, SSE, AVX instruction sets and practical assembly optimization strategies.", 
+      "why_read": "Because it’s one of the most thorough modern texts on x86 assembly — from basics of registers and instruction sets to advanced SIMD programming (SSE/AVX) that’s useful for performance‑critical code.", 
+      "when_to_read": "After foundational knowledge of computer architecture and some experience with C/C++ or low‑level coding, when you want to dive into efficient assembly and SIMD usage.",
+      "importance": "Apress book that serves as a key reference for assembly programmers who need a deep understanding of the x86 ISA and performance programming techniques.", 
+      "prerequisites": [
+        "Computer architecture basics",
+        "C or C++ programming"
+      ],
+      "pairs_well_with": [
+        "intel-software-developer-manual",
+        "programming-from-the-ground-up"
+      ],
+      "source": {
+        "online_url": "https://elhacker.info/manuales/Lenguajes%20de%20Programacion/Ensamblador/Kusswurm%20-%20Modern%20X86%20Assembly%20Language%20Programming,%20x86%2064-bit,%20AVX,%20AVX2%20_%20AVX-512,%20Apress%202019.pdf",
+        "file_path": "books/Daniel_Kusswurm_Modern_X86_Assembly_Lang.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "contributions-to-founding-transfinite-numbers",
+      "title": "Contributions to the Founding of the Theory of Transfinite Numbers",
+      "author": ["Georg Cantor"],
+      "category": "mathematics",
+      "subcategory": "set-theory",
+      "year_published": 1915,
+      "language": "English",
+      "tags": [
+        "set theory",
+        "infinite sets",
+        "cardinal numbers",
+        "ordinal numbers",
+        "transfinite numbers"
+      ],
+      "level": "advanced",
+      "description": "A foundational work in the theory of transfinite numbers and set theory, developing the concepts of cardinality, ordinal numbers, and arithmetic of infinite quantities. Cantor shows how infinite sets can have different sizes and lays the groundwork for modern set theory. :contentReference[oaicite:1]{index=1}",
+      "why_read": "Because it marks the inception of transfinite arithmetic and set theory — ideas that shaped 20th‑century mathematics and logic. :contentReference[oaicite:2]{index=2}",
+      "when_to_read": "After having a solid grasp of undergraduate real analysis and introductory set theory, or when exploring the mathematical concept of infinity. ",
+      "importance": "One of the most influential mathematical texts on the concept of infinity and set theory, essential for anyone studying advanced mathematics or logic. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic set theory",
+        "undergraduate mathematics"
+      ],
+      "pairs_well_with": [
+        "naive-set-theory",
+        "set theory textbooks"
+      ],
+      "source": {
+        "online_url": "https://ia601308.us.archive.org/33/items/contributionstof00cant/contributionstof00cant.pdf",
+        "file_path": "books/Contributions%20to%20the%20Founding%20of%20the%20Theory%20of%20Transfinite%20Numbers%20-%20Georg%20Cantor%20(1845-1918).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "code-the-hidden-language-of-computer-hardware-and-software",
+      "title": "Code: The Hidden Language of Computer Hardware and Software",
+      "author": ["Charles Petzold"],
+      "category": "computer-science",
+      "subcategory": "computer-architecture",
+      "year_published": 1999,
+      "language": "English",
+      "tags": [
+        "computer architecture",
+        "digital systems",
+        "bits and bytes",
+        "binary logic",
+        "hardware",
+        "software"
+      ],
+      "level": "intermediate",
+      "description": "A classic exploration of how computers work from the ground up. Petzold starts with basic communication codes and physical electrical principles, then builds up through binary logic, circuits, gates, and the internal structure of CPUs to explain the hidden language that underlies all computer hardware and software.:contentReference[oaicite:0]{index=0}",
+      "why_read": "This book gives a deep intuitive understanding of what a computer really is and how it operates, making complex concepts accessible even to readers without an engineering background.:contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you’ve learned basic programming and want to understand what happens under the hood at the hardware and systems level.:contentReference[oaicite:2]{index=2}",
+      "importance": "Considered a foundational book for anyone curious about how computers work at the lowest levels; often recommended as a bridge between theory and practical understanding.:contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic programming",
+        "fundamentals of binary numbers"
+      ],
+      "pairs_well_with": [
+        "computer-organization-and-design",
+        "operating-systems-concepts"
+      ],
+      "source": {
+        "online_url": "https://archive.org/details/CharlesPetzoldCodeTheHiddenLanguageOfComputerHardwareAndSoftwareMicrosoftPress2000",
+        "file_path": "books/Code_%20The%20Hidden%20Language%20of%20Computer%20Hardware%20and%20Software.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "c-in-a-nutshell",
+      "title": "C in a Nutshell",
+      "author": ["Peter Prinz", "Tony Crawford"],
+      "category": "programming",
+      "subcategory": "c-language",
+      "year_published": 2015,
+      "language": "English",
+      "tags": [
+        "C programming",
+        "reference",
+        "O'Reilly",
+        "standard library",
+        "GNU tools"
+      ],
+      "level": "intermediate",
+      "description": "A definitive reference to the C programming language and its standard library, covering language features, runtime behavior, and key tools like make and the GNU debugger. It discusses core concepts, standard headers and functions, and practical examples throughout. :contentReference[oaicite:0]{index=0}",
+      "why_read": "This book is a thorough reference for programmers who want to deeply understand C syntax, semantics, the standard library, and associated tools. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After learning the basics of C syntax and writing small programs, but before or while building larger or performance-critical C projects.",
+      "importance": "One of the most respected and comprehensive references on the C language, often used both as a learning tool and quick reference on the desk. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": ["basic C programming"],
+      "pairs_well_with": ["the-c-programming-language"],
+      "source": {
+        "online_url": "http://karadev.net/uroci/filespdf/files/c-in-a-nutshell-o-reilly-peter-prinz-tony-crawford.pdf",
+        "file_path": "books/C%20in%20a%20Nutshell.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "build-your-own-z80-computer",
+      "title": "Build Your Own Z80 Computer",
+      "author": ["Steve Ciarcia"],
+      "category": "computer-engineering",
+      "subcategory": "microprocessors",
+      "year_published": 1981,
+      "language": "English",
+      "tags": [
+        "Z80",
+        "microcomputer",
+        "electronics",
+        "hardware",
+        "DIY",
+        "embedded"
+      ],
+      "level": "intermediate",
+      "description": "A classic guide that walks you through designing and constructing a fully functional microcomputer based on the Zilog Z80 microprocessor, including power supply, CPU, memory, peripherals, and a basic operating system — all from discrete components and logic circuits. :contentReference[oaicite:0]{index=0}",
+      "why_read": "This is one of the most influential DIY microcomputer texts from the early home computing era, teaching both practical electronics and deep understanding of computer architecture. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you’ve learned the basics of digital electronics and want a practical hands-on project to understand low-level computing. :contentReference[oaicite:2]{index=2}",
+      "importance": "Highly significant in the retro/hobbyist computing world; still referenced decades after publication for its clear explanations and project-based approach. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic electronic circuits",
+        "digital logic fundamentals"
+      ],
+      "pairs_well_with": [
+        "programming-z80-assembly",
+        "retrocomputing-handbook"
+      ],
+      "source": {
+        "online_url": "https://ia600803.us.archive.org/8/items/BuildYourOwnZ80ComputerSteveCiarcia/mVQnFgWzX0AC_text.pdf",
+        "file_path": "books/Build%20Your%20Own%20Z80%20Computer%20Steve%20Ciarcia%20-%20PDF%20Room.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "assembly-language-step-by-step",
+      "title": "Assembly Language Step-by-Step: Programming with Linux",
+      "author": ["Jeff Duntemann"],
+      "category": "computer-science",
+      "subcategory": "programming-languages",
+      "year_published": 2009,
+      "language": "English",
+      "tags": [
+        "assembly language",
+        "x86",
+        "linux",
+        "nasm",
+        "systems programming",
+        "low-level"
+      ],
+      "level": "beginner",
+      "description": "A comprehensive introduction to Intel x86 assembly language programming on Linux. The book starts from the basics of programmable computing, binary and hexadecimal systems, and moves step-by-step through the x86 instruction set, memory addressing, procedures, macros, and interfacing with C libraries. It emphasizes free and open-source tools like NASM and the GNU toolchain, and is written in an approachable, conversational style. :contentReference[oaicite:0]{index=0}",
+      "why_read": "Because it teaches assembly from scratch in a friendly, tutorial-driven way, making a complex subject accessible even to programmers without prior assembly experience. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "Early in your systems programming journey, ideally after basic familiarity with Linux and at least one high-level programming language. :contentReference[oaicite:2]{index=2}",
+      "importance": "A well-regarded classic in assembly language education that bridges theory and practical code examples using real tooling, highly recommended for anyone serious about understanding how computers execute code. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic programming concepts",
+        "Linux command line familiarity"
+      ],
+      "pairs_well_with": [
+        "computer-architecture-book-id",
+        "operating-systems-book-id"
+      ],
+      "source": {
+        "online_url": "https://jagdishkapadnis.files.wordpress.com/2015/05/assembly-language-step-by-step-programming-with-linux-3rd-edition.pdf",
+        "file_path": "books/assembly-language-step-by-step-programming-with-linux-3rd-edition.pdf"
+      },
+      "status": "unread"
+    },
+    {
+      "id": "assembly-language-for-x86-processors",
+      "title": "Assembly Language for x86 Processors",
+      "author": ["Kip R. Irvine"],
+      "category": "computer-science",
+      "subcategory": "programming-languages",
+      "year_published": 2014,
+      "language": "English",
+      "tags": [
+        "assembly",
+        "x86",
+        "low-level programming",
+        "computer architecture",
+        "MASM"
+      ],
+      "level": "intermediate",
+      "description": "A comprehensive textbook introducing assembly language programming on Intel x86 processors. It teaches students how to write and debug machine‑level software, covering key concepts of CPU architecture, instruction sets, procedures, data structures, and integration with high‑level languages. The 7th edition focuses on both 32‑ and 64‑bit Intel/Windows platforms and includes practical examples and exercises. :contentReference[oaicite:0]{index=0}",
+      "why_read": "This book offers a structured introduction to assembly language for students and engineers alike, moving from basic syntax and instructions to more advanced topics such as procedures and memory organization. It's well‑suited for anyone wanting a solid foundation in x86 low‑level programming. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After gaining experience with at least one high‑level language (e.g., C or C++) and basic understanding of computer architecture. :contentReference[oaicite:2]{index=2}",
+      "importance": "Widely used in university courses on systems programming and computer architecture, this book remains one of the go‑to resources for learning practical x86 assembly. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "Basic understanding of a high‑level programming language",
+        "Fundamentals of computer organization"
+      ],
+      "pairs_well_with": [
+        "computer-architecture-books",
+        "operating-systems"
+      ],
+      "source": {
+        "online_url": "https://broman.dev/download/Assembly%20Language%20for%20x86%20Processors%207th%20Edition.pdf",
+        "file_path": "books/Assembly%20Language%20for%20x86%20Processors%207th%20Edition.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "the-art-of-assembly-language",
+      "title": "The Art of Assembly Language",
+      "author": ["Randall Hyde"],
+      "category": "computer-science",
+      "subcategory": "assembly-language",
+      "year_published": 2003,
+      "language": "English",
+      "tags": [
+        "assembly",
+        "x86",
+        "HLA",
+        "systems-programming",
+        "low-level"
+      ],
+      "level": "intermediate",
+      "description": "A comprehensive, tutorial + reference book that teaches x86 assembly from a high-level perspective using the High Level Assembler (HLA). Covers machine organization, the 80x86 instruction set, MASM/HLA syntax, I/O, floating point, optimization, and many practical examples and exercises.",
+      "why_read": "Excellent bridge between high-level programming and low-level machine concepts — teaches how programs map to hardware and how to write practical, maintainable assembly.",
+      "when_to_read": "After you know a high-level language (C/Java/etc.) and want a deep understanding of machine-level programming or need to write/optimize low-level code.",
+      "importance": "A canonical, widely-cited introduction/reference for x86 assembly and HLA; useful both as a textbook and a long-term reference.",
+      "prerequisites": [
+        "basic programming (C or similar)",
+        "fundamentals of computer architecture"
+      ],
+      "pairs_well_with": [
+        "write-great-code",
+        "programming-in-c"
+      ],
+      "source": {
+        "online_url": "https://www.ic.unicamp.br/~pannain/mc404/aulas/pdfs/Art%20Of%20Intel%20x86%20Assembly.pdf",
+        "file_path": "books/Art%20Of%20Intel%20x86%20Assembly.pdf"
+      },
+      "status": "unread",
+      "notes": "Local filename: Art Of Intel x86 Assembly.pdf — this PDF appears to be a full copy of Randall Hyde's text (many mirror sites host similar PDF). Might want to normalize title/edition in filenames (e.g. \"The Art of Assembly Language - Randall Hyde (2003).pdf\").",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "operating-systems-design-and-implementation",
+      "title": "Operating Systems: Design and Implementation",
+      "author": [
+        "Andrew S. Tanenbaum",
+        "Albert S. Woodhull"
+      ],
+      "category": "computer-science",
+      "subcategory": "operating-systems",
+      "year_published": 2006,
+      "language": "English",
+      "tags": [
+        "operating systems",
+        "MINIX",
+        "systems programming",
+        "OS internals",
+        "kernel"
+      ],
+      "level": "intermediate",
+      "description": "A classic operating systems textbook that explains core OS principles and illustrates them with the full source code of MINIX, a small Unix‑like system designed for teaching purposes. It covers processes, scheduling, IPC, memory management, file systems, security, and more, blending theory with real implementation examples. :contentReference[oaicite:0]{index=0}",
+      "why_read": "Because it not only teaches fundamental concepts of operating systems but also shows how those ideas are implemented in an actual system (MINIX), giving readers practical and theoretical insights. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you’ve completed some introductory CS courses and have basic experience in C programming and systems concepts; this will maximize your understanding of OS internals. ",
+      "importance": "One of the few textbooks bridging OS principles and real code; highly referenced in OS courses and systems education. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": [
+        "C programming",
+        "computer-architecture",
+        "data-structures"
+      ],
+      "pairs_well_with": [
+        "modern-operating-systems",
+        "os-concepts",
+        "xv6-book"
+      ],
+      "source": {
+        "online_url": "https://os.ecci.ucr.ac.cr/slides/Andrew-S.-Tanenbaum-OperatingSystems-Design-and-Implementation.pdf",
+        "file_path": "books/Andrew%20S.%20Tanenbaum%20-%20Operating%20Systems.%20Design%20and%20Implementation.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "al-farabi-and-his-school",
+      "title": "Al-Farabi and His School",
+      "author": ["Ian Richard Netton"],
+      "category": "philosophy",
+      "subcategory": "Islamic-philosophy",
+      "year_published": 1992,
+      "language": "English",
+      "tags": [
+        "Islamic philosophy",
+        "medieval philosophy",
+        "epistemology",
+        "al-Farabi",
+        "Arab thought"
+      ],
+      "level": "advanced",
+      "description": "A study of the medieval philosophical tradition centered on the Islamic philosopher al-Farabi and the school of thought that grew from his work. The book examines key thinkers from the late 9th to early 11th century and explores questions in epistemology and ethical dimensions of knowledge. :contentReference[oaicite:0]{index=0}",
+      "why_read": "This book provides a focused introduction to the intellectual context and legacy of al-Farabi’s philosophy, essential for anyone studying Islamic or medieval philosophy and epistemology. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After gaining some foundation in medieval philosophy or Islamic thought — ideal once you’re comfortable with basic epistemology and classical philosophy. ",
+      "importance": "Recognized as a concise and influential survey of al-Farabi’s school and its broader impact within Arabic thought and medieval philosophy. :contentReference[oaicite:2]{index=2}",
+      "prerequisites": [
+        "history-of-philosophy",
+        "Islamic-philosophy-basics"
+      ],
+      "pairs_well_with": [
+        "the-perfect-state-al-farabi",
+        "introduction-to-islamic-philosophy"
+      ],
+      "source": {
+        "online_url": "https://dokumen.pub/al-farabi-and-his-school-0203980204-0415035945-0415035953-9780203980200.html",
+        "file_path": "books/AL-FÄRÄBİ-AND HIS-SCHOOL.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "advanced-compiler-design-and-implementation",
+      "title": "Advanced Compiler Design and Implementation",
+      "author": ["Steven S. Muchnick"],
+      "category": "computer-science",
+      "subcategory": "compilers",
+      "year_published": 1997,
+      "language": "English",
+      "tags": [
+        "compiler design",
+        "compiler implementation",
+        "optimization",
+        "code generation",
+        "intermediate representation"
+      ],
+      "level": "advanced",
+      "description": "A comprehensive, in-depth treatment of modern compiler design and implementation techniques with an emphasis on optimization, intermediate representations, and realistic compiler structures. It covers advanced topics such as data-flow analysis, control-flow analysis, register allocation, loop optimizations, and case studies of commercial compilers. Written for professionals and graduate students. :contentReference[oaicite:0]{index=0}",
+      "why_read": "Because it’s one of the most detailed references on real-world compiler design and optimization, covering both theory and practical case studies — perfect for deepening understanding beyond introductory compiler texts. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you’ve studied basic compiler construction (parsing, semantic analysis, simple code generation) and want to focus on advanced topics like optimization and implementation strategies. :contentReference[oaicite:2]{index=2}",
+      "importance": "Considered a seminal advanced text in compiler design, especially for optimization and backend implementation, and a go‑to reference for serious compiler engineers. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "basic compiler theory",
+        "data structures",
+        "algorithms"
+      ],
+      "pairs_well_with": [
+        "compilers-principles-techniques-and-tools",
+        "optimizing-compilers-for-modern-architectures"
+      ],
+      "source": {
+        "online_url": "https://archive.org/details/advancedcompiler00much",
+        "file_path": "books/Advanced%20Compiler%20Design%20and%20Implementation.pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "a-mathematical-introduction-to-logic",
+      "title": "A Mathematical Introduction to Logic",
+      "author": ["Herbert B. Enderton"],
+      "category": "mathematics",
+      "subcategory": "logic",
+      "year_published": 1972,
+      "language": "English",
+      "tags": [
+        "mathematical logic",
+        "formal logic",
+        "first-order logic",
+        "undecidability",
+        "predicate calculus"
+      ],
+      "level": "intermediate",
+      "description": "A rigorous and classic textbook introducing the basic concepts and theorems of mathematical logic, including propositional logic, first‑order logic, completeness, compactness, and undecidability. It provides a foundation for understanding formal systems and their significance in mathematics and computer science. :contentReference[oaicite:1]{index=1}",
+      "why_read": "Because it's one of the most widely used mathematical logic textbooks, bridging intuitive ideas and formal proofs — ideal if you want a deep theoretical understanding of logic. :contentReference[oaicite:2]{index=2}",
+      "when_to_read": "After learning basic set theory and introductory proofs — once you're comfortable with algebra and mathematical thinking. :contentReference[oaicite:3]{index=3}",
+      "importance": "A standard reference in mathematical logic courses; foundational for advanced study in logic, theoretical CS, and philosophy of mathematics. :contentReference[oaicite:4]{index=4}",
+      "prerequisites": [
+        "basic set theory",
+        "mathematical proofs"
+      ],
+      "pairs_well_with": [
+        "elements-of-set-theory",
+        "computability-and-logic"
+      ],
+      "source": {
+        "online_url": "https://sistemas.fciencias.unam.mx/~lokylog/images/Notas/la_aldea_de_la_logica/Libros_notas_varios/L_03_ENDERTON_A%20Mathematical%20Introduction%20to%20Logic,%20Second%202Ed.pdf",
+        "file_path": "books/A%20Mathematical%20Introduction%20to%20Logic%20-%20Enderton%20(1972).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "thinking-fast-and-slow",
+      "title": "Thinking, Fast and Slow",
+      "author": ["Daniel Kahneman"],
+      "category": "psychology",
+      "subcategory": "cognitive-science",
+      "year_published": 2011,
+      "language": "English",
+      "tags": [
+        "cognitive biases",
+        "decision making",
+        "behavioral economics",
+        "psychology",
+        "thinking systems"
+      ],
+      "level": "general",
+      "description": "A landmark book in psychology and behavioral economics explaining how human thinking operates via two systems: System 1 (fast, intuitive) and System 2 (slow, deliberate), and how these shape judgment, decision-making, and biases.",
+      "why_read": "It synthesizes decades of research into a framework that reveals how we think, make choices, and fall prey to predictable errors — essential for anyone interested in human behavior, economics, or better judgment.",
+      "when_to_read": "Early to mid in your learning path if you're exploring psychology or decision-making; helpful before/while studying behavioral economics.",
+      "importance": "Widely regarded as a modern classic in psychology and behavioral science; highly influential on research and public understanding of decision-making. ",
+      "prerequisites": [
+        "basic psychology concepts"
+      ],
+      "pairs_well_with": [
+        "predictably-irrational",
+        "nudge"
+      ],
+      "source": {
+        "online_url": "https://mlsu.ac.in/econtents/2950_Daniel%20Kahneman%20-%20Thinking,%20Fast%20and%20Slow%20(2013).pdf",
+        "file_path": "books/2950_Daniel%20Kahneman%20-%20Thinking,%20Fast%20and%20Slow%20(2013).pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "computer-security-principles-and-practice",
+      "title": "Computer Security Principles and Practice",
+      "author": ["William Stallings", "Lawrie Brown"],
+      "category": "computer-science",
+      "subcategory": "security",
+      "year_published": 2014,
+      "language": "English",
+      "tags": [
+        "security",
+        "computer security",
+        "network security",
+        "cryptography",
+        "information assurance"
+      ],
+      "level": "intermediate",
+      "description": "A comprehensive textbook that covers both the fundamental principles of computer security and practical applications. It spans core topics such as cryptography, authentication, access control, threats, countermeasures, secure software practices, and network defense strategies, making it suitable for academic courses and self-study learners in computer and network security. :contentReference[oaicite:0]{index=0}",
+      "why_read": "Because it’s one of the most widely used undergraduate/graduate-level textbooks on computer security that combines theory with real-world practice, and it can also serve as a reference for professionals. :contentReference[oaicite:1]{index=1}",
+      "when_to_read": "After you’ve learned basics of computer systems, operating systems, and networking — ideal before diving deeper into specialized security topics or certifications like CISSP. :contentReference[oaicite:2]{index=2}",
+      "importance": "Considered a standard text in the field of computer security education; often used in university courses and referenced in professional security certification preparation. :contentReference[oaicite:3]{index=3}",
+      "prerequisites": [
+        "operating-systems",
+        "computer-networks",
+        "cryptography-basics"
+      ],
+      "pairs_well_with": [
+        "network-security-essentials",
+        "applied-cryptography"
+      ],
+      "source": {
+        "online_url": "https://unidel.edu.ng/focelibrary/books/Computer%20Security%20_%20Principles%20-%20WILLIAM%20STALLINGS_2089.pdf",
+        "file_path": "books/[SECURITY][Computer%20Security%20-%20Principles%20and%20Practice,%203rd%20Edition].pdf"
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-21"
+    },
+    {
+      "id": "ibn-sina-the-book-of-healing-logic-mathematics",
+      "title": "The Book of Healing (Al-Shifāʾ) – Logic & Mathematics",
+      "author": ["ابن سینا"],
+      "category": "philosophy",
+      "tags": ["logic", "mathematics", "Islamic philosophy", "medieval philosophy", "Avicenna"],
+      "level": "advanced",
+      "description": "A foundational encyclopedia by Ibn Sina (Avicenna) covering logic, mathematics, natural sciences, and metaphysics. These entries focus on sections of logic and mathematics as traditionally divided in manuscript traditions.",
+      "why_read": "It represents one of the most comprehensive surviving medieval philosophical treatises, blending Aristotelian logic with original development and linking mathematical theory with philosophical inquiry.",
+      "when_to_read": "After becoming comfortable with basic Aristotelian logic and medieval philosophy; ideal for scholars and advanced students interested in Islamic philosophy and history of logic.",
+      "importance": "One of the most influential works in the Islamic Golden Age philosophical tradition, deeply shaping later logic and metaphysics in both Islamic and European contexts.",
+      "prerequisites": ["Aristotelian logic basics", "general philosophy foundations"],
+      "pairs_well_with": [],
+      "source": {
+        "online_url": "https://archive.org",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "This entry groups related sections traditionally found in *Al‑Shifāʾ* (The Book of Healing). Precise published editions and PDF sources for each part vary and are not fully sourced yet."
+    },
+    {
+      "id": "aristotle-logic-summary",
+      "title": "Summary of Aristotle's Logic (تلخيص منطق أرسطو)",
+      "author": ["Unknown / Classical Arabic Translator"],
+      "category": "philosophy",
+      "tags": ["logic", "Aristotle", "Arabic philosophy", "medieval philosophy", "syllogism"],
+      "level": "advanced",
+      "description": "A medieval Arabic summary of Aristotle's logical works, covering syllogistic reasoning, categories, and demonstrations. Often used in Islamic philosophical curricula.",
+      "why_read": "Provides insight into how classical Greek logic was interpreted, taught, and adapted in medieval Islamic philosophy.",
+      "when_to_read": "After basic familiarity with Aristotelian logic; useful for scholars of philosophy or history of logic.",
+      "importance": "Shows the transmission of Greek logic into the Islamic world and its influence on later thinkers like Avicenna and Averroes.",
+      "prerequisites": ["Aristotelian logic basics"],
+      "pairs_well_with": ["ibn-sina-the-book-of-healing-logic-mathematics"],
+      "source": {
+        "online_url": "https://archive.org",
+        "file_path": "books/تلخيص منطق أرسطو.pdf"
+      },
+      "status": "unread",
+      "notes": "Exact edition, translation, or PDF sources vary; detailed scholarly editions not fully sourced yet."
+    },
+    {
+      "id": "al-kitab-al-jabr-wal-muqabala-al-khwarizmi",
+      "title": "Al-Kitāb al-Jabr wa al-Muqābala (کتاب الجبر و المقابلة) - Al-Khwarizmi",
+      "author": ["Al-Khwarizmi"],
+      "category": "mathematics",
+      "tags": ["algebra", "history of mathematics", "Arabic mathematics", "medieval mathematics"],
+      "level": "advanced",
+      "description": "The foundational treatise on algebra by Al-Khwarizmi, introducing systematic solutions to linear and quadratic equations and establishing algebra as a separate mathematical discipline.",
+      "why_read": "It is a historical cornerstone of mathematics and provides the roots of algebra as a formal system.",
+      "when_to_read": "After learning basic arithmetic and pre-algebra concepts; useful for history of math or advanced mathematical studies.",
+      "importance": "One of the most influential works in the development of mathematics; 'algebra' derives its name from 'al-jabr' in the title.",
+      "prerequisites": ["basic arithmetic", "geometry basics"],
+      "pairs_well_with": [],
+      "source": {
+        "online_url": "https://archive.org",
+        "file_path": "books/کتاب الجبر و المقابلة - الخوارزمی.pdf"
+      },
+      "status": "unread",
+      "notes": "Exact PDF or critical edition may vary; archival sources often incomplete or scattered."
+    },
+    {
+      "id": "the-wealth-of-nations",
+      "title": "The Wealth of Nations",
+      "author": ["Adam Smith"],
+      "category": "economics",
+      "subcategory": "classical-economics",
+      "year_published": 1776,
+      "language": "English",
+      "tags": ["classical economics", "free market", "capitalism", "division of labor", "invisible hand"],
+      "level": "intermediate",
+      "description": "The foundational text of modern economics. Smith argues that free markets, division of labor, and self-interest collectively produce national wealth far more efficiently than mercantile state control. Introduces concepts such as the 'invisible hand', comparative advantage, and the nature of capital.",
+      "why_read": "Essential reading for understanding capitalism and liberal economic thought. Every economic and political ideology since has had to engage with or against Smith.",
+      "when_to_read": "Early in your study of economics or political economy, as a foundation before reading critiques or alternatives.",
+      "importance": "Arguably the single most influential work in the history of economics. Shaped liberal thought, modern capitalism, and the conceptual vocabulary of policy debates for 250 years.",
+      "prerequisites": ["basic economics concepts"],
+      "pairs_well_with": ["das-kapital-vol-1", "the-road-to-serfdom"],
+      "source": {
+        "online_url": "https://eet.pixel-online.org/files/etranslation/original/The%20Wealth%20of%20Nations.pdf",
+        "file_path": "books/The Wealth of Nations.pdf"
+      },
+      "status": "unread",
+      "notes": "Start with Book I and II. Book V on taxation is also highly relevant to modern policy debates.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "das-kapital-vol-1",
+      "title": "Capital: A Critique of Political Economy, Volume I",
+      "author": ["Karl Marx"],
+      "category": "economics",
+      "subcategory": "political-economy",
+      "year_published": 1867,
+      "language": "English",
+      "tags": ["Marxism", "capitalism", "surplus value", "labor theory of value", "class struggle", "political economy"],
+      "level": "advanced",
+      "description": "Marx's systematic critique of capitalist production. Introduces the labor theory of value, surplus value extraction, capital accumulation, alienation of labor, and the historical contradictions of capitalism. Volume I focuses on the production process.",
+      "why_read": "Whether you accept or reject Marxism, understanding its arguments is essential to understanding modern politics, economics, labor movements, and 20th-century history.",
+      "when_to_read": "After reading Smith and basic political economy. Pairs well with The Communist Manifesto for the broader political argument.",
+      "importance": "One of the most consequential books ever written — shaped socialist movements, communist revolutions, labor law, and critical theory worldwide.",
+      "prerequisites": ["basic political economy", "the-communist-manifesto"],
+      "pairs_well_with": ["the-wealth-of-nations", "the-communist-manifesto"],
+      "source": {
+        "online_url": "https://www.marxists.org/archive/marx/works/1867-c1/",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "The first few chapters on commodities and value are dense but foundational. Do not skip them.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-general-theory-keynes",
+      "title": "The General Theory of Employment, Interest and Money",
+      "author": ["John Maynard Keynes"],
+      "category": "economics",
+      "subcategory": "macroeconomics",
+      "year_published": 1936,
+      "language": "English",
+      "tags": ["Keynesianism", "fiscal policy", "aggregate demand", "unemployment", "macroeconomics", "government intervention"],
+      "level": "advanced",
+      "description": "A revolutionary work that challenged classical economics by arguing markets do not automatically return to full employment, and that government fiscal intervention is sometimes necessary to stabilize economies. Introduces concepts of aggregate demand, liquidity preference, and the multiplier effect.",
+      "why_read": "Keynesian economics remains the dominant framework for macroeconomic policy. Understanding it is essential to understanding how governments respond to recessions, crises, and unemployment.",
+      "when_to_read": "After basic macroeconomics. Essential companion to Hayek and Friedman for understanding the great 20th-century economic debates.",
+      "importance": "Transformed 20th-century economic policy. Directly influenced the New Deal, post-WWII economic rebuilding, and every major government stimulus program since.",
+      "prerequisites": ["basic macroeconomics", "classical economics basics"],
+      "pairs_well_with": ["the-road-to-serfdom", "capitalism-and-freedom"],
+      "source": {
+        "online_url": "https://ia601508.us.archive.org/11/items/in.ernet.dli.2015.50092/2015.50092.The-General-Theory-Of-Employment-Interest-And-Money.pdf",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-road-to-serfdom",
+      "title": "The Road to Serfdom",
+      "author": ["Friedrich Hayek"],
+      "category": "economics",
+      "subcategory": "political-economy",
+      "year_published": 1944,
+      "language": "English",
+      "tags": ["classical liberalism", "free market", "central planning", "totalitarianism", "libertarianism", "socialism critique"],
+      "level": "intermediate",
+      "description": "A landmark critique of central planning and collectivism, arguing that government control of economic life inevitably leads to erosion of political freedom. Written during WWII, Hayek warns that socialist economic planning contains the seeds of totalitarianism regardless of its intentions.",
+      "why_read": "Foundational text of classical liberalism and free-market conservatism. Essential for understanding the liberal-socialist debate.",
+      "when_to_read": "After reading basic liberal and socialist thought. Read alongside Keynes for the great ideological divide of the 20th century.",
+      "importance": "One of the most influential political economy books of the 20th century. Revived classical liberalism and directly influenced Thatcherism, Reaganism, and modern libertarianism.",
+      "prerequisites": ["basic economics", "basic political philosophy"],
+      "pairs_well_with": ["the-general-theory-keynes", "capitalism-and-freedom", "the-open-society-and-its-enemies"],
+      "source": {
+        "online_url": "https://www.agathonlibrary.com/wp-content/uploads/2024/11/Hayek-Friedrich-the-road-to-serfdom-text-and-documents-zlib.pdf",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "capitalism-and-freedom",
+      "title": "Capitalism and Freedom",
+      "author": ["Milton Friedman"],
+      "category": "economics",
+      "subcategory": "political-economy",
+      "year_published": 1962,
+      "language": "English",
+      "tags": ["monetarism", "free market", "classical liberalism", "economic freedom", "Chicago School"],
+      "level": "intermediate",
+      "description": "Friedman argues that economic freedom is both an end in itself and a necessary precondition of political freedom. He applies this thesis across topics including monetary policy, education, licensing, social welfare, and foreign trade, advocating for minimal government intervention.",
+      "why_read": "The most accessible manifesto of Chicago School economics and market liberalism. Essential for understanding conservative and libertarian economic thought.",
+      "when_to_read": "After basic economics and The Road to Serfdom, as part of mapping the liberal-libertarian tradition.",
+      "importance": "Highly influential. Shaped the economic policies of the 1980s in the US and UK and remains a reference point for free-market advocates.",
+      "prerequisites": ["basic economics"],
+      "pairs_well_with": ["the-road-to-serfdom", "the-general-theory-keynes"],
+      "source": {
+        "online_url": "http://pombo.free.fr/friedman2002.pdf",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "capital-in-21st-century",
+      "title": "Capital in the Twenty-First Century",
+      "author": ["Thomas Piketty"],
+      "category": "economics",
+      "subcategory": "political-economy",
+      "year_published": 2013,
+      "language": "English",
+      "tags": ["inequality", "wealth distribution", "capital", "taxation", "economic history"],
+      "level": "advanced",
+      "description": "Using historical data spanning three centuries across 20+ countries, Piketty demonstrates that when the rate of return on capital exceeds economic growth, wealth inequality naturally increases over time. He argues this tendency is structural and proposes a global progressive wealth tax.",
+      "why_read": "The most data-driven and influential modern critique of capitalist inequality. Essential reading for contemporary economic and political debates on distribution and taxation.",
+      "when_to_read": "After reading basic political economy and ideally Das Kapital for historical context.",
+      "importance": "A major academic and public sensation. Revived serious scholarly debate on inequality, wealth, and redistribution after decades of neglect.",
+      "prerequisites": ["basic macroeconomics", "economic history basics"],
+      "pairs_well_with": ["das-kapital-vol-1", "why-nations-fail"],
+      "source": {
+        "online_url": "https://dowbor.org/wp-content/uploads/2014/06/14Thomas-Piketty.pdf",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "two-treatises-of-government",
+      "title": "Two Treatises of Government",
+      "author": ["John Locke"],
+      "category": "philosophy",
+      "subcategory": "political-philosophy",
+      "year_published": 1689,
+      "language": "English",
+      "tags": ["liberalism", "natural rights", "social contract", "property rights", "consent of the governed", "revolution"],
+      "level": "advanced",
+      "description": "The foundational text of classical liberalism. The Second Treatise argues that legitimate government is based on the consent of the governed, that individuals have natural rights to life, liberty, and property, and that when government violates these rights, revolution is justified.",
+      "why_read": "The most important source text for liberal democratic theory, constitutionalism, and human rights thought.",
+      "when_to_read": "Alongside Hobbes and Rousseau to map the three major social contract positions.",
+      "importance": "Enormously influential. Directly shaped the American Founding, the French Declaration of the Rights of Man, and modern constitutional liberal democracies.",
+      "prerequisites": ["basic political philosophy"],
+      "pairs_well_with": ["leviathan-hobbes", "the-social-contract-rousseau", "on-liberty-mill"],
+      "source": { "online_url": "https://books.google.je/books?id=IpYIAAAAQAAJ&printsec=frontcover&source=gbs_atb#v=onepage&q&f=false", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "on-liberty-mill",
+      "title": "On Liberty",
+      "author": ["John Stuart Mill"],
+      "category": "philosophy",
+      "subcategory": "political-philosophy",
+      "year_published": 1859,
+      "language": "English",
+      "tags": ["liberalism", "freedom of speech", "harm principle", "individual rights", "civil liberties"],
+      "level": "intermediate",
+      "description": "Mill's classic defense of individual liberty against the tyranny of prevailing opinion. He argues that the only legitimate reason to restrict individual freedom is to prevent harm to others ('harm principle'), and makes a powerful case for freedom of speech, thought, and lifestyle diversity.",
+      "why_read": "The clearest articulation of classical liberal values — free speech, individual rights, and pluralism. A foundational text for civil liberties law and liberal political theory.",
+      "when_to_read": "After Locke and Rousseau to see the maturation of liberal thought.",
+      "importance": "Foundational for liberal political theory, civil liberties jurisprudence, and the philosophical defense of free expression.",
+      "prerequisites": ["basic political philosophy"],
+      "pairs_well_with": ["two-treatises-of-government", "the-road-to-serfdom"],
+      "source": { "online_url": "https://archive.org/details/onliberty00inmill", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-origins-of-totalitarianism",
+      "title": "The Origins of Totalitarianism",
+      "author": ["Hannah Arendt"],
+      "category": "political-science",
+      "subcategory": "political-theory",
+      "year_published": 1951,
+      "language": "English",
+      "tags": ["totalitarianism", "Nazism", "Stalinism", "imperialism", "antisemitism", "20th century history"],
+      "level": "advanced",
+      "description": "A landmark analysis of Nazi and Stalinist totalitarianism, tracing their origins through imperialism, racism, and the collapse of the nation-state. Arendt argues totalitarianism is a genuinely novel form of government that seeks to remake human nature itself through terror and ideology.",
+      "why_read": "The definitive philosophical analysis of 20th-century totalitarianism. Essential for understanding fascism, communism, and the conditions that allow extreme ideologies to seize power.",
+      "when_to_read": "After reading basic political theory and some 20th-century history.",
+      "importance": "One of the most important political works of the 20th century. Defines the analytical framework for distinguishing authoritarian from totalitarian regimes.",
+      "prerequisites": ["basic political philosophy", "20th century history basics"],
+      "pairs_well_with": ["the-open-society-and-its-enemies", "anatomy-of-fascism"],
+      "source": { "online_url": "https://archive.org/details/hannah-arendt-the-origins-of-totalitarianism", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-open-society-and-its-enemies",
+      "title": "The Open Society and Its Enemies",
+      "author": ["Karl Popper"],
+      "category": "philosophy",
+      "subcategory": "political-philosophy",
+      "year_published": 1945,
+      "language": "English",
+      "tags": ["democracy", "totalitarianism", "historicism", "liberalism", "Plato critique", "Marxism critique"],
+      "level": "advanced",
+      "description": "Popper attacks 'historicist' political philosophies (Plato, Hegel, Marx) that claim to know the direction of History and use this to justify authoritarian programs. He defends liberal democracy as the only system that allows peaceful change and self-correction without bloodshed.",
+      "why_read": "A powerful philosophical defense of liberal democracy and a devastating critique of Platonic, Hegelian, and Marxist utopianism.",
+      "when_to_read": "After reading Plato's Republic, Marx, and Hegel to appreciate the full force of the critique.",
+      "importance": "A major work in 20th-century political philosophy. Popper's concept of 'piecemeal social engineering' vs utopianism remains central to policy debates.",
+      "prerequisites": ["basic political philosophy", "Plato and Marx basics"],
+      "pairs_well_with": ["the-origins-of-totalitarianism", "the-road-to-serfdom"],
+      "source": { "online_url": "https://cdn.oujdalibrary.com/books/998/998-the-open-society-and-its-enemies-new-one-volume-edition-(www.tawcer.com).pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "democracy-in-america",
+      "title": "Democracy in America",
+      "author": ["Alexis de Tocqueville"],
+      "category": "political-science",
+      "subcategory": "comparative-politics",
+      "year_published": 1835,
+      "language": "English",
+      "tags": ["democracy", "American politics", "civil society", "tyranny of the majority", "comparative politics"],
+      "level": "intermediate",
+      "description": "Tocqueville's observation of American democratic society in the 1830s, analyzing the strengths and dangers of democracy. He identifies the risk of 'tyranny of the majority', the importance of civil associations, and the tension between equality and freedom — prophetically diagnosing modern democratic pathologies.",
+      "why_read": "The most insightful analysis of democracy as a social and cultural system, not just a political system.",
+      "when_to_read": "After basic political theory and the social contract tradition.",
+      "importance": "Considered the greatest study of democracy and American political culture ever written.",
+      "prerequisites": ["basic political philosophy"],
+      "pairs_well_with": ["the-federalist-papers", "on-liberty-mill"],
+      "source": { "online_url": "https://oll-resources.s3.us-east-2.amazonaws.com/oll3/store/titles/2735/Tocqueville_1593-01.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-federalist-papers",
+      "title": "The Federalist Papers",
+      "author": ["Alexander Hamilton", "James Madison", "John Jay"],
+      "category": "political-science",
+      "subcategory": "constitutional-theory",
+      "year_published": 1788,
+      "language": "English",
+      "tags": ["constitutionalism", "federalism", "separation of powers", "American republic", "checks and balances"],
+      "level": "intermediate",
+      "description": "A collection of 85 essays written to advocate for ratification of the US Constitution, arguing for the necessity of a strong federal government with separated powers, checks and balances, and republican representation.",
+      "why_read": "The primary text for understanding constitutional republican theory, federalism, and the institutional design of liberal democracy.",
+      "when_to_read": "After Locke and Montesquieu, to see their ideas applied to a concrete constitutional design.",
+      "importance": "Considered the most authoritative interpretation of the US Constitution. Still cited by the Supreme Court.",
+      "prerequisites": ["two-treatises-of-government", "basic political philosophy"],
+      "pairs_well_with": ["democracy-in-america", "the-spirit-of-the-laws"],
+      "source": { "online_url": "https://guides.loc.gov/federalist-papers/full-text", "file_path": "" },
+      "status": "unread",
+      "notes": "Federalist No. 10 and No. 51 are the most important to read first.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "anatomy-of-fascism",
+      "title": "The Anatomy of Fascism",
+      "author": ["Robert O. Paxton"],
+      "category": "political-science",
+      "subcategory": "political-theory",
+      "year_published": 2004,
+      "language": "English",
+      "tags": ["fascism", "Nazism", "Mussolini", "far-right", "totalitarianism", "20th century history"],
+      "level": "intermediate",
+      "description": "The definitive scholarly analysis of fascism as a political phenomenon. Paxton rejects ideological definitions and instead traces fascism through its historical practices: how it forms, how it gains power, and how it exercises it.",
+      "why_read": "The most rigorous, non-polemical scholarly study of fascism in practice. Essential for understanding what fascism actually is versus how it presents itself.",
+      "when_to_read": "After basic 20th-century political history and Arendt's Origins of Totalitarianism.",
+      "importance": "The standard academic reference on fascism.",
+      "prerequisites": ["basic 20th century history"],
+      "pairs_well_with": ["the-origins-of-totalitarianism"],
+      "source": { "online_url": "https://files.libcom.org/files/Robert%20O.%20Paxton-The%20Anatomy%20of%20Fascism%20%20-Knopf%20(2004).pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-state-and-revolution",
+      "title": "The State and Revolution",
+      "author": ["Vladimir Ilyich Lenin"],
+      "category": "political-science",
+      "subcategory": "political-theory",
+      "year_published": 1917,
+      "language": "English",
+      "tags": ["Marxism", "Leninism", "state", "revolution", "socialism", "communism", "dictatorship of proletariat"],
+      "level": "intermediate",
+      "description": "Written just before the Bolshevik Revolution, Lenin presents his theory of the state as an instrument of class domination that must be smashed and replaced by a transitional 'dictatorship of the proletariat', which will eventually wither away as a communist society emerges.",
+      "why_read": "Essential for understanding Marxist-Leninist political theory and the ideological foundations of the Soviet Union and communist movements worldwide.",
+      "when_to_read": "After The Communist Manifesto and Das Kapital.",
+      "importance": "One of the most consequential political documents of the 20th century. Directly shaped the organization of Soviet-style communist states worldwide.",
+      "prerequisites": ["the-communist-manifesto", "das-kapital-vol-1"],
+      "pairs_well_with": ["the-communist-manifesto"],
+      "source": { "online_url": "https://www.marxists.org/archive/lenin/works/1917/staterev/", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "nineteen-eighty-four",
+      "title": "Nineteen Eighty-Four (1984)",
+      "author": ["George Orwell"],
+      "category": "political-science",
+      "subcategory": "political-fiction",
+      "year_published": 1949,
+      "language": "English",
+      "tags": ["dystopia", "totalitarianism", "surveillance", "propaganda", "thought control", "Stalinism critique"],
+      "level": "general",
+      "description": "Orwell's prophetic novel depicting a totalitarian surveillance state ruled by 'Big Brother'. Illustrates how totalitarian regimes use language, history rewriting, perpetual war, and terror to maintain absolute power over both behavior and thought.",
+      "why_read": "The most powerful literary depiction of totalitarianism and its mechanisms. Introduced concepts (doublethink, newspeak, memory hole) that have become essential analytical vocabulary.",
+      "when_to_read": "Alongside or after Arendt's Origins of Totalitarianism. Accessible entry point for political fiction.",
+      "importance": "One of the most widely read political novels in history. Permanently altered how we discuss surveillance, propaganda, and state power.",
+      "prerequisites": [],
+      "pairs_well_with": ["the-origins-of-totalitarianism", "brave-new-world"],
+      "source": { "online_url": "https://dn790002.ca.archive.org/0/items/NineteenEightyFour-Novel-GeorgeOrwell/orwell1984.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "brave-new-world",
+      "title": "Brave New World",
+      "author": ["Aldous Huxley"],
+      "category": "political-science",
+      "subcategory": "political-fiction",
+      "year_published": 1932,
+      "language": "English",
+      "tags": ["dystopia", "consumerism", "soft totalitarianism", "social control", "technology and power"],
+      "level": "general",
+      "description": "Huxley's dystopia imagines a society controlled not by terror but by pleasure, consumption, conditioning, and the elimination of meaningful choice. Citizens are kept docile through engineered happiness, not brutal repression.",
+      "why_read": "Complements 1984 by depicting a different path to unfreedom — through comfort and distraction rather than terror.",
+      "when_to_read": "Read alongside 1984 as two contrasting dystopian models.",
+      "importance": "One of the great 20th-century dystopian novels. Its vision of soft social control through pleasure has become increasingly relevant.",
+      "prerequisites": [],
+      "pairs_well_with": ["nineteen-eighty-four"],
+      "source": { "online_url": "https://dn790000.ca.archive.org/0/items/BraveNewWorld-and-BraveNewWorldRevisited/Brave-New-World_-_Aldous-Huxley.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-english-constitution",
+      "title": "The English Constitution",
+      "author": ["Walter Bagehot"],
+      "category": "political-science",
+      "subcategory": "constitutional-theory",
+      "year_published": 1867,
+      "language": "English",
+      "tags": ["constitutional monarchy", "parliamentary government", "cabinet government", "monarchy", "British politics"],
+      "level": "intermediate",
+      "description": "A brilliant analysis of the actual working of the British constitutional monarchy, distinguishing between its 'dignified' components (monarchy, aristocracy) and 'efficient' components (cabinet, prime minister). Exposes how the monarchy serves legitimating functions while power resides in elected government.",
+      "why_read": "The classic analysis of constitutional monarchy and parliamentary government. Essential for understanding how modern constitutional monarchies actually function.",
+      "when_to_read": "After basic constitutional theory.",
+      "importance": "Still the definitive analysis of the British constitutional system and the model for understanding constitutional monarchy theory.",
+      "prerequisites": ["basic political philosophy"],
+      "pairs_well_with": ["the-federalist-papers", "democracy-in-america"],
+      "source": { "online_url": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Walter_Bagehot%2C_The_English_Constitution_%281st_ed%2C_1867%29.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "The distinction between 'dignified' and 'efficient' parts of the constitution is one of the most insightful analytical concepts in political science.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "guns-germs-and-steel",
+      "title": "Guns, Germs, and Steel: The Fates of Human Societies",
+      "author": ["Jared Diamond"],
+      "category": "political-science",
+      "subcategory": "comparative-politics",
+      "year_published": 1997,
+      "language": "English",
+      "tags": ["world history", "geography", "civilizations", "inequality", "development", "cultural determinism"],
+      "level": "general",
+      "description": "Diamond asks why some civilizations conquered others, arguing the answer lies not in racial or cultural superiority but in geographic and environmental factors: availability of domesticable plants and animals, continental orientation, and disease ecology.",
+      "why_read": "A powerful, evidence-based framework for thinking about the long-run origins of global inequality.",
+      "when_to_read": "Before or alongside Why Nations Fail for a geographic versus institutional framework comparison.",
+      "importance": "Pulitzer Prize winner. One of the most widely read works in historical sociology.",
+      "prerequisites": ["basic world history"],
+      "pairs_well_with": ["why-nations-fail", "the-clash-of-civilizations"],
+      "source": { "online_url": "https://dn721503.ca.archive.org/0/items/fp_Jared_Diamond-Guns_Germs_and_Steel/Jared_Diamond-Guns_Germs_and_Steel.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-clash-of-civilizations",
+      "title": "The Clash of Civilizations and the Remaking of World Order",
+      "author": ["Samuel P. Huntington"],
+      "category": "political-science",
+      "subcategory": "international-relations",
+      "year_published": 1996,
+      "language": "English",
+      "tags": ["international relations", "civilizations", "geopolitics", "cultural conflict", "Islam", "West"],
+      "level": "intermediate",
+      "description": "Huntington argues that post-Cold War conflicts will be primarily civilizational rather than ideological or national. He identifies eight major world civilizations and argues that fault lines between them will define the major conflicts of the coming era.",
+      "why_read": "One of the most debated and influential frameworks in international relations, especially after 9/11. Essential for understanding cultural-civilizational approaches to geopolitics.",
+      "when_to_read": "After basic international relations theory and modern geopolitics.",
+      "importance": "Enormously influential in foreign policy circles and international relations scholarship. Still heavily debated.",
+      "prerequisites": ["basic international relations"],
+      "pairs_well_with": ["the-end-of-history", "orientalism-said"],
+      "source": { "online_url": "https://msuweb.montclair.edu/~lebelp/1993SamuelPHuntingtonTheClashOfCivilizationsAndTheRemakingofWorldOrder.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "Read alongside critiques — Amartya Sen's 'Identity and Violence' offers the strongest rebuttal.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-end-of-history",
+      "title": "The End of History and the Last Man",
+      "author": ["Francis Fukuyama"],
+      "category": "political-science",
+      "subcategory": "international-relations",
+      "year_published": 1992,
+      "language": "English",
+      "tags": ["liberal democracy", "end of history", "Hegel", "geopolitics", "post-Cold War", "liberalism"],
+      "level": "intermediate",
+      "description": "Fukuyama argues that with the collapse of the Soviet Union, liberal democracy has definitively triumphed as the final form of human government. Drawing on Hegel and Kojève, he also warns of the 'last man' problem: liberal societies may produce citizens without the spirit for greatness.",
+      "why_read": "Essential for understanding post-Cold War liberal triumphalism and the subsequent backlash.",
+      "when_to_read": "After basic political philosophy and Cold War history. Read alongside Huntington as contrasting frameworks.",
+      "importance": "One of the most debated political works of the 1990s. Still structures conversations about democracy's prospects.",
+      "prerequisites": ["basic political philosophy"],
+      "pairs_well_with": ["the-clash-of-civilizations", "the-origins-of-totalitarianism"],
+      "source": { "online_url": "https://ia803100.us.archive.org/33/items/THEENDOFHISTORYFUKUYAMA/THE%20END%20OF%20HISTORY%20-%20FUKUYAMA.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "Fukuyama's later books revise this thesis significantly — useful to read alongside.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "orientalism-said",
+      "title": "Orientalism",
+      "author": ["Edward W. Said"],
+      "category": "political-science",
+      "subcategory": "postcolonial-theory",
+      "year_published": 1978,
+      "language": "English",
+      "tags": ["postcolonialism", "discourse", "imperialism", "Middle East", "representation", "knowledge and power"],
+      "level": "advanced",
+      "description": "Said argues that 'Orientalism' — the Western academic, literary, and cultural tradition of representing the 'Orient' — is not neutral scholarship but a mode of domination that constructs the East as exotic, backward, and inferior to justify imperial control. A foundational text in postcolonial theory.",
+      "why_read": "Essential for understanding how knowledge, culture, and political power interact, and for critically analyzing representations of non-Western societies in Western discourse.",
+      "when_to_read": "After basic political theory and colonial history.",
+      "importance": "One of the most influential and debated works in cultural studies, Middle Eastern studies, and postcolonial theory.",
+      "prerequisites": ["basic political theory", "colonial history basics"],
+      "pairs_well_with": ["the-clash-of-civilizations"],
+      "source": { "online_url": "https://monoskop.org/images/4/4e/Said_Edward_Orientalism_1979.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "savak-documents-in-iran",
+      "title": "Documents from the U.S. Espionage Den (Asnad-e Laneh-ye Jasusi)",
+      "author": ["Islamic Republic of Iran (compiler)"],
+      "category": "political-science",
+      "subcategory": "intelligence-and-security",
+      "year_published": 1980,
+      "language": "Persian",
+      "tags": ["SAVAK", "CIA", "Iran", "intelligence", "Pahlavi regime", "Cold War", "embassy documents"],
+      "level": "advanced",
+      "description": "The multi-volume series of US Embassy documents seized during the 1979 Iranian hostage crisis. Contains CIA cables, diplomatic correspondence, and intelligence assessments revealing US-Iranian intelligence relations, SAVAK cooperation with CIA, and American political intervention in Iran.",
+      "why_read": "Primary source documents revealing the actual mechanics of US-Iranian intelligence cooperation, SAVAK operations, and American political involvement in Iran during the Pahlavi era.",
+      "when_to_read": "After reading historical background on the Pahlavi era and the 1979 Revolution.",
+      "importance": "Unique primary source collection with no equivalent in published intelligence literature on Iran.",
+      "prerequisites": ["modern Iranian history basics"],
+      "pairs_well_with": ["all-the-shahs-men"],
+      "source": {
+        "online_url": "https://lohedana.ir/books/reader/1011373006/6/1/1",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "Primary source documents, not an analytical work. Best read alongside academic secondary sources on SAVAK and CIA-Iran relations.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "how-democracies-die",
+      "title": "How Democracies Die",
+      "author": ["Steven Levitsky", "Daniel Ziblatt"],
+      "category": "political-science",
+      "subcategory": "comparative-politics",
+      "year_published": 2018,
+      "language": "English",
+      "tags": ["democracy", "authoritarianism", "democratic backsliding", "polarization", "institutions"],
+      "level": "intermediate",
+      "description": "Based on comparative data from historical and contemporary cases, Levitsky and Ziblatt argue that modern democracies typically die not via military coup but through gradual elected-leader autocratization — using democratic means to undermine democratic norms and institutions.",
+      "why_read": "The clearest scholarly framework for understanding contemporary democratic backsliding in Turkey, Hungary, Poland, and the United States.",
+      "when_to_read": "After basic comparative politics and democratic theory.",
+      "importance": "The standard reference for discussions of democratic backsliding.",
+      "prerequisites": ["basic comparative politics"],
+      "pairs_well_with": ["the-origins-of-totalitarianism", "the-dictators-handbook"],
+      "source": { "online_url": "https://psi424.cankaya.edu.tr/uploads/files/Levitsky%20%26%20Ziblatt%2C%20How%20Democracies%20Die_%20What%20History%20Reveals%20about%20Our%20Future%20%282019%20--%20Penguin%20Books%29.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-art-of-war-sun-tzu",
+      "title": "The Art of War",
+      "author": ["Sun Tzu"],
+      "category": "political-science",
+      "subcategory": "strategy",
+      "year_published": -500,
+      "language": "English",
+      "tags": ["strategy", "military strategy", "statecraft", "leadership", "ancient philosophy", "geopolitics"],
+      "level": "general",
+      "description": "The oldest and most influential military strategy text, consisting of 13 chapters. Its principles extend to politics, business, and any competitive endeavor: know yourself and your enemy, adapt to circumstances, win without fighting where possible.",
+      "why_read": "Timeless strategic principles applicable to military, political, diplomatic, and organizational contexts.",
+      "when_to_read": "As a foundational strategic text. Can be read at any level.",
+      "importance": "Foundational to East Asian military and political thought. Widely studied in military academies, business schools, and political science programs worldwide.",
+      "prerequisites": [],
+      "pairs_well_with": ["the-prince-machiavelli"],
+      "source": { "online_url": "https://dn790006.ca.archive.org/0/items/TheArtOfWarBySunTzu/ArtOfWar.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "culture-matters-harrison-huntington",
+      "title": "Culture Matters: How Values Shape Human Progress",
+      "author": ["Lawrence E. Harrison", "Samuel P. Huntington"],
+      "category": "political-science",
+      "subcategory": "political-culture",
+      "year_published": 2000,
+      "language": "English",
+      "tags": ["political culture", "development", "values", "religion and politics", "cultural determinism"],
+      "level": "intermediate",
+      "description": "An edited volume examining how cultural values (religion, trust, attitudes toward work, authority, and time) shape whether societies develop successful democracies and market economies.",
+      "why_read": "The most systematic scholarly treatment of the cultural factors in political and economic development.",
+      "when_to_read": "After reading Why Nations Fail for the institutional argument. Provides the cultural counterargument.",
+      "importance": "Influential in development studies and political science.",
+      "prerequisites": ["basic political science", "development economics basics"],
+      "pairs_well_with": ["why-nations-fail", "the-clash-of-civilizations"],
+      "source": { "online_url": "https://ia800101.us.archive.org/27/items/CultureMattersHowValuesShapeHumanProgress/Culture%20Matters%20How%20Values%20Shape%20Human%20Progress.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "imagined-communities",
+      "title": "Imagined Communities: Reflections on the Origin and Spread of Nationalism",
+      "author": ["Benedict Anderson"],
+      "category": "political-science",
+      "subcategory": "nationalism",
+      "year_published": 1983,
+      "language": "English",
+      "tags": ["nationalism", "nation-state", "print capitalism", "identity", "community", "postcolonialism"],
+      "level": "intermediate",
+      "description": "Anderson argues that nations are 'imagined communities' — socially constructed through shared culture, print media, and collective narrative. He traces the historical emergence of nationalism and how print capitalism allowed previously disparate populations to imagine themselves as unified nations.",
+      "why_read": "The most influential scholarly account of nationalism and national identity. Essential for understanding why people identify with nations and how national identity is constructed.",
+      "when_to_read": "After basic political theory. Accessible to non-specialists.",
+      "importance": "The standard reference work on nationalism in political science, sociology, and cultural studies.",
+      "prerequisites": ["basic political science"],
+      "pairs_well_with": ["the-clash-of-civilizations", "orientalism-said"],
+      "source": { "online_url": "https://nationalismstudies.org/wp-content/uploads/2021/03/Imagined-Communities-Reflections-on-the-Origin-and-Spread-of-Nationalism-by-Benedict-Anderson-z-lib.org_.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-power-elite",
+      "title": "The Power Elite",
+      "author": ["C. Wright Mills"],
+      "category": "political-science",
+      "subcategory": "political-sociology",
+      "year_published": 1956,
+      "language": "English",
+      "tags": ["elite theory", "power", "military-industrial complex", "American politics", "democracy critique"],
+      "level": "intermediate",
+      "description": "Mills argues that American society is dominated by an interlocking 'power elite' composed of top military commanders, corporate executives, and political leaders — whose shared backgrounds, values, and connections allow them to make decisions that shape the nation, largely outside democratic accountability.",
+      "why_read": "The foundational text of American power elite theory. Essential for understanding critiques of formal democracy and the role of unelected elites in political decision-making.",
+      "when_to_read": "After basic political theory and social stratification concepts.",
+      "importance": "Widely cited in political sociology. The concept of the 'military-industrial complex' originates here.",
+      "prerequisites": ["basic political science", "social stratification basics"],
+      "pairs_well_with": ["democracy-in-america", "the-dictators-handbook"],
+      "source": { "online_url": "https://ia600800.us.archive.org/4/items/dli.ernet.507694/507694-The%20Power%20Elite%20%281959%29.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-protestant-ethic",
+      "title": "The Protestant Ethic and the Spirit of Capitalism",
+      "author": ["Max Weber"],
+      "category": "political-science",
+      "subcategory": "political-sociology",
+      "year_published": 1905,
+      "language": "English",
+      "tags": ["religion and politics", "capitalism origins", "Protestantism", "culture and economics", "sociology"],
+      "level": "advanced",
+      "description": "Weber argues that the cultural values of Protestant Christianity — particularly Calvinist ideas about predestination and the calling — fostered the psychological and behavioral traits (hard work, frugality, reinvestment) that enabled the rise of modern capitalism in Western Europe and North America.",
+      "why_read": "One of the most influential sociological arguments about the relationship between culture, religion, and economic systems.",
+      "when_to_read": "After basic sociology and economics. A foundational text for understanding the culture-institutions debate.",
+      "importance": "One of the foundational texts of modern sociology. Weber's thesis is still debated and tested in development economics.",
+      "prerequisites": ["basic sociology", "economic history basics"],
+      "pairs_well_with": ["das-kapital-vol-1", "culture-matters-harrison-huntington"],
+      "source": { "online_url": "https://gpde.direito.ufmg.br/wp-content/uploads/2019/03/MAX-WEBER.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "theory-of-international-politics-waltz",
+      "title": "Theory of International Politics",
+      "author": ["Kenneth N. Waltz"],
+      "category": "political-science",
+      "subcategory": "international-relations",
+      "year_published": 1979,
+      "language": "English",
+      "tags": ["international relations", "realism", "structural realism", "neorealism", "anarchy", "balance of power"],
+      "level": "advanced",
+      "description": "The foundational text of structural realism (neorealism) in international relations theory. Waltz argues that the behavior of states is determined primarily by the anarchic structure of the international system — the absence of a world government — which forces states to compete for security and power regardless of their internal character.",
+      "why_read": "Essential for understanding realist international relations theory, which dominates both academic IR and practical foreign policy thinking.",
+      "when_to_read": "After basic international relations concepts. A graduate-level text.",
+      "importance": "The most influential work in IR theory of the 20th century. Defined the neorealist paradigm.",
+      "prerequisites": ["basic international relations"],
+      "pairs_well_with": ["the-clash-of-civilizations"],
+      "source": { "online_url": "http://slantchev.ucsd.edu/courses/ps240/03%20Anarchy,%20Hierarchy,%20and%20Sovereignty/Waltz%20-%20Theory%20of%20International%20Politics%20(Ch%205-8).pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "manufacturing-consent",
+      "title": "Manufacturing Consent: The Political Economy of the Mass Media",
+      "author": ["Edward S. Herman", "Noam Chomsky"],
+      "category": "political-science",
+      "subcategory": "political-sociology",
+      "year_published": 1988,
+      "language": "English",
+      "tags": ["media", "propaganda", "capitalism", "power", "journalism", "left critique"],
+      "level": "intermediate",
+      "description": "Herman and Chomsky present a 'propaganda model' of mass media, arguing that in capitalist democracies, major news media are structured to serve the interests of corporate owners and government — not through overt censorship but through selection of topics, framing, and sourcing.",
+      "why_read": "The most rigorous left-wing analysis of media and democracy. Essential for understanding critiques of 'free press' narratives and the relationship between media ownership and political power.",
+      "when_to_read": "After basic political theory and media studies.",
+      "importance": "Highly influential in media studies, journalism criticism, and left political circles worldwide.",
+      "prerequisites": ["basic political science"],
+      "pairs_well_with": ["the-power-elite", "nineteen-eighty-four"],
+      "source": { "online_url": "https://files.libcom.org/files/2022-04/manufacturing_consent.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "iron-law-of-oligarchy-michels",
+      "title": "Political Parties: A Sociological Study of the Oligarchical Tendencies of Modern Democracy",
+      "author": ["Robert Michels"],
+      "category": "political-science",
+      "subcategory": "political-sociology",
+      "year_published": 1911,
+      "language": "English",
+      "tags": ["oligarchy", "political parties", "democracy critique", "elite theory", "bureaucracy"],
+      "level": "advanced",
+      "description": "Michels formulates the 'Iron Law of Oligarchy' — the thesis that all organizations, including democratic parties and labor movements, inevitably develop an elite leadership class that consolidates power and acts in its own interest rather than the members'.",
+      "why_read": "A sobering and influential critique of democratic organizations from within the left. The 'Iron Law of Oligarchy' remains one of political sociology's most debated concepts.",
+      "when_to_read": "After reading democratic theory and alongside elite theory literature.",
+      "importance": "Foundational in political sociology. The Iron Law of Oligarchy is still a reference point in studies of political parties and organizations.",
+      "prerequisites": ["basic political science", "sociology basics"],
+      "pairs_well_with": ["the-power-elite", "democracy-in-america"],
+      "source": { "online_url": "https://archive.org/details/politicalparties00mich/page/n5/mode/2up", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "poor-economics",
+      "title": "Poor Economics: A Radical Rethinking of the Way to Fight Global Poverty",
+      "author": ["Abhijit V. Banerjee", "Esther Duflo"],
+      "category": "economics",
+      "subcategory": "development-economics",
+      "year_published": 2011,
+      "language": "English",
+      "tags": ["poverty", "development economics", "randomized control trials", "aid", "microeconomics of poverty"],
+      "level": "intermediate",
+      "description": "Nobel laureates Banerjee and Duflo use randomized controlled trials to examine how poor people actually make economic decisions, what interventions actually reduce poverty, and how to move beyond ideological debates about aid.",
+      "why_read": "The most empirically rigorous and readable recent work on poverty and development. Challenges both leftist aid orthodoxy and rightist anti-aid dogma with actual data.",
+      "when_to_read": "After basic development economics.",
+      "importance": "Won the Nobel Prize in Economics (2019). Transformed development economics methodology toward field experiments.",
+      "prerequisites": ["basic economics"],
+      "pairs_well_with": ["why-nations-fail", "the-wealth-of-nations"],
+      "source": { "online_url": "https://paxmongolica.org/wp-content/uploads/2019/11/poor-economics-a-radical-rethinking-of-the-way-to-fight-global-poverty-by-abhijit-v-banerjee-and-esther-duflo-pdf.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "anarchy-state-and-utopia-nozick",
+      "title": "Anarchy, State, and Utopia",
+      "author": ["Robert Nozick"],
+      "category": "philosophy",
+      "subcategory": "justice",
+      "year_published": 1974,
+      "language": "English",
+      "tags": ["libertarianism", "justice", "rights", "minimal state", "distributive justice", "entitlement theory"],
+      "level": "advanced",
+      "description": "Nozick's libertarian response to Rawls. He argues that only a minimal state protecting against force, theft, and fraud is justifiable. His 'entitlement theory of justice' holds that a distribution is just if it arose from just acquisitions and voluntary transfers — regardless of whether it produces equality.",
+      "why_read": "The most rigorous philosophical defense of libertarianism and the strongest philosophical challenge to redistributive justice. Essential reading alongside Rawls.",
+      "when_to_read": "Immediately after Rawls' A Theory of Justice.",
+      "importance": "Defined the libertarian position in academic philosophy. The Rawls-Nozick debate frames virtually all subsequent work on distributive justice.",
+      "prerequisites": ["a-theory-of-justice-rawls"],
+      "pairs_well_with": ["a-theory-of-justice-rawls", "the-idea-of-justice"],
+      "source": { "online_url": "https://archive.org/details/robert-nozick-anarchy-state-and-utopia", "file_path": "" },
+      "status": "unread",
+      "notes": "The historical entitlement theory in Part I and the critique of patterned principles are the core arguments.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "development-as-freedom-sen",
+      "title": "Development as Freedom",
+      "author": ["Amartya Sen"],
+      "category": "economics",
+      "subcategory": "development-economics",
+      "year_published": 1999,
+      "language": "English",
+      "tags": ["development", "freedom", "capability approach", "justice", "social justice", "human rights", "poverty"],
+      "level": "intermediate",
+      "description": "Sen argues that development should be understood not as GDP growth but as the expansion of human 'capabilities' — the real freedoms people have to live lives they have reason to value. He applies this framework to poverty, democracy, women's rights, famine, and social justice.",
+      "why_read": "The most influential alternative framework to GDP-based development. Essential for understanding the capability approach, human development indices, and normative debates about what development is for.",
+      "when_to_read": "After basic development economics and political philosophy. Bridges the two fields beautifully.",
+      "importance": "Won the Nobel Prize in Economics (1998). Directly influenced the UN Human Development Index and international development policy.",
+      "prerequisites": ["basic economics", "basic political philosophy"],
+      "pairs_well_with": ["the-idea-of-justice", "poor-economics"],
+      "source": { "online_url": "https://kuangaliablog.wordpress.com/wp-content/uploads/2017/07/amartya_kumar_sen_development_as_freedombookfi.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "al-kitab-al-mukhtasar-fi-hisab-al-jabr",
+      "title": "Kitāb al-mukhtaṣar fī ḥisāb al-jabr wa-l-muqābala",
+      "author": ["Muḥammad ibn Mūsā al-Khwārizmī"],
+      "category": "mathematics",
+      "subcategory": "history-of-mathematics",
+      "year_published": 830,
+      "language": "Arabic",
+      "tags": ["algebra", "history of mathematics", "Islamic Golden Age", "Iranian mathematics", "al-Khwarizmi", "linear equations", "quadratic equations"],
+      "level": "advanced",
+      "description": "The 9th-century Baghdad treatise by the Iranian mathematician Muhammad ibn Musa al-Khwarizmi that founded algebra as an independent mathematical discipline. Al-Khwarizmi systematically classifies and solves linear and quadratic equations through geometric and arithmetic methods. The word 'algebra' derives from al-jabr in the title; the word 'algorithm' derives from the Latin transliteration of al-Khwarizmi's name.",
+      "why_read": "A foundational primary source in the history of mathematics. Reading it reveals how mathematical problem-solving was systematized in the Islamic Golden Age and transmitted to medieval Europe, shaping all subsequent mathematics.",
+      "when_to_read": "After basic algebra and history of mathematics. Primarily of historical-scholarly interest.",
+      "importance": "One of the most consequential scientific texts ever written. Algebra as a branch of mathematics, and the word 'algorithm', both originate from this work and its author.",
+      "prerequisites": ["basic algebra", "history of mathematics basics"],
+      "pairs_well_with": ["al-kitab-al-jabr-wal-muqabala-al-khwarizmi", "contributions-to-founding-transfinite-numbers"],
+      "source": {
+        "online_url": "https://archive.org/details/aljabar_alkhwarizmi/page/n11/mode/2up",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "The Rosen translation (1831) is the standard English edition. The original Arabic is also available at archive.org.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "ibn-al-haytham-optics",
+      "title": "Kitāb al-Manāẓir",
+      "author": ["Ibn al-Haytham (Alhazen)"],
+      "category": "history-of-science",
+      "subcategory": "history-of-mathematics",
+      "year_published": 1021,
+      "language": "Arabic",
+      "tags": ["optics", "mathematics", "Islamic Golden Age", "scientific method", "geometry", "vision theory"],
+      "level": "advanced",
+      "description": "The seminal seven-volume work on optics by the Iraqi-Egyptian mathematician Ibn al-Haytham. It decisively disproved the ancient Greek emission theory of vision, established the intromission theory (that vision occurs through light entering the eye), introduced systematic experimentation as a method, and developed a mathematical treatment of reflection and refraction. Directly influenced Roger Bacon, Kepler, and Newton.",
+      "why_read": "A landmark in both the history of science and the history of mathematics. Ibn al-Haytham's experimental method predates the European 'Scientific Revolution' by 600 years.",
+      "when_to_read": "After reading Euclid and basic history of science, when interested in the Islamic Golden Age's contributions.",
+      "importance": "One of the most influential scientific works in history. Transformed optics, epistemology, and the philosophy of science.",
+      "prerequisites": ["basic geometry", "history of science basics"],
+      "pairs_well_with": ["novum-organum", "two-treatises-on-the-astrolabe-biruni"],
+      "source": {
+        "online_url": "https://monoskop.org/images/f/ff/The_Optics_of_Ibn_Al-Haytham_Books_I-III_On_Direct_Vision_Sabra_1989.pdf",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "Smith's complete English translation (2001, 7 vols) is the scholarly standard. The philosophical introduction to Book I is the most accessible entry.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-history-of-mathematics-katz",
+      "title": "A History of Mathematics: An Introduction",
+      "author": ["Victor J. Katz"],
+      "category": "mathematics",
+      "subcategory": "history-of-mathematics",
+      "year_published": 1993,
+      "language": "English",
+      "tags": ["history of mathematics", "Islamic mathematics", "Iranian mathematicians", "algebra", "number theory", "overview"],
+      "level": "intermediate",
+      "description": "A comprehensive history of mathematics from ancient Mesopotamia and Egypt through the 20th century. Covers Babylonian algebra, Greek geometry, Indian and Islamic mathematics (including al-Khwarizmi, al-Biruni, Omar Khayyam, al-Tusi), and the European tradition. Includes primary-source passages and exercises. One of the few histories that gives serious coverage to non-Western mathematics.",
+      "why_read": "The best single-volume academic history of mathematics covering both Western and non-Western traditions. Provides essential historical context for understanding any area of mathematics.",
+      "when_to_read": "Can be read at any point alongside or after studying specific mathematical fields. Chapters are relatively independent.",
+      "importance": "The standard academic textbook for history of mathematics courses. Unusually thorough in its coverage of Islamic and South Asian mathematical traditions.",
+      "prerequisites": ["introductory college mathematics"],
+      "pairs_well_with": ["al-kitab-al-mukhtasar-fi-hisab-al-jabr", "euclids-elements-of-geometry"],
+      "source": { "online_url": "https://www.math.mcgill.ca/darmon/courses/history/katz.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "Chapter 7 (Mathematics in Medieval Islam) is particularly valuable for Iranian and Islamic mathematical history.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "al-biruni-india",
+      "title": "Kitāb Taḥqīq mā li-l-Hind (Alberuni's India)",
+      "author": ["Abu Rayhan Muhammad ibn Ahmad Biruni"],
+      "category": "history-of-science",
+      "subcategory": "comparative-culture",
+      "year_published": 1030,
+      "language": "Arabic",
+      "tags": ["anthropology", "India", "Indian mathematics", "comparative culture", "Islamic Golden Age", "al-Biruni", "methodology"],
+      "level": "advanced",
+      "description": "Al-Biruni's exhaustive study of Indian mathematics, astronomy, philosophy, religion, and culture — produced after spending years learning Sanskrit. Considered the first work of systematic comparative anthropology and ethnography. His mathematically rigorous and culturally respectful methodology is centuries ahead of its time.",
+      "why_read": "A landmark in both the history of science and the history of cross-cultural scholarship. Al-Biruni's methodology of suspending judgment and learning the language before studying a culture anticipates modern anthropology.",
+      "when_to_read": "After two-treatises-on-the-astrolabe-biruni and basic Islamic Golden Age history.",
+      "importance": "Considered the founding text of comparative anthropology and an extraordinary achievement in cross-cultural scholarship.",
+      "prerequisites": ["history of science basics", "basic Islamic Golden Age history"],
+      "pairs_well_with": ["two-treatises-on-the-astrolabe-biruni", "guns-germs-and-steel"],
+      "source": {
+        "online_url": "https://archive.org/details/alberunisindia_201612/alberunisindia-color_001/page/n7/mode/2up",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "Sachau's 1910 English translation remains the standard. Primarily for scholars of history of science and comparative culture.",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "computability-and-logic-boolos",
+      "title": "Computability and Logic",
+      "author": ["George S. Boolos", "John P. Burgess", "Richard C. Jeffrey"],
+      "category": "logic",
+      "subcategory": "mathematical-logic",
+      "year_published": 1974,
+      "language": "English",
+      "tags": ["computability", "logic", "Gödel's theorems", "Turing machines", "decidability", "mathematical logic"],
+      "level": "advanced",
+      "description": "A rigorous treatment of mathematical logic and computability theory. Covers propositional and predicate logic, Turing computability, the incompleteness theorems (Gödel), Church's theorem, and modal logic. One of the most carefully written advanced logic texts, balancing precision with relative accessibility.",
+      "why_read": "The best advanced introduction to the intersection of logic and computability. Essential for understanding Gödel's incompleteness theorems and the foundations of computer science.",
+      "when_to_read": "After Enderton's A Mathematical Introduction to Logic and some computability theory.",
+      "importance": "A classic graduate-level text in logic and computability. Widely used in advanced logic and computer science theory courses.",
+      "prerequisites": ["a-mathematical-introduction-to-logic", "basic set theory"],
+      "pairs_well_with": ["a-mathematical-introduction-to-logic", "godel-escher-bach"],
+      "source": { "online_url": "http://ndl.ethernet.edu.et/bitstream/123456789/39866/1/53pdf.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "elements-of-set-theory-enderton",
+      "title": "Elements of Set Theory",
+      "author": ["Herbert B. Enderton"],
+      "category": "mathematics",
+      "subcategory": "set-theory",
+      "year_published": 1977,
+      "language": "English",
+      "tags": ["set theory", "Zermelo-Fraenkel", "ordinals", "cardinals", "foundations of mathematics"],
+      "level": "intermediate",
+      "description": "A rigorous but pedagogically excellent introduction to axiomatic set theory. Covers the Zermelo-Fraenkel axioms, relations, functions, ordinal and cardinal numbers, and the axiom of choice. One of the clearest presentations of the foundational framework underlying all modern mathematics.",
+      "why_read": "The best accessible introduction to rigorous set theory. Essential foundation for advanced mathematics, logic, and theoretical computer science.",
+      "when_to_read": "After calculus and introductory proof-writing. Before or alongside Enderton's logic book.",
+      "importance": "The standard undergraduate set theory text. Clear, rigorous, and beautifully organized.",
+      "prerequisites": ["calculus basics", "introductory proof techniques"],
+      "pairs_well_with": ["a-mathematical-introduction-to-logic", "contributions-to-founding-transfinite-numbers"],
+      "source": { "online_url": "https://docs.ufpr.br/~hoefel/ensino/CM304_CompleMat_PE3/livros/Enderton_Elements%20of%20set%20theory_%281977%29.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "naive-set-theory-halmos",
+      "title": "Naive Set Theory",
+      "author": ["Paul R. Halmos"],
+      "category": "mathematics",
+      "subcategory": "set-theory",
+      "year_published": 1960,
+      "language": "English",
+      "tags": ["set theory", "mathematics foundations", "ordinals", "cardinals", "introductory", "Halmos"],
+      "level": "beginner",
+      "description": "A short, elegant introduction to set theory from one of the 20th century's greatest mathematical expositors. Covers basic set operations, relations, functions, ordinals, and cardinals in a clear, informal (hence 'naive') style — meaning it avoids full formalization while still being mathematically rigorous enough for most purposes.",
+      "why_read": "The most readable and enjoyable introduction to set theory ever written. Halmos's prose is a model of mathematical clarity.",
+      "when_to_read": "As a first encounter with set theory, before the more formal Enderton text.",
+      "importance": "A classic in mathematical exposition. Still widely assigned and recommended as the gentlest path into formal set theory.",
+      "prerequisites": ["high school mathematics"],
+      "pairs_well_with": ["elements-of-set-theory-enderton", "a-mathematical-introduction-to-logic"],
+      "source": {
+        "online_url": "http://people.whitman.edu/~guichard/260/halmos__naive_set_theory.pdf",
+        "file_path": ""
+      },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "how-to-prove-it-velleman",
+      "title": "How to Prove It: A Structured Approach",
+      "author": ["Daniel J. Velleman"],
+      "category": "mathematics",
+      "subcategory": "foundations",
+      "year_published": 1994,
+      "language": "English",
+      "tags": ["mathematical proof", "logic", "set theory", "proof techniques", "discrete mathematics", "foundations"],
+      "level": "beginner",
+      "description": "A comprehensive guide to mathematical proof-writing, covering propositional logic, set theory, induction, functions, and relations — all in service of teaching how to construct rigorous mathematical proofs. The book bridges computational mathematics and pure mathematics for students making the transition.",
+      "why_read": "The best book for learning how to write and understand mathematical proofs. Essential for anyone transitioning to upper-division mathematics or wanting to read technical logic and mathematics texts.",
+      "when_to_read": "Before or alongside any rigorous mathematics or logic text. Ideal for self-study.",
+      "importance": "The standard text for 'introduction to proof' courses. Widely used in universities as a bridge to higher mathematics.",
+      "prerequisites": ["high school algebra", "basic calculus concepts"],
+      "pairs_well_with": ["naive-set-theory-halmos", "a-mathematical-introduction-to-logic"],
+      "source": { "online_url": "https://ia800501.us.archive.org/7/items/how-to-prove-it-a-structured-approach-daniel-j.-velleman/How%20to%20Prove%20It%20A%20Structured%20Approach%20%28Daniel%20J.%20Velleman%29.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "the-man-who-loved-only-numbers",
+      "title": "The Man Who Loved Only Numbers: The Story of Paul Erdős and the Search for Mathematical Truth",
+      "author": ["Paul Hoffman"],
+      "category": "mathematics",
+      "subcategory": "mathematical-culture",
+      "year_published": 1998,
+      "language": "English",
+      "tags": ["mathematics biography", "Paul Erdős", "number theory", "mathematical community", "accessible", "Ramsey theory"],
+      "level": "general",
+      "description": "A biography of the legendary Hungarian mathematician Paul Erdős — the most prolific mathematician of the 20th century — that doubles as an accessible introduction to pure mathematics, the mathematical community, and the beauty and strangeness of mathematical thought. Covers number theory, graph theory, combinatorics, and Ramsey theory through Erdős's life and collaborations.",
+      "why_read": "One of the best books for non-mathematicians to see what mathematics is really about: the ideas, the culture, the beauty, and the obsession.",
+      "when_to_read": "At any level. No mathematical prerequisites. Highly recommended as a motivational read alongside formal study.",
+      "importance": "Widely read among mathematicians and the public. One of the most beloved popular mathematics books.",
+      "prerequisites": [],
+      "pairs_well_with": ["godel-escher-bach", "what-is-mathematics-courant"],
+      "source": { "online_url": "https://bobson.ludost.net/copycrime/35559997-Man-Who-Loved-Only-Numbers-Paul-Hoffman.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    },
+    {
+      "id": "what-is-mathematics-courant",
+      "title": "What Is Mathematics? An Elementary Approach to Ideas and Methods",
+      "author": ["Richard Courant", "Herbert Robbins"],
+      "category": "mathematics",
+      "subcategory": "foundations",
+      "year_published": 1941,
+      "language": "English",
+      "tags": ["mathematics overview", "number theory", "geometry", "topology", "calculus", "accessible", "foundations"],
+      "level": "intermediate",
+      "description": "A comprehensive survey of mathematical ideas written for the educated non-specialist. Covers number theory, geometry, topology, calculus, and more through concrete ideas and beautiful proofs rather than mechanical calculation. Revised by Ian Stewart in 1996.",
+      "why_read": "One of the great introductions to what mathematics is, written by one of the 20th century's greatest mathematicians. Shows the ideas behind the methods.",
+      "when_to_read": "After high school mathematics, when wanting a broad overview of mathematical ideas before specialization.",
+      "importance": "A classic of mathematical exposition. Einstein called it 'a lucid representation of mathematics'.",
+      "prerequisites": ["high school mathematics"],
+      "pairs_well_with": ["euclids-elements-of-geometry", "godel-escher-bach"],
+      "source": { "online_url": "https://www.cimat.mx/~gil/docencia/2017/mate_elem/[Courant,Robbins]What_Is_Mathematics(2nd_edition_1996)v2.pdf", "file_path": "" },
+      "status": "unread",
+      "notes": "",
+      "added_date": "2026-02-22"
+    }
+  ]
+}
