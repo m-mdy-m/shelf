@@ -229,10 +229,11 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
     signal?: AbortSignal,
   ): Promise<Result<ExtractedPageText, ReaderError>> {
     const numericIndex = index as number;
+    const isAborted = (): boolean => signal?.aborted === true;
     if (this.#closedRef.current) {
       return { ok: false, error: errorResult("cancelled", "The PDF document is closed.") };
     }
-    if (signal?.aborted === true) {
+    if (isAborted()) {
       return { ok: false, error: errorResult("cancelled", "Text extraction was cancelled.") };
     }
     if (this.#rangeFailureRef.current !== null) {
@@ -251,7 +252,7 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
 
     try {
       const page = await this.#document.getPage(numericIndex + 1);
-      if (signal?.aborted === true || this.#closedRef.current) {
+      if (isAborted() || this.#closedRef.current) {
         return { ok: false, error: errorResult("cancelled", "Text extraction was cancelled.") };
       }
       const reader = page.streamTextContent().getReader();
@@ -267,7 +268,7 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
 
       try {
         while (true) {
-          if (signal?.aborted === true || this.#closedRef.current) {
+          if (isAborted() || this.#closedRef.current) {
             await reader.cancel();
             return { ok: false, error: errorResult("cancelled", "Text extraction was cancelled.") };
           }
@@ -312,7 +313,7 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
         reader.releaseLock();
       }
 
-      if (signal?.aborted === true || this.#closedRef.current) {
+      if (isAborted() || this.#closedRef.current) {
         return { ok: false, error: errorResult("cancelled", "Text extraction was cancelled.") };
       }
       const content: PdfJsTextContent = { items };
