@@ -21,7 +21,7 @@ The renderer creates three sibling layers:
 - Text: PDF.js TextLayer from the page's text-content stream; it remains selectable and independently cancellable.
 - Annotations: Shelf-owned DOM markers projected from normalized page rectangles.
 
-Canvas pixel budgets are checked before allocation. Render tasks and text streams are cancelled when a page is rerendered or removed. The PDF.js text-layer stylesheet is shipped as a separate asset so its selectors do not apply to the rest of Shelf's document.
+Canvas pixel budgets are checked before allocation. Render tasks and text streams are cancelled when a page is rerendered or removed. TextLayer positioning and selection rules live in the PDF engine's scoped stylesheet; no global PDF.js viewer stylesheet is loaded.
 
 ## Virtualization
 

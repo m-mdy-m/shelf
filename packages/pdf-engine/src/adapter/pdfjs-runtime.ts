@@ -109,7 +109,7 @@ export interface PdfJsAssetUrls {
 export function resolvePdfJsAssetUrls(baseUrl: string): PdfJsAssetUrls {
   const base = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
   return {
-    workerSrc: new URL("assets/pdfjs/pdf.worker.min.mjs", base).href,
+    workerSrc: new URL("assets/pdfjs/build/pdf.worker.min.mjs", base).href,
     cMapUrl: new URL("assets/pdfjs/cmaps/", base).href,
     iccUrl: new URL("assets/pdfjs/iccs/", base).href,
     standardFontDataUrl: new URL("assets/pdfjs/standard_fonts/", base).href,
