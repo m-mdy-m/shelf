@@ -64,14 +64,20 @@ function failure(
 function safeDisplayName(displayName: string | null): string | null {
   if (displayName === null) return null;
   const leaf = displayName.split(/[\\/]/u).filter(Boolean).at(-1) ?? "";
-  const safe = leaf.replace(/[\\u0000-\\u001f\\u007f]/gu, "").trim();
-  return safe.length === 0 ? null : safe.slice(0, 255);
+  let safe = "";
+  for (const character of leaf) {
+    const codePoint = character.codePointAt(0) ?? 0;
+    if (codePoint < 32 || codePoint === 127) continue;
+    safe += character;
+  }
+  const trimmed = safe.trim();
+  return trimmed.length === 0 ? null : trimmed.slice(0, 255);
 }
 
 function safeTitle(displayName: string | null): string {
   const leaf = safeDisplayName(displayName);
   if (leaf === null) return "Untitled PDF";
-  const title = leaf.replace(/\\.pdf$/iu, "").trim();
+  const title = leaf.toLowerCase().endsWith(".pdf") ? leaf.slice(0, -4).trim() : leaf;
   return title.length === 0 ? "Untitled PDF" : title.slice(0, 512);
 }
 

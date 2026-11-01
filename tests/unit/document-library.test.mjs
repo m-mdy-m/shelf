@@ -272,7 +272,8 @@ test("imported-copy creates an app-owned reopenable copy with a stable safe reco
   assert.equal(document.accessState, "available");
   assert.match(document.fingerprint ?? "", /^sha256:[a-f0-9]{64}$/u);
   assert.equal(harness.locatorsByDocument.get(document.id)?.value.startsWith("copy-"), true);
-  assert.equal(document.source.displayName?.includes("Private Folder"), true);
+  assert.equal(document.source.displayName?.includes("Private Folder"), false);
+  assert.equal(document.source.displayName, "Reader Sample.pdf");
   assert.equal("locator" in document, false);
   assert.equal(JSON.stringify(document).includes("external://secret/path"), false);
   assert.deepEqual([...harness.files.get(harness.locatorsByDocument.get(document.id).value).bytes], [...bytes]);

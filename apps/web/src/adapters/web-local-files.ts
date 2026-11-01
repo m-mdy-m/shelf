@@ -67,8 +67,14 @@ function metadataFor(blob: Blob, displayName: string | null, modifiedAt: number 
 function safeDisplayName(value: string | null): string | null {
   if (value === null) return null;
   const leaf = value.split(/[\\/]/u).filter(Boolean).at(-1) ?? "";
-  const safe = leaf.replace(/[\\u0000-\\u001f\\u007f]/gu, "").trim();
-  return safe.length === 0 ? null : safe.slice(0, 255);
+  let safe = "";
+  for (const character of leaf) {
+    const codePoint = character.codePointAt(0) ?? 0;
+    if (codePoint < 32 || codePoint === 127) continue;
+    safe += character;
+  }
+  const trimmed = safe.trim();
+  return trimmed.length === 0 ? null : trimmed.slice(0, 255);
 }
 
 let nextToken = 0;

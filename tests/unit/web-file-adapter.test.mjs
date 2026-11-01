@@ -11,11 +11,12 @@ class FakeOpfsDirectory {
   #files = new Map();
 
   async getFileHandle(name, options = {}) {
-    if (!this.#files.has(name) && options.create !== true) {
+    const files = this.#files;
+    if (!files.has(name) && options.create !== true) {
       throw new Error("File is missing");
     }
 
-    if (!this.#files.has(name)) this.#files.set(name, new Blob([]));
+    if (!files.has(name)) files.set(name, new Blob([]));
 
     return {
       getFile: async () => this.#files.get(name),
@@ -26,7 +27,7 @@ class FakeOpfsDirectory {
             chunks.push(chunk.slice());
           },
           async close() {
-            this.#files.set(name, new Blob(chunks));
+            files.set(name, new Blob(chunks));
           },
           async abort() {
             chunks.length = 0;
