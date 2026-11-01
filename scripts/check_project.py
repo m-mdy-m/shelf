@@ -57,6 +57,7 @@ REQUIRED_FILES = (
     "packages/pdf-engine/src/styles.css", "docs/architecture/pdf-engine.md",
     "tests/fixtures/pdf/README.md", "tests/fixtures/pdf/fixture-builder.mjs",
     "tests/unit/pdf-engine.test.mjs",
+    "tests/unit/document-library.test.mjs", "tests/unit/browser-document-source.test.mjs",
     "scripts/check_project.py", "scripts/sync_github_metadata.py",
     "scripts/format-check.mjs", "scripts/lint.mjs", "scripts/run-tests.mjs",
     "scripts/clean.mjs", "scripts/build-web.mjs", "tests/README.md",

@@ -1,0 +1,17 @@
+{
+  "name": "@shelf/library",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Document library registration and local source lifecycle",
+  "dependencies": {
+    "@shelf/reader-core": "0.1.0"
+  },
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}
