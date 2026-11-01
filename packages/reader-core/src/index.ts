@@ -6,6 +6,7 @@ export type * from "./domain/annotation.js";
 export type * from "./domain/bookmark.js";
 export type * from "./domain/byte-range.js";
 export type * from "./domain/document.js";
+export type * from "./domain/document-locator.js";
 export type * from "./domain/errors.js";
 export type * from "./domain/ids.js";
 export type * from "./domain/page-index.js";

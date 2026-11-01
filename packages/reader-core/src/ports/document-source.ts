@@ -1,8 +1,8 @@
 import type {
-  DocumentLocator,
   DocumentSourceMetadata,
   OpenDocumentHandle,
 } from "../domain/document.js";
+import type { DocumentLocator } from "../domain/document-locator.js";
 import type { ByteRange } from "../domain/byte-range.js";
 import type { ReaderError } from "../domain/errors.js";
 import type { DocumentId, SourceHandleId } from "../domain/ids.js";
