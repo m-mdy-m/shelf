@@ -1,7 +1,7 @@
 # Shelf — Reader engine
 
 ## Responsibilities
-Own document lifecycle, navigation, rendered page state, selection, reading position, and user-facing annotations. Do not own AI provider calls or IDIOS Notes data.
+Own document lifecycle, navigation, rendered page state, selection, reading position, and user-facing annotations. Do not own AI provider calls or external note-export integrations.
 
 ## Rendering
 - Start with Mozilla PDF.js behind a Shelf adapter; use its worker where supported.
