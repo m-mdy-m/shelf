@@ -47,7 +47,8 @@ function normalizeWithOffsets(source: string): NormalizedText {
   let value = "";
   const sourceStarts: number[] = [];
   const sourceEnds: number[] = [];
-  let pendingWhitespace: { readonly start: number; readonly end: number } | null = null;
+  let pendingWhitespaceStart: number | null = null;
+  let pendingWhitespaceEnd = 0;
 
   for (let offset = 0; offset < source.length;) {
     const codePoint = source.codePointAt(offset);
@@ -58,17 +59,16 @@ function normalizeWithOffsets(source: string): NormalizedText {
 
     if (/^\s+$/u.test(normalized)) {
       if (value.length > 0) {
-        pendingWhitespace = {
-          start: pendingWhitespace?.start ?? offset,
-          end,
-        };
+        if (pendingWhitespaceStart === null) pendingWhitespaceStart = offset;
+        pendingWhitespaceEnd = end;
       }
     } else {
-      if (pendingWhitespace !== null) {
+      if (pendingWhitespaceStart !== null) {
         value += " ";
-        sourceStarts.push(pendingWhitespace.start);
-        sourceEnds.push(pendingWhitespace.end);
-        pendingWhitespace = null;
+        sourceStarts.push(pendingWhitespaceStart);
+        sourceEnds.push(pendingWhitespaceEnd);
+        pendingWhitespaceStart = null;
+        pendingWhitespaceEnd = 0;
       }
       for (let index = 0; index < normalized.length; index += 1) {
         value += normalized[index];
