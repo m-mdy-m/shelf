@@ -8,14 +8,16 @@
     "node": ">=22.16.0 <23",
     "npm": ">=10.9.0 <11"
   },
-  "workspaces": ["apps/web"],
+  "workspaces": ["apps/web", "packages/reader-core"],
   "scripts": {
     "format:check": "node scripts/format-check.mjs",
     "lint": "node scripts/lint.mjs",
-    "typecheck": "tsc --noEmit -p apps/web/tsconfig.json",
-    "test": "node scripts/run-tests.mjs",
-    "build": "npm run clean && tsc -p apps/web/tsconfig.build.json && node scripts/build-web.mjs",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
+    "typecheck": "tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p packages/reader-core/tsconfig.json",
+    "test:run": "node scripts/run-tests.mjs",
+    "test": "npm run build:core && npm run test:run",
+    "build:core": "tsc -p packages/reader-core/tsconfig.build.json",
+    "build": "npm run clean && tsc -p apps/web/tsconfig.build.json && node scripts/build-web.mjs && npm run build:core",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run build && npm run test:run",
     "ci": "npm run check",
     "clean": "node scripts/clean.mjs"
   },

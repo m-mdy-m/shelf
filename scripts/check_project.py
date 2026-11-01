@@ -23,22 +23,40 @@ REQUIRED_FILES = (
     "spec/02-reader-engine.md", "spec/03-ai-companion.md", "spec/04-data-model.md",
     "spec/05-cross-platform.md", "spec/06-quality-security.md", "spec/07-roadmap.md",
     "spec/08-github-work-plan.md", "docs/README.md", "docs/product/README.md",
-    "docs/architecture/README.md", "docs/development/README.md",
-    "docs/decisions/README.md", "docs/decisions/0001-desktop-runtime-packaging.md",
-    "docs/web-assets.md", "apps/web/package.json", "apps/web/index.html",
-    "apps/web/tsconfig.json", "apps/web/tsconfig.build.json",
-    "apps/web/src/main.ts", "apps/web/src/application.ts", "apps/web/src/styles.css",
+    "docs/architecture/README.md", "docs/architecture/reader-contracts.md",
+    "docs/development/README.md", "docs/decisions/README.md",
+    "docs/decisions/0001-desktop-runtime-packaging.md", "docs/web-assets.md",
+    "apps/web/package.json", "apps/web/index.html", "apps/web/tsconfig.json",
+    "apps/web/tsconfig.build.json", "apps/web/src/main.ts",
+    "apps/web/src/application.ts", "apps/web/src/styles.css",
     "apps/web/public/favicon.svg", "apps/web/public/site.webmanifest",
     "apps/web/public/robots.txt", "apps/web/public/brand/shelf-mark.svg",
     "apps/web/public/icons/shelf.svg", ".nvmrc", "package.json", "package-lock.json",
-    "tsconfig.base.json", "scripts/check_project.py", "scripts/sync_github_metadata.py",
+    "tsconfig.base.json", "packages/reader-core/README.md",
+    "packages/reader-core/package.json", "packages/reader-core/tsconfig.json",
+    "packages/reader-core/tsconfig.build.json", "packages/reader-core/src/index.ts",
+    "packages/reader-core/src/domain/ids.ts", "packages/reader-core/src/domain/page-index.ts",
+    "packages/reader-core/src/domain/byte-range.ts", "packages/reader-core/src/domain/document-locator.ts",
+    "packages/reader-core/src/domain/result.ts",
+    "packages/reader-core/src/domain/errors.ts", "packages/reader-core/src/domain/document.ts",
+    "packages/reader-core/src/domain/reading-progress.ts",
+    "packages/reader-core/src/domain/bookmark.ts",
+    "packages/reader-core/src/domain/annotation.ts", "packages/reader-core/src/domain/quote.ts",
+    "packages/reader-core/src/ports/document-source.ts",
+    "packages/reader-core/src/ports/repositories.ts",
+    "packages/reader-core/src/ports/runtime.ts", "packages/reader-core/src/ports/index.ts",
+    "packages/reader-core/src/application/reader-use-cases.ts",
+    "packages/reader-core/tests/contracts.type-test.ts",
+    "scripts/check_project.py", "scripts/sync_github_metadata.py",
     "scripts/format-check.mjs", "scripts/lint.mjs", "scripts/run-tests.mjs",
-    "scripts/clean.mjs", "scripts/build-web.mjs",
-    "tests/README.md", "tests/unit/application-foundation.test.mjs",
+    "scripts/clean.mjs", "scripts/build-web.mjs", "tests/README.md",
+    "tests/unit/application-foundation.test.mjs", "tests/unit/reader-contracts.test.mjs",
 )
 REQUIRED_DIRS = (
     "apps/web/src", "apps/web/public", "apps/desktop", "apps/mobile",
-    "packages/reader-core", "packages/pdf-engine", "packages/selection",
+    "packages/reader-core", "packages/reader-core/src/domain",
+    "packages/reader-core/src/ports", "packages/reader-core/src/application",
+    "packages/reader-core/tests", "packages/pdf-engine", "packages/selection",
     "packages/annotations", "packages/ai-contracts", "packages/platform-adapters",
     "backend/cmd/shelf", "backend/internal/domain", "backend/internal/application",
     "backend/internal/ports", "backend/internal/adapters/storage",
@@ -101,19 +119,32 @@ def check_pipeline() -> None:
 def check_application_workspace() -> None:
     manifest = load_json("package.json")
     web_manifest = load_json("apps/web/package.json")
+    reader_manifest = load_json("packages/reader-core/package.json")
     lock = load_json("package-lock.json")
     compiler_config = load_json("tsconfig.base.json")
-    if manifest.get("workspaces") != ["apps/web"]:
-        fail("root npm workspace must explicitly include apps/web")
+
+    expected_workspaces = ["apps/web", "packages/reader-core"]
+    if manifest.get("workspaces") != expected_workspaces:
+        fail(f"root npm workspace must explicitly include {expected_workspaces}")
     if web_manifest.get("name") != "@shelf/web" or web_manifest.get("private") is not True:
         fail("web application must be a private @shelf/web workspace")
+    if reader_manifest.get("name") != "@shelf/reader-core" or reader_manifest.get("private") is not True:
+        fail("Reader core must be a private @shelf/reader-core workspace")
+    if reader_manifest.get("types") != "./dist/index.d.ts":
+        fail("Reader core must publish its generated TypeScript declaration entry")
     if manifest.get("devDependencies", {}).get("typescript") != "5.8.3":
         fail("TypeScript must be pinned to the reviewed 5.8.3 version")
     if lock.get("lockfileVersion") != 3:
         fail("package-lock.json must use npm lockfile version 3")
-    locked_typescript = lock.get("packages", {}).get("node_modules/typescript", {})
+
+    lock_packages = lock.get("packages", {})
+    locked_typescript = lock_packages.get("node_modules/typescript", {})
     if locked_typescript.get("version") != manifest["devDependencies"]["typescript"]:
         fail("package-lock.json TypeScript version does not match package.json")
+    if lock_packages.get("packages/reader-core", {}).get("name") != "@shelf/reader-core":
+        fail("package-lock.json is missing the Reader core workspace entry")
+    if lock_packages.get("node_modules/@shelf/reader-core", {}).get("resolved") != "packages/reader-core":
+        fail("package-lock.json is missing the Reader core workspace link")
     if compiler_config.get("compilerOptions", {}).get("strict") is not True:
         fail("TypeScript strict mode must remain enabled")
 
@@ -212,7 +243,7 @@ def main() -> None:
     check_psx_gix()
     check_public_assets()
     check_markdown_links()
-    print("PASS: Shelf structure, app workspace, quality gates, specs, assets, and GitHub metadata")
+    print("PASS: Shelf structure, app workspaces, quality gates, specs, assets, and GitHub metadata")
 
 
 if __name__ == "__main__":
