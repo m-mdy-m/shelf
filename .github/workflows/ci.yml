@@ -15,12 +15,27 @@ concurrency:
 
 jobs:
   quality:
-    uses: m-mdy-m/pipeline/.github/workflows/ci.yml@f4e05487193a653ecb96cd09f9a6b2da7ba4822
-    with:
-      language: custom
-      python-version: "3.12"
-      pipeline-task: ci
-      pipeline-ref: f4e05487193a653ecb96cd09f9a6b2da7ba4822
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Check out the shared Pipeline task runner
+        uses: actions/checkout@v7
+        with:
+          repository: m-mdy-m/pipeline
+          ref: f4e05487193a653ecb96cd09f9a6b2da7ba4822
+          path: .pipeline
+          persist-credentials: false
+      - name: Run the Shelf task graph
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.pipeline/src
+        run: >-
+          python -m pipeline.providers.github task ci
+          --root "$GITHUB_WORKSPACE"
+          --config "$GITHUB_WORKSPACE/pipeline.toml"
+          --json
 
   structure:
     runs-on: ubuntu-latest
@@ -40,9 +55,9 @@ jobs:
       - name: Build pinned PSX
         working-directory: .tools/psx
         run: go build -trimpath -o "$RUNNER_TEMP/psx" ./cmd/psx
-      - name: Verify the PSX-generated project structure
+      - name: Initialize and verify the declared structure
         run: |
-          "$RUNNER_TEMP/psx" fix --dry-run
+          "$RUNNER_TEMP/psx" fix
           "$RUNNER_TEMP/psx" check
           git diff --exit-code
 

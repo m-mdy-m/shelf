@@ -40,3 +40,7 @@ Thumbs.db
 *.sqlite3
 *.log
 logs/
+
+# PSX local metadata
+.psx/
+.psx-project.yml
