@@ -1,0 +1,123 @@
+version: 1
+
+project:
+  type: generic
+  kind: app
+
+# PSX keeps the repository structure intentional while implementation is staged.
+rules:
+  readme: error
+  license: error
+  gitignore: error
+  changelog: warning
+  tests_folder: warning
+  scripts_folder: error
+  docs_folder: error
+  contributing: info
+  security: info
+  pull_request_template: error
+  issue_templates: error
+  ci_config: info
+  workflow_ci: error
+  editorconfig: info
+
+ignore:
+  - .git/
+  - node_modules/
+  - vendor/
+  - dist/
+  - build/
+  - coverage/
+  - .pipeline/
+  - .psx/
+
+fix:
+  interactive: false
+  backup: true
+
+custom:
+  files:
+    - path: docs/README.md
+      content: |
+        # Documentation
+        Product requirements live in [spec/](../spec/README.md). This directory holds implementation-facing guides.
+    - path: docs/architecture/README.md
+      content: |
+        # Architecture notes
+        Record implementation decisions here. Normative requirements live in [spec/](../../spec/README.md).
+    - path: docs/development/README.md
+      content: |
+        # Development guides
+        Add setup, build, test, and release instructions as implementation lands.
+    - path: docs/decisions/README.md
+      content: |
+        # Architecture decision records
+        Keep one focused ADR per material decision.
+    - path: tests/README.md
+      content: |
+        # Tests
+        Organize unit, integration, and E2E tests here. Use redistributable PDF fixtures only.
+    - path: scripts/README.md
+      content: |
+        # Scripts
+        Repository maintenance and validation scripts only.
+  folders:
+    - path: apps
+      structure:
+        web:
+          src:
+            .gitkeep: ""
+        desktop:
+          .gitkeep: ""
+        mobile:
+          .gitkeep: ""
+    - path: packages
+      structure:
+        reader-core:
+          .gitkeep: ""
+        pdf-engine:
+          .gitkeep: ""
+        selection:
+          .gitkeep: ""
+        annotations:
+          .gitkeep: ""
+        ai-contracts:
+          .gitkeep: ""
+        platform-adapters:
+          .gitkeep: ""
+    - path: backend
+      structure:
+        cmd:
+          shelf:
+            .gitkeep: ""
+        internal:
+          domain:
+            .gitkeep: ""
+          application:
+            .gitkeep: ""
+          ports:
+            .gitkeep: ""
+          adapters:
+            storage:
+              .gitkeep: ""
+            ai:
+              .gitkeep: ""
+    - path: tests
+      structure:
+        unit:
+          .gitkeep: ""
+        integration:
+          .gitkeep: ""
+        e2e:
+          .gitkeep: ""
+        fixtures:
+          pdf:
+            .gitkeep: ""
+    - path: docs
+      structure:
+        architecture:
+          .gitkeep: ""
+        development:
+          .gitkeep: ""
+        decisions:
+          .gitkeep: ""

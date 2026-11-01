@@ -1,0 +1,31 @@
+schema_version = 1
+
+[project]
+name = "shelf"
+description = "Cross-platform local-first PDF reading workspace with local and cloud AI"
+
+[defaults]
+timeout_seconds = 300
+fail_fast = true
+
+[tasks.project-check]
+description = "Validate Shelf spec, archive, and project metadata"
+command = ["python", "scripts/check_project.py"]
+timeout_seconds = 60
+
+[tasks.compile]
+description = "Compile repository maintenance scripts"
+command = ["python", "-m", "compileall", "-q", "scripts"]
+timeout_seconds = 60
+
+[tasks.check]
+description = "Run repository scaffold checks"
+command = ["python", "-c", "print('Shelf repository checks passed')"]
+depends_on = ["project-check", "compile"]
+timeout_seconds = 60
+
+[tasks.ci]
+description = "CI task graph for local and GitHub Actions execution"
+command = ["python", "-c", "print('Shelf CI task graph passed')"]
+depends_on = ["check"]
+timeout_seconds = 60

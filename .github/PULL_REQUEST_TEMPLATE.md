@@ -1,19 +1,10 @@
-## What does this change?
+## What changed?
+<!-- One or two sentences. -->
 
-## Related issues
-<!-- Closes #N / Refs #N -->
+## Related issue
+<!-- Closes #123 -->
 
-## Validation
-- [ ] Focused tests run
-- [ ] Relevant build checks run
-- [ ] Platform checks run or are marked NOT RUN
-- [ ] PDF/source-citation/privacy implications reviewed
-- [ ] Spec/docs updated
-
-## Platform coverage
-Only check platforms actually tested:
-- [ ] Windows
-- [ ] macOS
-- [ ] Linux
-- [ ] Android
-- [ ] iOS
+## Checks
+- [ ] Relevant tests/checks run (or explain why not).
+- [ ] Docs/spec updated when needed.
+- [ ] Tested platforms are listed; untested platforms are not claimed.
