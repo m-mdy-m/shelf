@@ -1,0 +1,29 @@
+name: Sync GitHub project metadata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/labels.json"
+      - ".github/milestones.json"
+      - "scripts/sync_github_metadata.py"
+      - ".github/workflows/sync-project-metadata.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Create or update labels and milestones
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python scripts/sync_github_metadata.py

@@ -1,0 +1,152 @@
+[
+  {
+    "name": "type:epic",
+    "color": "6f42c1",
+    "description": "Parent work stream with a defined release outcome."
+  },
+  {
+    "name": "type:feature",
+    "color": "1d76db",
+    "description": "User-visible or platform capability."
+  },
+  {
+    "name": "type:task",
+    "color": "0e8a16",
+    "description": "Focused engineering or validation task."
+  },
+  {
+    "name": "type:research",
+    "color": "d4c5f9",
+    "description": "Time-boxed investigation or architecture decision."
+  },
+  {
+    "name": "type:bug",
+    "color": "d73a4a",
+    "description": "Defect that needs correction."
+  },
+  {
+    "name": "area:architecture",
+    "color": "c2e0c6",
+    "description": "Architecture, boundaries, contracts, and build foundations."
+  },
+  {
+    "name": "area:reader",
+    "color": "bfd4f2",
+    "description": "PDF reading experience and workflows."
+  },
+  {
+    "name": "area:pdf",
+    "color": "d4c5f9",
+    "description": "PDF parsing, rendering, text, and file compatibility."
+  },
+  {
+    "name": "area:library",
+    "color": "fef2c0",
+    "description": "Document library and import flows."
+  },
+  {
+    "name": "area:annotations",
+    "color": "f9d0c4",
+    "description": "Bookmarks, highlights, notes, quotes, and anchors."
+  },
+  {
+    "name": "area:storage",
+    "color": "c5def5",
+    "description": "Local persistence, migrations, backup, and export."
+  },
+  {
+    "name": "area:ai",
+    "color": "7057ff",
+    "description": "AI context, orchestration, and user workflows."
+  },
+  {
+    "name": "area:ai-local",
+    "color": "0052cc",
+    "description": "Local model providers and inference."
+  },
+  {
+    "name": "area:ai-cloud",
+    "color": "1d76db",
+    "description": "Cloud AI providers and remote inference."
+  },
+  {
+    "name": "area:privacy",
+    "color": "e4e669",
+    "description": "Privacy, secrets, security, and consent."
+  },
+  {
+    "name": "area:platform",
+    "color": "006b75",
+    "description": "Cross-platform capabilities and release engineering."
+  },
+  {
+    "name": "area:desktop",
+    "color": "0e8a16",
+    "description": "Windows, macOS, and Linux desktop targets."
+  },
+  {
+    "name": "area:mobile",
+    "color": "fbca04",
+    "description": "Android and iOS targets."
+  },
+  {
+    "name": "area:knowledge",
+    "color": "d876e3",
+    "description": "Knowledge capture, concepts, flashcards, and quizzes."
+  },
+  {
+    "name": "area:integration",
+    "color": "bfdadc",
+    "description": "Optional integration with the IDIOS ecosystem."
+  },
+  {
+    "name": "area:quality",
+    "color": "e99695",
+    "description": "Testing, validation, accessibility, and performance."
+  },
+  {
+    "name": "priority:P0",
+    "color": "b60205",
+    "description": "Blocking foundation for the first usable Reader release."
+  },
+  {
+    "name": "priority:P1",
+    "color": "d93f0b",
+    "description": "Important follow-up capability or release blocker."
+  },
+  {
+    "name": "priority:P2",
+    "color": "fbca04",
+    "description": "Later enhancement or optional integration."
+  },
+  {
+    "name": "platform:windows",
+    "color": "0078d4",
+    "description": "Windows target."
+  },
+  {
+    "name": "platform:macos",
+    "color": "000000",
+    "description": "macOS target."
+  },
+  {
+    "name": "platform:linux",
+    "color": "fcc624",
+    "description": "Linux target."
+  },
+  {
+    "name": "platform:android",
+    "color": "3ddc84",
+    "description": "Android target."
+  },
+  {
+    "name": "platform:ios",
+    "color": "555555",
+    "description": "iOS target."
+  },
+  {
+    "name": "platform:all",
+    "color": "0366d6",
+    "description": "Affects all supported platform families."
+  }
+]

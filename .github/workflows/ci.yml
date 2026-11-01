@@ -1,0 +1,23 @@
+name: Shelf CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shelf-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    uses: m-mdy-m/pipeline/.github/workflows/ci.yml@f4e05487193a653ecb96cd09f9a6b2da7ba4822
+    with:
+      language: custom
+      python-version: "3.12"
+      pipeline-task: ci
+      pipeline-ref: f4e05487193a653ecb96cd09f9a6b2da7ba4822

@@ -1,0 +1,18 @@
+[
+  {
+    "title": "0.1 — Reader Foundation",
+    "description": "Offline PDF Reader: import, PDF.js rendering, navigation/search, selection, durable annotations, progress/resume, and quality baseline."
+  },
+  {
+    "title": "0.2 — AI Companion",
+    "description": "Optional local and cloud AI with bounded PDF context, verifiable citations, streaming, cancellation, and privacy controls."
+  },
+  {
+    "title": "0.3 — Knowledge & IDIOS Integration",
+    "description": "Portable quotes/notes, concepts as reviewable drafts, deep links, and optional IDIOS adapters."
+  },
+  {
+    "title": "1.0 — Cross-platform Standalone Release",
+    "description": "Installable standalone Shelf on Windows, macOS, Linux, Android, and iOS with offline Reader workflows and platform validation."
+  }
+]
