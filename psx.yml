@@ -67,6 +67,11 @@ custom:
         web:
           src:
             .gitkeep: ""
+          public:
+            brand:
+              .gitkeep: ""
+            icons:
+              .gitkeep: ""
         desktop:
           .gitkeep: ""
         mobile:

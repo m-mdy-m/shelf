@@ -1,0 +1,22 @@
+name: Bug report
+description: Report a reproducible Shelf problem.
+title: "bug: "
+body:
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and reproduction steps
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform and version
+    validations:
+      required: true
