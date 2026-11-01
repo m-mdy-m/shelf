@@ -215,9 +215,23 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
 
   function updateMeasuredSize(index: number, handle: PdfPageHandle): boolean {
     const next = handle.geometry;
-    const previous = virtualizer.getPageSize(toPageIndex(index));
+    const pageIndex = toPageIndex(index);
+    const previous = virtualizer.getPageSize(pageIndex);
     if (previous.width === next.width && previous.height === next.height) return false;
-    virtualizer.updatePageSize(toPageIndex(index), { width: next.width, height: next.height });
+
+    // Keep the currently visible page anchored when an earlier page's estimate
+    // is replaced by its measured height. Without this correction, a long PDF
+    // can visibly jump as pages enter and leave the virtual window.
+    const anchorTopBefore = mode === "continuous"
+      ? virtualizer.getPageTop(toPageIndex(currentPage), zoom)
+      : 0;
+    virtualizer.updatePageSize(pageIndex, { width: next.width, height: next.height });
+    if (mode === "continuous" && index < currentPage) {
+      const anchorTopAfter = virtualizer.getPageTop(toPageIndex(currentPage), zoom);
+      const correction = anchorTopAfter - anchorTopBefore;
+      stage.scrollTop = Math.max(0, stage.scrollTop + correction);
+      lastScrollPosition = stage.scrollTop;
+    }
     return true;
   }
 
