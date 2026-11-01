@@ -78,8 +78,10 @@ It copies Shelf's isolated page-layer/TextLayer stylesheet. `resolvePdfJsAssetUr
 
 ## Page text extraction
 
-A session exposes `getPageText(toPageIndex(index), signal?)`. It reads PDF.js text-content chunks from `streamTextContent()`, not from an unbounded full-page text allocation. Extraction is capped at 50,000 items and 500,000 characters per page and cached for at most 24 pages per session. AbortSignal cancels the active stream and returns a `cancelled` Result.
+A session exposes `getPageText(toPageIndex(index), signal?)`. It reads PDF.js text-content chunks from `streamTextContent()`, not from an unbounded full-page text allocation. Extraction is capped at 50,000 items and 500,000 characters per page, records truncation explicitly, and is cached for at most 24 pages per session. AbortSignal cancels the active stream and returns a `cancelled` Result.
 
 The returned `ExtractedPageText` contains normalized text, source-preserving UTF-16 offsets, direction/font metadata, and viewport-projected page rectangles. NFKC normalization expands compatibility ligatures; geometric line grouping, paragraph-gap detection, punctuation-aware space inference, simple gutter-based column ordering, and RTL ordering provide deterministic layout fallbacks. They do not replace OCR or guarantee semantic order for malformed PDFs.
 
-Use the Reader Core `findTextMatches` helper to search normalized text while retaining offsets into the extracted string. The Reader shell bounds a search to 2,000 pages, 2,000,000 characters, 100 results, and 20 matches per page. Image-only pages are explicitly represented with `hasSelectableText: false`.
+Use the Reader Core `findTextMatches` helper to search normalized text while retaining offsets into the extracted string. The Reader shell bounds a search to 2,000 pages, 2,000,000 characters, 100 results, 20 matches per page, and a 256-character query. Image-only pages are explicitly represented with `hasSelectableText: false`.
+
+The ReaderWorkspace controller exposes the active transient selection via `getSelection()` and an optional callback. The selection includes the exact text, normalized fallback, document/page identity, UTF-16 offsets, document fingerprint, anchor version, normalized page rectangles, and offset confidence. Its geometry is capped at 512 fragments and transient interaction overlays at 500 markers per page.

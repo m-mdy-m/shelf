@@ -72,3 +72,7 @@ Persist last document, page/scroll, zoom, reading mode, and timestamps; debounce
 - Local search is sequential, cancellable, and bounded to 2,000 pages, 2,000,000 indexed characters, 100 results, and 20 results per page. Search normalization handles case, NFKC, and whitespace while returning offsets into the extracted page text.
 - Browser selection reports exact selected text, DocumentId, zero-based PageIndex, UTF-16 offsets, document fingerprint, anchor version, normalized page rectangles, and offset confidence. Selection offsets are resolved against extracted text, preferring exact text and then the nearest normalized-text occurrence.
 - A page with no extractable text is reported as non-selectable. OCR is not run and must never be implied. Search/selection state remains transient; annotation persistence and resilient anchor recovery are handled by Issue #12.
+
+- Extracted pages expose an explicit truncation flag when the 50,000-item or 500,000-character per-page budget is reached; search reports truncated and failed pages so partial results are not presented as complete.
+- Search queries are limited to 256 characters; the per-page transient interaction overlay is capped at 500 markers and selection geometry at 512 rectangles.
+- The ReaderWorkspace controller and optional selection callback expose transient TextSelection metadata to future annotation/context workflows without writing an Annotation or Quote.

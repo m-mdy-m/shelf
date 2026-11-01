@@ -107,6 +107,14 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(workspace.includes("captureTextSelection"), true);
   assert.equal(workspace.includes("MAX_SEARCH_PAGES"), true);
   assert.equal(workspace.includes("MAX_SEARCH_CHARACTERS"), true);
+  assert.equal(workspace.includes("MAX_SEARCH_QUERY_CHARACTERS"), true);
+  assert.equal(workspace.includes("MAX_SELECTION_RECTANGLES"), true);
+  assert.equal(workspace.includes("MAX_INTERACTION_MARKERS_PER_PAGE"), true);
+  assert.equal(workspace.includes("getSelection(): TextSelection"), true);
+  assert.equal(workspace.includes("onSelection?: (selection: TextSelection | null) => void;"), true);
+  assert.equal(workspace.includes("options.onSelection?.(activeSelection)"), true);
+  assert.equal(workspace.includes("pageText.truncated"), true);
+  assert.equal(workspace.includes("jumpToSearchMatch"), true);
   assert.equal(pdfRenderer.includes("shelf-pdf-interaction-layer"), true);
   assert.equal(workspace.includes("let outlineLoaded = false"), true);
   assert.equal(workspace.includes("await loadOutline()"), false);
