@@ -1,0 +1,17 @@
+{
+  "name": "@shelf/platform-adapters",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser storage, file access, and permission adapters",
+  "dependencies": {
+    "@shelf/reader-core": "0.1.0"
+  },
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}

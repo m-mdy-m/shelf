@@ -3,7 +3,11 @@ import type {
   DocumentId,
 } from "./ids.js";
 
-export type DocumentSourceKind = "local-file" | "imported-copy" | "provider";
+export type DocumentSourceKind =
+  | "local-file"
+  | "imported-copy"
+  | "external-reference"
+  | "provider";
 
 export interface DocumentSource {
   /** Source category only; access locators are stored separately by adapters. */

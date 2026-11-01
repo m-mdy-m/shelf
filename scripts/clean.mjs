@@ -6,5 +6,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 await rm(path.join(root, "dist"), { recursive: true, force: true });
 await rm(path.join(root, "packages", "reader-core", "dist"), { recursive: true, force: true });
 await rm(path.join(root, "packages", "pdf-engine", "dist"), { recursive: true, force: true });
+await rm(path.join(root, "packages", "library", "dist"), { recursive: true, force: true });
+await rm(path.join(root, "packages", "platform-adapters", "dist"), { recursive: true, force: true });
 await rm(path.join(root, "apps", "web", "tsconfig.tsbuildinfo"), { force: true });
 console.log("Cleaned generated Shelf build output.");

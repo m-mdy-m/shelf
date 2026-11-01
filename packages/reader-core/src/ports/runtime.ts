@@ -19,6 +19,11 @@ export interface IdGeneratorPort {
   next<Kind extends string>(kind: Kind): OpaqueId<Kind>;
 }
 
+/** Cryptographic hashing supplied by a platform adapter; input is already bounded. */
+export interface Sha256DigestPort {
+  digest(data: Uint8Array): Promise<Result<Uint8Array, ReaderError>>;
+}
+
 export interface SecureCredentialStorePort {
   /** Secret material is transient and must never be logged or included in exports. */
   get(key: CredentialKey): Promise<Result<SecretValue | null, ReaderError>>;
