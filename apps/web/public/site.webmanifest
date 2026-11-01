@@ -1,0 +1,25 @@
+{
+  "name": "Shelf — Reading Workspace",
+  "short_name": "Shelf",
+  "description": "A calm, local-first reading workspace for PDFs and the ideas inside them.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#111318",
+  "theme_color": "#171A20",
+  "categories": [
+    "books",
+    "education",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/icons/shelf.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
