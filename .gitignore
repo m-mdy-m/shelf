@@ -1,8 +1,42 @@
-go.work
+# Secrets
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies and build
+node_modules/
+vendor/
+dist/
+build/
+out/
+target/
+coverage/
+
+# Native build outputs
+*.app/
+*.dmg
+*.exe
+*.msi
+*.apk
+*.aab
+*.ipa
+
+# Go
+*.test
+*.prof
+*.out
+
+# Tooling
 .vscode/
-# Logs
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local data and logs
+*.db
+*.sqlite
+*.sqlite3
 *.log
 logs/
-bin
-vendor

@@ -1,23 +1,19 @@
-## What does this PR do?
+## What does this change?
 
-<!-- A short description of the change. -->
+## Related issues
+<!-- Closes #N / Refs #N -->
 
-## Why?
+## Validation
+- [ ] Focused tests run
+- [ ] Relevant build checks run
+- [ ] Platform checks run or are marked NOT RUN
+- [ ] PDF/source-citation/privacy implications reviewed
+- [ ] Spec/docs updated
 
-<!-- Context or motivation. Link to an issue if relevant: Closes #XXX -->
-
-## Type of change
-
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Refactor / cleanup
-- [ ] Documentation
-- [ ] Other
-
-## Checklist
-
-- [ ] `go vet ./...` passes
-- [ ] `go test ./...` passes
-- [ ] `gofmt -w .` applied
-- [ ] Updated `SCHEMA.md` if schema changed
-- [ ] Tested manually with `shelf add` / `shelf find` / `shelf remove`
+## Platform coverage
+Only check platforms actually tested:
+- [ ] Windows
+- [ ] macOS
+- [ ] Linux
+- [ ] Android
+- [ ] iOS
