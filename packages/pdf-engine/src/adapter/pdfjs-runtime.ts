@@ -141,7 +141,7 @@ export function createPdfJsRuntime(assets: PdfJsAssetUrls): PdfJsRuntime {
     createRangeTransport(length, filename, requestRange, onAbort) {
       class ShelfRangeTransport extends PDFDataRangeTransport {
         constructor() {
-          super(length, null, false, filename);
+          super(length, null, false, filename ?? undefined);
         }
 
         override requestDataRange(begin: number, end: number): void {
@@ -161,7 +161,7 @@ export function createPdfJsRuntime(assets: PdfJsAssetUrls): PdfJsRuntime {
     },
     getDocument(options) {
       return getDocument({
-        range: options.range as PDFDataRangeTransport,
+        range: options.range as unknown as PDFDataRangeTransport,
         worker: options.worker as PDFWorker,
         rangeChunkSize: options.rangeChunkSize,
         disableRange: false,
