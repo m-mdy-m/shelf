@@ -1,0 +1,23 @@
+{
+  "name": "shelf",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local-first PDF reading workspace",
+  "packageManager": "npm@10.9.4",
+  "engines": {
+    "node": ">=22.16.0 <23",
+    "npm": ">=10.9.0 <11"
+  },
+  "workspaces": ["apps/web"],
+  "scripts": {
+    "format:check": "node scripts/format-check.mjs",
+    "lint": "node scripts/lint.mjs",
+    "typecheck": "tsc --noEmit -p apps/web/tsconfig.json",
+    "test": "node scripts/run-tests.mjs",
+    "build": "npm run clean && tsc -p apps/web/tsconfig.build.json && node scripts/build-web.mjs",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
+    "ci": "npm run check",
+    "clean": "node scripts/clean.mjs"
+  },
+  "devDependencies": {"typescript": "5.8.3"}
+}

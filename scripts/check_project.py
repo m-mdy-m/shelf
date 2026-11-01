@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Shelf's specification-first repository using Python's standard library."""
+"""Validate Shelf's specification, tooling, and application foundation."""
 
 from __future__ import annotations
 
@@ -12,72 +12,38 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_FILES = (
-    "README.md",
-    "LICENSE",
-    "psx.yml",
-    ".gix/config",
-    "pipeline.toml",
-    "Makefile",
-    "CONTRIBUTING.md",
-    "SECURITY.md",
-    ".github/PULL_REQUEST_TEMPLATE.md",
-    ".github/ISSUE_TEMPLATE/config.yml",
-    ".github/ISSUE_TEMPLATE/bug_report.yml",
-    ".github/ISSUE_TEMPLATE/feature_request.yml",
-    ".github/workflows/ci.yml",
-    ".github/workflows/sync-project-metadata.yml",
-    ".github/labels.json",
-    ".github/milestones.json",
-    ".github/issue-metadata.json",
-    "archive/README.md",
-    "archive/catalog.json",
-    "archive/SCHEMA.md",
-    "spec/README.md",
-    "spec/00-product-brief.md",
-    "spec/01-architecture.md",
-    "spec/02-reader-engine.md",
-    "spec/03-ai-companion.md",
-    "spec/04-data-model.md",
-    "spec/05-cross-platform.md",
-    "spec/06-quality-security.md",
-    "spec/07-roadmap.md",
-    "spec/08-github-work-plan.md",
-    "docs/README.md",
-    "docs/product/README.md",
-    "docs/architecture/README.md",
-    "docs/development/README.md",
-    "docs/decisions/README.md",
-    "docs/web-assets.md",
-    "apps/web/public/favicon.svg",
-    "apps/web/public/site.webmanifest",
-    "apps/web/public/robots.txt",
-    "apps/web/public/brand/shelf-mark.svg",
-    "apps/web/public/icons/shelf.svg",
-    "scripts/check_project.py",
-    "scripts/sync_github_metadata.py",
-    "tests/README.md",
+    "README.md", "LICENSE", "psx.yml", ".gix/config", "pipeline.toml", "Makefile",
+    "CONTRIBUTING.md", "SECURITY.md", ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/ISSUE_TEMPLATE/config.yml", ".github/ISSUE_TEMPLATE/bug_report.yml",
+    ".github/ISSUE_TEMPLATE/feature_request.yml", ".github/workflows/ci.yml",
+    ".github/workflows/sync-project-metadata.yml", ".github/labels.json",
+    ".github/milestones.json", ".github/issue-metadata.json",
+    "archive/README.md", "archive/catalog.json", "archive/SCHEMA.md",
+    "spec/README.md", "spec/00-product-brief.md", "spec/01-architecture.md",
+    "spec/02-reader-engine.md", "spec/03-ai-companion.md", "spec/04-data-model.md",
+    "spec/05-cross-platform.md", "spec/06-quality-security.md", "spec/07-roadmap.md",
+    "spec/08-github-work-plan.md", "docs/README.md", "docs/product/README.md",
+    "docs/architecture/README.md", "docs/development/README.md",
+    "docs/decisions/README.md", "docs/decisions/0001-desktop-runtime-packaging.md",
+    "docs/web-assets.md", "apps/web/package.json", "apps/web/index.html",
+    "apps/web/tsconfig.json", "apps/web/tsconfig.build.json",
+    "apps/web/src/main.ts", "apps/web/src/application.ts", "apps/web/src/styles.css",
+    "apps/web/public/favicon.svg", "apps/web/public/site.webmanifest",
+    "apps/web/public/robots.txt", "apps/web/public/brand/shelf-mark.svg",
+    "apps/web/public/icons/shelf.svg", ".nvmrc", "package.json", "package-lock.json",
+    "tsconfig.base.json", "scripts/check_project.py", "scripts/sync_github_metadata.py",
+    "scripts/format-check.mjs", "scripts/lint.mjs", "scripts/run-tests.mjs",
+    "scripts/clean.mjs", "scripts/build-web.mjs",
+    "tests/README.md", "tests/unit/application-foundation.test.mjs",
 )
 REQUIRED_DIRS = (
-    "apps/web/src",
-    "apps/web/public",
-    "apps/desktop",
-    "apps/mobile",
-    "packages/reader-core",
-    "packages/pdf-engine",
-    "packages/selection",
-    "packages/annotations",
-    "packages/ai-contracts",
-    "packages/platform-adapters",
-    "backend/cmd/shelf",
-    "backend/internal/domain",
-    "backend/internal/application",
-    "backend/internal/ports",
-    "backend/internal/adapters/storage",
-    "backend/internal/adapters/ai",
-    "tests/unit",
-    "tests/integration",
-    "tests/e2e",
-    "tests/fixtures/pdf",
+    "apps/web/src", "apps/web/public", "apps/desktop", "apps/mobile",
+    "packages/reader-core", "packages/pdf-engine", "packages/selection",
+    "packages/annotations", "packages/ai-contracts", "packages/platform-adapters",
+    "backend/cmd/shelf", "backend/internal/domain", "backend/internal/application",
+    "backend/internal/ports", "backend/internal/adapters/storage",
+    "backend/internal/adapters/ai", "tests/unit", "tests/integration",
+    "tests/e2e", "tests/fixtures/pdf",
 )
 LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 
@@ -87,11 +53,11 @@ def fail(message: str) -> None:
     raise SystemExit(1)
 
 
-def load_json(path: str):
+def load_json(relative_path: str):
     try:
-        return json.loads((ROOT / path).read_text(encoding="utf-8"))
+        return json.loads((ROOT / relative_path).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        fail(f"{path} is invalid JSON: {exc}")
+        fail(f"{relative_path} is invalid JSON: {exc}")
 
 
 def check_required_paths() -> None:
@@ -120,7 +86,7 @@ def check_pipeline() -> None:
     if config.get("schema_version") != 1:
         fail("pipeline.toml schema_version must be 1")
     tasks = config.get("tasks", {})
-    for name in ("project-check", "compile", "check", "ci"):
+    for name in ("project-check", "compile", "application-check", "check", "ci"):
         if name not in tasks:
             fail(f"pipeline.toml is missing task {name!r}")
     for name, task in tasks.items():
@@ -132,13 +98,34 @@ def check_pipeline() -> None:
                 fail(f"pipeline task {name!r} depends on unknown task {dependency!r}")
 
 
+def check_application_workspace() -> None:
+    manifest = load_json("package.json")
+    web_manifest = load_json("apps/web/package.json")
+    lock = load_json("package-lock.json")
+    compiler_config = load_json("tsconfig.base.json")
+    if manifest.get("workspaces") != ["apps/web"]:
+        fail("root npm workspace must explicitly include apps/web")
+    if web_manifest.get("name") != "@shelf/web" or web_manifest.get("private") is not True:
+        fail("web application must be a private @shelf/web workspace")
+    if manifest.get("devDependencies", {}).get("typescript") != "5.8.3":
+        fail("TypeScript must be pinned to the reviewed 5.8.3 version")
+    if lock.get("lockfileVersion") != 3:
+        fail("package-lock.json must use npm lockfile version 3")
+    locked_typescript = lock.get("packages", {}).get("node_modules/typescript", {})
+    if locked_typescript.get("version") != manifest["devDependencies"]["typescript"]:
+        fail("package-lock.json TypeScript version does not match package.json")
+    if compiler_config.get("compilerOptions", {}).get("strict") is not True:
+        fail("TypeScript strict mode must remain enabled")
+    if not (ROOT / ".nvmrc").read_text(encoding="utf-8").strip():
+        fail(".nvmrc must pin the Node.js toolchain")
+
+
 def check_github_manifests() -> None:
     labels = load_json(".github/labels.json")
     milestones = load_json(".github/milestones.json")
     issues = load_json(".github/issue-metadata.json")
     if not isinstance(labels, list) or not isinstance(milestones, list) or not isinstance(issues, dict):
         fail("GitHub metadata manifests have invalid top-level types")
-
     label_names = set()
     for item in labels:
         if not all(key in item for key in ("name", "color", "description")):
@@ -146,7 +133,6 @@ def check_github_manifests() -> None:
         if item["name"] in label_names:
             fail(f"duplicate label name: {item['name']}")
         label_names.add(item["name"])
-
     milestone_titles = set()
     for item in milestones:
         if not all(key in item for key in ("title", "description")):
@@ -154,7 +140,6 @@ def check_github_manifests() -> None:
         if item["title"] in milestone_titles:
             fail(f"duplicate milestone title: {item['title']}")
         milestone_titles.add(item["title"])
-
     for issue_number, item in issues.items():
         if not all(key in item for key in ("labels", "milestone", "assignees")):
             fail(f"issue metadata #{issue_number} is incomplete")
@@ -172,7 +157,6 @@ def check_psx_gix() -> None:
     for token in ("version: 1", "type: generic", "kind: app", "custom:", "folders:", "public:"):
         if token not in psx:
             fail(f"psx.yml is missing {token!r}")
-
     gix = (ROOT / ".gix/config").read_text(encoding="utf-8")
     for token in ('version: "1"', "remote: origin", "main:", "develop:", "feature:", "bugfix:", "hotfix:", "release:"):
         if token not in gix:
@@ -188,18 +172,15 @@ def check_public_assets() -> None:
     if not manifest.get("icons"):
         fail("web manifest must declare at least one icon")
     for icon in manifest["icons"]:
-        path = icon.get("src", "").lstrip("/")
-        if not path or not (ROOT / "apps/web/public" / path).is_file():
+        relative_path = icon.get("src", "").lstrip("/")
+        if not relative_path or not (ROOT / "apps/web/public" / relative_path).is_file():
             fail(f"web manifest icon is missing: {icon.get('src')}")
 
 
 def check_markdown_links() -> None:
     markdown_files = [
-        ROOT / "README.md",
-        ROOT / "CONTRIBUTING.md",
-        ROOT / "archive/README.md",
-        *sorted((ROOT / "spec").glob("*.md")),
-        *sorted((ROOT / "docs").rglob("*.md")),
+        ROOT / "README.md", ROOT / "CONTRIBUTING.md", ROOT / "archive/README.md",
+        *sorted((ROOT / "spec").glob("*.md")), *sorted((ROOT / "docs").rglob("*.md")),
     ]
     broken: list[str] = []
     for source in markdown_files:
@@ -209,8 +190,8 @@ def check_markdown_links() -> None:
             parsed = urlsplit(target)
             if parsed.scheme or target.startswith("#") or not parsed.path:
                 continue
-            path = (source.parent / unquote(parsed.path)).resolve()
-            if not path.exists():
+            resolved = (source.parent / unquote(parsed.path)).resolve()
+            if not resolved.exists():
                 broken.append(f"{source.relative_to(ROOT)} -> {target}")
     if broken:
         fail("broken local Markdown links:\n  " + "\n  ".join(broken))
@@ -220,11 +201,12 @@ def main() -> None:
     check_required_paths()
     check_archive()
     check_pipeline()
+    check_application_workspace()
     check_github_manifests()
     check_psx_gix()
     check_public_assets()
     check_markdown_links()
-    print("PASS: Shelf docs, archive, public assets, PSX/GIX config, Pipeline graph, and GitHub manifests")
+    print("PASS: Shelf structure, app workspace, quality gates, specs, assets, and GitHub metadata")
 
 
 if __name__ == "__main__":
