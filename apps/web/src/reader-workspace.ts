@@ -28,11 +28,13 @@ interface ReaderWorkspaceOptions {
   readonly progressRepository: ReadingProgressRepositoryPort;
   readonly initialProgress: ReadingProgress | null;
   readonly onStatus: (message: string, isError?: boolean) => void;
+  readonly onSelection?: (selection: TextSelection | null) => void;
   readonly onClose: () => void;
 }
 
 export interface ReaderWorkspaceController {
   persist(): Promise<void>;
+  getSelection(): TextSelection | null;
   dispose(): void;
 }
 
@@ -54,7 +56,10 @@ const MAX_SEARCH_PAGES = 2_000;
 const MAX_SEARCH_CHARACTERS = 2_000_000;
 const MAX_SEARCH_RESULTS = 100;
 const MAX_SEARCH_MATCHES_PER_PAGE = 20;
+const MAX_SEARCH_QUERY_CHARACTERS = 256;
 const MAX_SELECTION_CHARACTERS = 20_000;
+const MAX_SELECTION_RECTANGLES = 512;
+const MAX_INTERACTION_MARKERS_PER_PAGE = 500;
 
 function element<K extends keyof HTMLElementTagNameMap>(
   owner: Document,
@@ -147,6 +152,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   searchInput.type = "search";
   searchInput.placeholder = "Search in document";
   searchInput.setAttribute("aria-label", "Search PDF text");
+  searchInput.maxLength = MAX_SEARCH_QUERY_CHARACTERS;
   const searchButton = createButton(owner, "Search", "button button-small");
   const cancelSearchButton = createButton(owner, "Cancel", "button button-small");
   cancelSearchButton.hidden = true;
@@ -361,6 +367,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   function updateInteractionOverlay(index: number, page: MountedPage): void {
     const layer = page.layers.interaction;
     layer.replaceChildren();
+    let markerCount = 0;
     const pageText = pageTextCache.get(index);
     const matches = searchMatches.filter((match) => match.pageIndex === index);
     if (pageText !== undefined) {
@@ -369,17 +376,23 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
         for (const run of pageText.runs) {
           if (run.startOffset >= match.endOffset || run.endOffset <= match.startOffset) continue;
           for (const rectangle of run.rectangles) {
+            if (markerCount >= MAX_INTERACTION_MARKERS_PER_PAGE) break;
+            markerCount += 1;
             addOverlayRect(
               layer,
               active ? "shelf-pdf-search-highlight shelf-pdf-search-highlight--active" : "shelf-pdf-search-highlight",
               rectangle,
             );
           }
+          if (markerCount >= MAX_INTERACTION_MARKERS_PER_PAGE) break;
         }
       }
     }
-    if (activeSelection !== null && activeSelection.pageIndex === index) {
+    if (markerCount < MAX_INTERACTION_MARKERS_PER_PAGE &&
+        activeSelection !== null && activeSelection.pageIndex === index) {
       for (const rectangle of activeSelection.rectangles) {
+        if (markerCount >= MAX_INTERACTION_MARKERS_PER_PAGE) break;
+        markerCount += 1;
         addOverlayRect(layer, "shelf-pdf-selection-highlight", rectangle);
       }
     }
@@ -421,6 +434,11 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       updateAllInteractionOverlays();
       return;
     }
+    if (query.length > MAX_SEARCH_QUERY_CHARACTERS) {
+      searchPanel.hidden = false;
+      searchSummary.textContent = "Search queries are limited to " + String(MAX_SEARCH_QUERY_CHARACTERS) + " characters.";
+      return;
+    }
 
     cancelSearch();
     const controller = new AbortController();
@@ -436,18 +454,23 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     let scannedPages = 0;
     let indexedCharacters = 0;
     let pagesWithText = 0;
+    let failedPages = 0;
+    let extractionTruncatedPages = 0;
     let truncated = false;
-    let failureMessage: string | null = null;
 
     try {
       const pageLimit = Math.min(session.info.pageCount, MAX_SEARCH_PAGES);
       for (let index = 0; index < pageLimit; index += 1) {
-        if (controller.signal.aborted || disposed) break;
+        if (controller.signal.aborted || disposed || searchController !== controller) break;
         const pageText = await getPageText(index, controller.signal);
-        if (controller.signal.aborted || disposed) break;
+        if (controller.signal.aborted || disposed || searchController !== controller) break;
         scannedPages += 1;
-        if (pageText === null) continue;
+        if (pageText === null) {
+          failedPages += 1;
+          continue;
+        }
         if (pageText.hasSelectableText) pagesWithText += 1;
+        if (pageText.truncated) extractionTruncatedPages += 1;
 
         const remainingCharacters = MAX_SEARCH_CHARACTERS - indexedCharacters;
         if (remainingCharacters <= 0) {
@@ -480,17 +503,28 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       if (session.info.pageCount > MAX_SEARCH_PAGES && scannedPages >= MAX_SEARCH_PAGES) {
         truncated = true;
       }
-      if (controller.signal.aborted || disposed) {
-        searchSummary.textContent = "Search cancelled.";
-      } else if (failureMessage !== null) {
-        searchSummary.textContent = failureMessage;
+      if (controller.signal.aborted || disposed || searchController !== controller) {
+        return;
+      } else if (pagesWithText === 0 && failedPages > 0) {
+        searchSummary.textContent = "Text extraction failed on " + String(failedPages) + " pages. Check the source and retry.";
       } else if (pagesWithText === 0) {
         searchSummary.textContent = "No selectable text was found. This may be an image-only PDF; OCR has not been run.";
       } else if (searchMatches.length === 0) {
-        searchSummary.textContent = "No matches in " + String(scannedPages) + " pages.";
+        searchSummary.textContent = "No matches in " + String(scannedPages) + " pages" +
+          (truncated ? " · bounded search limit reached" : "") +
+          (failedPages > 0 ? " · extraction failed on " + String(failedPages) + " pages" : "") +
+          (extractionTruncatedPages > 0
+            ? " · text capped on " + String(extractionTruncatedPages) + " pages"
+            : "") +
+          ".";
       } else {
         searchSummary.textContent = String(searchMatches.length) + " matches in " +
-          String(scannedPages) + " pages" + (truncated ? " · bounded search limit reached" : "");
+          String(scannedPages) + " pages" +
+          (truncated ? " · bounded search limit reached" : "") +
+          (failedPages > 0 ? " · extraction failed on " + String(failedPages) + " pages" : "") +
+          (extractionTruncatedPages > 0
+            ? " · text capped on " + String(extractionTruncatedPages) + " pages"
+            : "");
         for (let matchIndex = 0; matchIndex < searchMatches.length; matchIndex += 1) {
           const match = searchMatches[matchIndex];
           if (match === undefined) continue;
@@ -500,18 +534,15 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
             "reader-search-result",
           );
           resultButton.addEventListener("click", () => {
-            activeSearchMatchIndex = matchIndex;
-            jumpTo(match.pageIndex as number);
-            updateAllInteractionOverlays();
+            void jumpToSearchMatch(match, matchIndex);
           });
           searchResults.append(resultButton);
         }
       }
       updateAllInteractionOverlays();
     } catch {
-      if (!controller.signal.aborted && !disposed) {
-        failureMessage = "Shelf could not complete this local text search.";
-        searchSummary.textContent = failureMessage;
+      if (!controller.signal.aborted && !disposed && searchController === controller) {
+        searchSummary.textContent = "Shelf could not complete this local text search.";
       }
     } finally {
       if (searchController === controller) {
@@ -543,6 +574,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     if (selected === null || selected.rangeCount === 0) {
       activeSelection = null;
       selectionPanel.hidden = true;
+      options.onSelection?.(null);
       updateAllInteractionOverlays();
       return;
     }
@@ -557,6 +589,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
         selectedText.length > MAX_SELECTION_CHARACTERS) {
       activeSelection = null;
       selectionPanel.hidden = true;
+      options.onSelection?.(null);
       updateAllInteractionOverlays();
       return;
     }
@@ -567,18 +600,24 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     updateAllInteractionOverlays();
     const approximateStart = textOffsetAt(page.layers.text, range.startContainer, range.startOffset) ?? 0;
     const pageText = await getPageText(pageIndex);
-    if (disposed || generation !== selectionGeneration || pageText === null) return;
+    if (disposed || generation !== selectionGeneration) return;
+    if (pageText === null) {
+      options.onSelection?.(null);
+      return;
+    }
 
     const offsets = resolveTextSelectionOffsets(pageText.text, selectedText, approximateStart);
     if (offsets === null) {
       activeSelection = null;
       selectionPanel.hidden = true;
+      options.onSelection?.(null);
       updateAllInteractionOverlays();
       return;
     }
 
     const pageBounds = page.root.getBoundingClientRect();
     const rectangles: PageRect[] = Array.from(range.getClientRects())
+      .slice(0, MAX_SELECTION_RECTANGLES)
       .map((rectangle) => {
         const x = clamp((rectangle.left - pageBounds.left) / Math.max(1, pageBounds.width), 0, 1);
         const y = clamp((rectangle.top - pageBounds.top) / Math.max(1, pageBounds.height), 0, 1);
@@ -591,7 +630,10 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       })
       .filter((rectangle) => rectangle.width > 0 && rectangle.height > 0);
 
-    if (rectangles.length === 0) return;
+    if (rectangles.length === 0) {
+      options.onSelection?.(null);
+      return;
+    }
     activeSelection = {
       documentId: session.info.documentId,
       pageIndex: toPageIndex(pageIndex),
@@ -609,6 +651,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       String(offsets.startOffset) + "–" + String(offsets.endOffset) + " · " +
       String(rectangles.length) + " geometry fragments · " + offsets.confidence + " offsets";
     selectionPanel.hidden = false;
+    options.onSelection?.(activeSelection);
     updateInteractionOverlay(pageIndex, page);
     onStatus("Selected " + String(selectedText.length) + " characters on page " + String(pageIndex + 1) + ".");
   }
@@ -842,6 +885,34 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     void jumpTo(clamp(currentPage + delta, 0, session.info.pageCount - 1));
   }
 
+  async function jumpToSearchMatch(match: TextSearchMatch, matchIndex: number): Promise<void> {
+    activeSearchMatchIndex = matchIndex;
+    const index = match.pageIndex as number;
+    jumpTo(index);
+    const handle = await ensurePageGeometry(index);
+    if (disposed || searchMatches[activeSearchMatchIndex] !== match || handle === null) return;
+    const pageText = pageTextCache.get(index);
+    const run = pageText?.runs.find((item) =>
+      item.startOffset < match.endOffset && item.endOffset > match.startOffset,
+    );
+    const rectangle = run?.rectangles[0];
+    if (rectangle !== undefined) {
+      const pageTop = mode === "continuous"
+        ? virtualizer.getPageTop(toPageIndex(index), zoom)
+        : 0;
+      const pageHeight = handle.geometry.height * zoom;
+      stage.scrollTop = Math.max(
+        0,
+        pageTop + rectangle.y * pageHeight - stage.clientHeight * 0.35,
+      );
+      lastScrollPosition = stage.scrollTop;
+      draw();
+    }
+    updateAllInteractionOverlays();
+  }
+
+
+
   function changeMode(nextMode: ReadingMode): void {
     if (mode === nextMode) return;
     const position = readPosition();
@@ -1039,6 +1110,9 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
 
   return {
     persist,
+    getSelection(): TextSelection | null {
+      return activeSelection;
+    },
     dispose(): void {
       if (disposed) return;
       disposed = true;
@@ -1053,6 +1127,8 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       clearPagesExcept(new Set());
       pageHandleCache.clear();
       pageTextCache.clear();
+      activeSelection = null;
+      options.onSelection?.(null);
     },
   };
 }

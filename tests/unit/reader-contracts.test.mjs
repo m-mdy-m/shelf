@@ -63,6 +63,7 @@ test("text search normalizes case, Unicode ligatures, and whitespace while prese
     text: "Intro\\nThe ﬁrst  READER guide ends here.\\n",
     runs: [],
     hasSelectableText: true,
+    truncated: false,
   };
   const matches = findTextMatches(page, "FIRST reader", 10);
   assert.equal(matches.length, 1);
@@ -85,6 +86,7 @@ test("text search ignores empty queries and pages without selectable text", asyn
     text: "",
     runs: [],
     hasSelectableText: false,
+    truncated: false,
   };
   assert.deepEqual(findTextMatches(page, "anything"), []);
   assert.deepEqual(findTextMatches({ ...page, text: "plain text", hasSelectableText: true }, "  "), []);
@@ -97,6 +99,7 @@ test("text search bounds result counts and rejects invalid limits", async () => 
     text: "match match match match",
     runs: [],
     hasSelectableText: true,
+    truncated: false,
   };
   assert.equal(findTextMatches(page, "match", 2).length, 2);
   assert.throws(() => findTextMatches(page, "match", 0), RangeError);

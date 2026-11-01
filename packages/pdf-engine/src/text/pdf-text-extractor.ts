@@ -142,8 +142,10 @@ function groupIntoLines(items: readonly PositionedTextItem[]): TextLine[] {
 
   for (const item of sorted) {
     const previous = lines[lines.length - 1];
+    const previousItem = previous?.items[previous.items.length - 1];
     const tolerance = Math.max(2.5, Math.min(item.height, previous?.height ?? item.height) * 0.55);
-    if (previous !== undefined && Math.abs(item.centerY - previous.centerY) <= tolerance) {
+    if (previous !== undefined && previousItem?.hasEOL !== true &&
+        Math.abs(item.centerY - previous.centerY) <= tolerance) {
       previous.items.push(item);
       previous.top = Math.min(previous.top, item.top);
       previous.bottom = Math.max(previous.bottom, item.bottom);
@@ -224,10 +226,11 @@ export function extractPdfPageText(
   pageIndex: number,
   content: PdfJsTextContent,
   viewport: PdfJsViewport,
+  truncated = false,
 ): ExtractedPageText {
   const items = positionedItems(content, viewport);
   if (items.length === 0) {
-    return { pageIndex: toPageIndex(pageIndex), text: "", runs: [], hasSelectableText: false };
+    return { pageIndex: toPageIndex(pageIndex), text: "", runs: [], hasSelectableText: false, truncated };
   }
 
   const initialLines = groupIntoLines(items);
@@ -288,6 +291,7 @@ export function extractPdfPageText(
       text: normalizedText.slice(0, Math.max(0, trimmedEnd - leading)),
       runs: adjustedRuns,
       hasSelectableText: normalizedText.length > 0,
+      truncated,
     };
   }
 
@@ -296,5 +300,6 @@ export function extractPdfPageText(
     text,
     runs,
     hasSelectableText: text.length > 0,
+    truncated,
   };
 }

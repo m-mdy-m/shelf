@@ -417,6 +417,7 @@ test("PDF text extraction normalizes ligatures and reconstructs punctuation, lin
   if (page.ok) {
     assert.equal(page.value.text, "Hello world!\nThe first page.");
     assert.equal(page.value.hasSelectableText, true);
+    assert.equal(page.value.truncated, false);
     assert.equal(page.value.runs.length, 5);
     assert.equal(page.value.runs[0].startOffset, 0);
     assert.equal(page.value.runs.at(-1).endOffset, page.value.text.length);
@@ -427,6 +428,20 @@ test("PDF text extraction normalizes ligatures and reconstructs punctuation, lin
       height: 10 / 792,
     });
   }
+  await session.close();
+});
+
+test("PDF text extraction honors explicit PDF.js end-of-line markers", async () => {
+  const environment = createFakeEnvironment({
+    textItems: [
+      { str: "First", dir: "ltr", transform: [1, 0, 0, 10, 40, 700], width: 25, height: 10, fontName: "f1", hasEOL: true },
+      { str: "Second", dir: "ltr", transform: [1, 0, 0, 10, 65, 700], width: 35, height: 10, fontName: "f1" },
+    ],
+  });
+  const session = await openFixture(environment);
+  const page = await session.getPageText(toPageIndex(0));
+  assert.equal(page.ok, true);
+  if (page.ok) assert.equal(page.value.text, "First\nSecond");
   await session.close();
 });
 
@@ -465,6 +480,7 @@ test("PDF text extraction preserves RTL ordering and reports image-only pages wi
   assert.equal(scannedPage.ok, true);
   if (scannedPage.ok) {
     assert.equal(scannedPage.value.text, "");
+    assert.equal(scannedPage.value.truncated, false);
     assert.equal(scannedPage.value.hasSelectableText, false);
   }
   await scannedSession.close();
@@ -520,7 +536,10 @@ test("PDF text extraction honors cancellation and a bounded per-page character b
   const session = await openFixture(environment);
   const page = await session.getPageText(toPageIndex(0));
   assert.equal(page.ok, true);
-  if (page.ok) assert.equal(page.value.text.length, 500_000);
+  if (page.ok) {
+    assert.equal(page.value.text.length, 500_000);
+    assert.equal(page.value.truncated, true);
+  }
 
   const controller = new AbortController();
   controller.abort();

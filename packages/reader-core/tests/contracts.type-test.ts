@@ -11,6 +11,8 @@ import type {
   DocumentSource,
   PageIndex,
   QuoteId,
+  ExtractedPageText,
+  TextSelection,
 } from "../src/index.js";
 import type { NewAnnotation } from "../src/application/reader-use-cases.js";
 import { toOpaqueId, toPageIndex } from "../src/index.js";
@@ -25,6 +27,25 @@ const validBookmark: BookmarkId = bookmarkId;
 const validQuote: QuoteId = quoteId;
 const validAnnotation: AnnotationId = annotationId;
 const firstPage: PageIndex = toPageIndex(0);
+const extractedPage: ExtractedPageText = {
+  pageIndex: firstPage,
+  text: "page text",
+  runs: [],
+  hasSelectableText: true,
+  truncated: false,
+};
+const selection: TextSelection = {
+  documentId,
+  pageIndex: firstPage,
+  selectedText: "selected text",
+  normalizedText: "selected text",
+  startOffset: 0,
+  endOffset: 13,
+  documentFingerprint: null,
+  anchorVersion: 1,
+  rectangles: [{ x: 0.1, y: 0.2, width: 0.3, height: 0.04 }],
+  offsetConfidence: "exact",
+};
 
 const highlightDraft: NewAnnotation = {
   kind: "highlight",
@@ -111,6 +132,8 @@ void [
   validQuote,
   validAnnotation,
   firstPage,
+  extractedPage,
+  selection,
   highlightDraft,
   noteDraft,
   safeDocumentSource,

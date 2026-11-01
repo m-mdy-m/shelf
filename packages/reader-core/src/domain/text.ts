@@ -20,6 +20,8 @@ export interface ExtractedPageText {
   readonly text: string;
   readonly runs: readonly ExtractedTextRun[];
   readonly hasSelectableText: boolean;
+  /** True when the bounded PDF text stream ended before the full page could be extracted. */
+  readonly truncated: boolean;
 }
 
 export interface TextSearchMatch {
@@ -142,6 +144,9 @@ export function resolveTextSelectionOffsets(
   if (selectedNormalized.length === 0 || pageText.length === 0) return null;
 
   const normalized = normalizeWithOffsets(pageText);
+  const preferredStart = Number.isFinite(approximateStart)
+    ? Math.max(0, Math.min(pageText.length, approximateStart))
+    : 0;
   let searchFrom = 0;
   let closestStart = -1;
   let closestEnd = -1;
@@ -155,7 +160,7 @@ export function resolveTextSelectionOffsets(
     const sourceStart = normalized.sourceStarts[found];
     const sourceEnd = normalized.sourceEnds[finalIndex];
     if (sourceStart !== undefined && sourceEnd !== undefined && sourceEnd > sourceStart) {
-      const distance = Math.abs(sourceStart - approximateStart);
+      const distance = Math.abs(sourceStart - preferredStart);
       if (distance < closestDistance) {
         closestStart = sourceStart;
         closestEnd = sourceEnd;
@@ -163,7 +168,7 @@ export function resolveTextSelectionOffsets(
         if (distance === 0) break;
       }
     }
-    searchFrom = found + Math.max(1, selectedNormalized.length);
+    searchFrom = found + 1;
   }
 
   if (closestStart < 0 || closestEnd <= closestStart) return null;

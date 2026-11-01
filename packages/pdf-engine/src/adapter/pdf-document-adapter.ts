@@ -321,6 +321,7 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
         numericIndex,
         content,
         page.getViewport({ scale: 1 }),
+        truncated,
       );
       this.#textCache.set(numericIndex, extracted);
       while (this.#textCache.size > 24) {
@@ -330,6 +331,9 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
       }
       return { ok: true, value: extracted };
     } catch (error) {
+      if (isAborted() || this.#closedRef.current) {
+        return { ok: false, error: errorResult("cancelled", "Text extraction was cancelled.") };
+      }
       return {
         ok: false,
         error: mapPdfJsFailure(error, this.#rangeFailureRef.current, null),
@@ -439,10 +443,9 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
   async close(): Promise<Result<void, ReaderError>> {
     if (this.#closedRef.current) return { ok: true, value: undefined };
     this.#closedRef.current = true;
-    for (const reader of this.#activeTextReaders) {
-      void reader.cancel().catch(() => {});
-    }
     this.#range.abort();
+    const textReaderCancellations = [...this.#activeTextReaders]
+      .map((reader) => reader.cancel().catch(() => {}));
     let closeFailure: ReaderError | null = null;
 
     try {
@@ -452,7 +455,7 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
       this.#worker.destroy();
     }
 
-    await Promise.allSettled([...this.#rangePending]);
+    await Promise.allSettled([...this.#rangePending, ...textReaderCancellations]);
     this.#activeTextReaders.clear();
     this.#textCache.clear();
     const sourceResult = await this.#source.close(this.#sourceHandle.id);
