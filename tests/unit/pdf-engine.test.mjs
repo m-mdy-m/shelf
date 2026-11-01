@@ -21,7 +21,15 @@ function namedError(name, message = "fixture error") {
   return error;
 }
 
-function createFakePage({ width = 612, height = 792, rotate = 0, renderCalls = [], textItems = [] } = {}) {
+function createFakePage({
+  width = 612,
+  height = 792,
+  rotate = 0,
+  renderCalls = [],
+  textItems = [],
+  pendingTextStream = false,
+  onTextStreamCancel = () => {},
+} = {}) {
   return {
     rotate,
     getViewport({ scale }) {
@@ -45,6 +53,16 @@ function createFakePage({ width = 612, height = 792, rotate = 0, renderCalls = [
       return { promise: Promise.resolve(), cancel() {} };
     },
     streamTextContent() {
+      if (pendingTextStream) {
+        return new ReadableStream({
+          start(controller) {
+            controller.enqueue({ items: textItems, styles: {} });
+          },
+          cancel() {
+            onTextStreamCancel();
+          },
+        });
+      }
       return new ReadableStream({
         start(controller) {
           controller.enqueue({ items: textItems, styles: {} });
@@ -62,6 +80,7 @@ function createFakeEnvironment(options = {}) {
   const renderCalls = [];
   let sourceCloseCount = 0;
   let locatorReadCount = 0;
+  let textStreamCancelCount = 0;
   let outlineLookupActive = 0;
   let maxOutlineLookupActive = 0;
   let workerDestroyed = false;
@@ -75,7 +94,15 @@ function createFakeEnvironment(options = {}) {
   let passwordPromptCalls = 0;
 
   const pages = [
-    createFakePage({ width: 612, height: 792, rotate: 0, renderCalls, textItems: options.textItems ?? [] }),
+    createFakePage({
+      width: 612,
+      height: 792,
+      rotate: 0,
+      renderCalls,
+      textItems: options.textItems ?? [],
+      pendingTextStream: options.pendingTextStream === true,
+      onTextStreamCancel() { textStreamCancelCount += 1; },
+    }),
     createFakePage({ width: 360, height: 540, rotate: 90, renderCalls }),
     createFakePage({ width: 595, height: 842, rotate: 270, renderCalls }),
   ];
@@ -242,6 +269,7 @@ function createFakeEnvironment(options = {}) {
     renderCalls,
     sourceCloseCount: () => sourceCloseCount,
     locatorReadCount: () => locatorReadCount,
+    textStreamCancelCount: () => textStreamCancelCount,
     maxOutlineLookupConcurrency: () => maxOutlineLookupActive,
     workerDestroyed: () => workerDestroyed,
     workerCreateCount: () => workerCreateCount,
@@ -465,6 +493,22 @@ test("PDF text extraction retains mixed RTL/LTR script runs and paragraph gaps",
       ),
     ));
   }
+  await session.close();
+});
+
+test("PDF text extraction cancels an in-flight PDF.js stream when the search is aborted", async () => {
+  const environment = createFakeEnvironment({ pendingTextStream: true });
+  const session = await openFixture(environment);
+  const controller = new AbortController();
+  const pending = session.getPageText(toPageIndex(0), controller.signal);
+
+  await new Promise((resolve) => setImmediate(resolve));
+  controller.abort();
+  const result = await pending;
+
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.error.code, "cancelled");
+  assert.equal(environment.textStreamCancelCount(), 1);
   await session.close();
 });
 

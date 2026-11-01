@@ -138,26 +138,39 @@ export function resolveTextSelectionOffsets(
   readonly endOffset: number;
   readonly confidence: TextSelection["offsetConfidence"];
 } | null {
-  const page: ExtractedPageText = {
-    pageIndex: 0 as PageIndex,
-    text: pageText,
-    runs: [],
-    hasSelectableText: pageText.length > 0,
-  };
-  const matches = findTextMatches(page, selectedText, 1_000);
-  if (matches.length === 0) return null;
-
-  const closest = matches.reduce((best, match) =>
-    Math.abs(match.startOffset - approximateStart) < Math.abs(best.startOffset - approximateStart)
-      ? match
-      : best,
-  );
   const selectedNormalized = normalizedQuery(selectedText);
-  const exact = pageText.slice(closest.startOffset, closest.endOffset) === selectedText;
-  if (selectedNormalized.length === 0) return null;
+  if (selectedNormalized.length === 0 || pageText.length === 0) return null;
+
+  const normalized = normalizeWithOffsets(pageText);
+  let searchFrom = 0;
+  let closestStart = -1;
+  let closestEnd = -1;
+  let closestDistance = Number.POSITIVE_INFINITY;
+
+  while (searchFrom <= normalized.value.length - selectedNormalized.length) {
+    const found = normalized.value.indexOf(selectedNormalized, searchFrom);
+    if (found < 0) break;
+
+    const finalIndex = found + selectedNormalized.length - 1;
+    const sourceStart = normalized.sourceStarts[found];
+    const sourceEnd = normalized.sourceEnds[finalIndex];
+    if (sourceStart !== undefined && sourceEnd !== undefined && sourceEnd > sourceStart) {
+      const distance = Math.abs(sourceStart - approximateStart);
+      if (distance < closestDistance) {
+        closestStart = sourceStart;
+        closestEnd = sourceEnd;
+        closestDistance = distance;
+        if (distance === 0) break;
+      }
+    }
+    searchFrom = found + Math.max(1, selectedNormalized.length);
+  }
+
+  if (closestStart < 0 || closestEnd <= closestStart) return null;
+  const exact = pageText.slice(closestStart, closestEnd) === selectedText;
   return {
-    startOffset: closest.startOffset,
-    endOffset: closest.endOffset,
+    startOffset: closestStart,
+    endOffset: closestEnd,
     confidence: exact ? "exact" : "nearest-text-match",
   };
 }

@@ -101,3 +101,17 @@ test("text search bounds result counts and rejects invalid limits", async () => 
   assert.equal(findTextMatches(page, "match", 2).length, 2);
   assert.throws(() => findTextMatches(page, "match", 0), RangeError);
 });
+
+
+test("selection offset resolution finds the nearest repeated passage beyond the search result cap", async () => {
+  const { resolveTextSelectionOffsets } = await import("../../packages/reader-core/dist/index.js");
+  const pageText = "repeat ".repeat(1_100) + "repeat";
+  const expectedStart = pageText.lastIndexOf("repeat");
+  const result = resolveTextSelectionOffsets(pageText, "repeat", expectedStart + 2);
+
+  assert.deepEqual(result, {
+    startOffset: expectedStart,
+    endOffset: expectedStart + "repeat".length,
+    confidence: "exact",
+  });
+});
