@@ -166,6 +166,7 @@ function createFakeEnvironment(options = {}) {
         async destroy() {
           taskDestroyCount += 1;
           workerDestroyed = true;
+          configuration.worker.destroy();
           if (options.rejectOnDestroy === true) {
             rejectDocument(namedError("AbortException"));
           }
