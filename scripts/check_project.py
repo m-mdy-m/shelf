@@ -116,8 +116,14 @@ def check_application_workspace() -> None:
         fail("package-lock.json TypeScript version does not match package.json")
     if compiler_config.get("compilerOptions", {}).get("strict") is not True:
         fail("TypeScript strict mode must remain enabled")
-    if not (ROOT / ".nvmrc").read_text(encoding="utf-8").strip():
-        fail(".nvmrc must pin the Node.js toolchain")
+
+    node_version = (ROOT / ".nvmrc").read_text(encoding="utf-8").strip()
+    if re.fullmatch(r"\d+\.\d+\.\d+", node_version) is None:
+        fail(".nvmrc must pin an exact Node.js semantic version")
+    engine_range = manifest.get("engines", {}).get("node", "")
+    minimum = re.search(r">=(\d+\.\d+\.\d+)", engine_range)
+    if minimum is None or minimum.group(1) != node_version:
+        fail(".nvmrc must match the exact Node.js minimum in package.json engines")
 
 
 def check_github_manifests() -> None:

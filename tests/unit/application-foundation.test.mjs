@@ -30,6 +30,13 @@ test("the web shell is a private npm workspace with a pinned TypeScript compiler
   assert.equal(lock.lockfileVersion, 3);
 });
 
+test("Node runtime pin matches the declared engine range", async () => {
+  const manifest = await json("package.json");
+  const version = (await readFile(path.join(root, ".nvmrc"), "utf8")).trim();
+  assert.match(version, /^\d+\.\d+\.\d+$/u);
+  assert.ok(manifest.engines.node.includes(`>=${version}`));
+});
+
 test("TypeScript compiler options enforce strict checking", async () => {
   const config = await json("tsconfig.base.json");
   assert.equal(config.compilerOptions.strict, true);
@@ -41,11 +48,15 @@ test("the application entry point and shell stay within the web application", as
   const html = await readFile(path.join(root, "apps/web/index.html"), "utf8");
   const entry = await readFile(path.join(root, "apps/web/src/main.ts"), "utf8");
   const shell = await readFile(path.join(root, "apps/web/src/application.ts"), "utf8");
+  const buildScript = await readFile(path.join(root, "scripts/build-web.mjs"), "utf8");
 
   assert.match(html, /src="\/assets\/main\.js"/u);
+  assert.doesNotMatch(html, /role="application"/u);
+  assert.doesNotMatch(html, /frame-ancestors/u);
   assert.match(entry, /from "\.\/application\.js"/u);
   assert.match(shell, /export function mountShelf\(root: HTMLElement\)/u);
   assert.doesNotMatch(shell, /better-sqlite3|@capacitor\/|node:/u);
+  assert.match(buildScript, /access\(entryAsset\)/u);
 });
 
 test("the repository declares explicit application boundaries", async () => {

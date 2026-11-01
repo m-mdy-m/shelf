@@ -17,3 +17,4 @@ The web shell serves static files from apps/web/public. Keep only assets that sh
 - Use relative/root-scoped asset references that work under the configured deployment base path.
 - Generate raster app icons and platform-specific store assets from the approved vector source when visual identity is finalized.
 - Add a service worker only alongside a reviewed cache policy. PDF documents, user data, and API responses must not be cached accidentally.
+- The Content-Security-Policy meta element is only a client-side fallback. Production hosting must send a response-header CSP, including frame-ancestors, plus the required security headers; frame-ancestors is not enforced when delivered through a meta element.

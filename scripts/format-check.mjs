@@ -17,11 +17,12 @@ async function collect(directory) {
 
   const files = [];
   for (const entry of entries) {
-    const relative = path.posix.join(directory, entry.name);
     if (entry.isDirectory()) {
+      if (entry.name === "node_modules" || entry.name.startsWith(".")) continue;
+      const relative = path.posix.join(directory, entry.name);
       files.push(...(await collect(relative)));
     } else if (entry.isFile() && extensions.has(path.extname(entry.name))) {
-      files.push(relative);
+      files.push(path.posix.join(directory, entry.name));
     }
   }
   return files;
