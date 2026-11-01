@@ -130,9 +130,9 @@ function positionedItemFromRecord(
     centerY: (positioned.top + positioned.bottom) / 2,
     height: positioned.bottom - positioned.top,
     direction: directionOf(item.dir),
-    fontName: item.fontName,
+    fontName: typeof candidate["fontName"] === "string" ? candidate["fontName"] : null,
     rectangle: positioned.rect,
-    hasEOL: item.hasEOL,
+    hasEOL: candidate["hasEOL"] === true,
   }];
 }
 
