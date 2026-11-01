@@ -16,6 +16,7 @@ import type {
 import type {
   PdfJsDocumentProxy,
   PdfJsLoadingTask,
+  PdfJsTextContent,
   PdfJsOutlineItem,
   PdfJsPageProxy,
   PdfJsRangeTransport,
@@ -24,6 +25,8 @@ import type {
 } from "./pdfjs-runtime.js";
 import type { PageVirtualizerOptions } from "../virtualization/page-virtualizer.js";
 import { PageVirtualizer } from "../virtualization/page-virtualizer.js";
+import { extractPdfPageText } from "../text/pdf-text-extractor.js";
+import type { ExtractedPageText } from "@shelf/reader-core";
 
 let nextPdfWorkerInstanceId = 0;
 
@@ -81,6 +84,7 @@ export interface PdfPageHandle {
 export interface PdfDocumentSession {
   readonly info: PdfDocumentInfo;
   getPage(index: PageIndex): Promise<Result<PdfPageHandle, ReaderError>>;
+  getPageText(index: PageIndex, signal?: AbortSignal): Promise<Result<ExtractedPageText, ReaderError>>;
   getOutline(): Promise<Result<readonly PdfOutlineItem[], ReaderError>>;
   createVirtualizer(options?: PageVirtualizerOptions): PageVirtualizer;
   close(): Promise<Result<void, ReaderError>>;
@@ -164,6 +168,8 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
   readonly #rangeFailureRef: { current: ReaderError | null };
   readonly #closedRef: { current: boolean };
   readonly #info: PdfDocumentInfo;
+  readonly #textCache = new Map<number, ExtractedPageText>();
+  readonly #activeTextReaders = new Set<ReadableStreamDefaultReader<unknown>>();
 
   constructor(args: {
     document: PdfJsDocumentProxy;
@@ -210,6 +216,118 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
       const handle: PdfPageHandle = { geometry: asPageGeometry(index, pageProxy) };
       pageProxyByHandle.set(handle, pageProxy);
       return { ok: true, value: handle };
+    } catch (error) {
+      return {
+        ok: false,
+        error: mapPdfJsFailure(error, this.#rangeFailureRef.current, null),
+      };
+    }
+  }
+
+  async getPageText(
+    index: PageIndex,
+    signal?: AbortSignal,
+  ): Promise<Result<ExtractedPageText, ReaderError>> {
+    const numericIndex = index as number;
+    if (this.#closedRef.current) {
+      return { ok: false, error: errorResult("cancelled", "The PDF document is closed.") };
+    }
+    if (signal?.aborted === true) {
+      return { ok: false, error: errorResult("cancelled", "Text extraction was cancelled.") };
+    }
+    if (this.#rangeFailureRef.current !== null) {
+      return { ok: false, error: this.#rangeFailureRef.current };
+    }
+    if (!Number.isSafeInteger(numericIndex) || numericIndex < 0 || numericIndex >= this.#info.pageCount) {
+      return { ok: false, error: errorResult("invalid-input", "Page index is outside this PDF document.") };
+    }
+
+    const cached = this.#textCache.get(numericIndex);
+    if (cached !== undefined) {
+      this.#textCache.delete(numericIndex);
+      this.#textCache.set(numericIndex, cached);
+      return { ok: true, value: cached };
+    }
+
+    try {
+      const page = await this.#document.getPage(numericIndex + 1);
+      if (signal?.aborted === true || this.#closedRef.current) {
+        return { ok: false, error: errorResult("cancelled", "Text extraction was cancelled.") };
+      }
+      const reader = page.streamTextContent().getReader();
+      this.#activeTextReaders.add(reader);
+      const items: unknown[] = [];
+      let characterCount = 0;
+      let itemCount = 0;
+      let truncated = false;
+      const cancelStream = (): void => {
+        void reader.cancel().catch(() => {});
+      };
+      signal?.addEventListener("abort", cancelStream, { once: true });
+
+      try {
+        while (true) {
+          if (signal?.aborted === true || this.#closedRef.current) {
+            await reader.cancel();
+            return { ok: false, error: errorResult("cancelled", "Text extraction was cancelled.") };
+          }
+          const chunk = await reader.read();
+          if (chunk.done) break;
+          if (typeof chunk.value !== "object" || chunk.value === null || !("items" in chunk.value)) continue;
+          const chunkItems = (chunk.value as { readonly items?: unknown }).items;
+          if (!Array.isArray(chunkItems)) continue;
+
+          for (const candidate of chunkItems) {
+            if (itemCount >= 50_000) {
+              truncated = true;
+              break;
+            }
+            if (typeof candidate === "object" && candidate !== null &&
+                "str" in candidate && typeof (candidate as { str: unknown }).str === "string") {
+              const value = (candidate as { readonly str: string }).str;
+              const remaining = 500_000 - characterCount;
+              if (remaining <= 0) {
+                truncated = true;
+                break;
+              }
+              if (value.length > remaining) {
+                items.push({ ...candidate, str: value.slice(0, remaining) });
+                characterCount += remaining;
+                truncated = true;
+                break;
+              }
+              characterCount += value.length;
+            }
+            items.push(candidate);
+            itemCount += 1;
+          }
+          if (truncated) {
+            await reader.cancel();
+            break;
+          }
+        }
+      } finally {
+        signal?.removeEventListener("abort", cancelStream);
+        this.#activeTextReaders.delete(reader);
+        reader.releaseLock();
+      }
+
+      if (signal?.aborted === true || this.#closedRef.current) {
+        return { ok: false, error: errorResult("cancelled", "Text extraction was cancelled.") };
+      }
+      const content: PdfJsTextContent = { items };
+      const extracted = extractPdfPageText(
+        numericIndex,
+        content,
+        page.getViewport({ scale: 1 }),
+      );
+      this.#textCache.set(numericIndex, extracted);
+      while (this.#textCache.size > 24) {
+        const oldest = this.#textCache.keys().next().value as number | undefined;
+        if (oldest === undefined) break;
+        this.#textCache.delete(oldest);
+      }
+      return { ok: true, value: extracted };
     } catch (error) {
       return {
         ok: false,
@@ -320,6 +438,9 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
   async close(): Promise<Result<void, ReaderError>> {
     if (this.#closedRef.current) return { ok: true, value: undefined };
     this.#closedRef.current = true;
+    for (const reader of this.#activeTextReaders) {
+      void reader.cancel().catch(() => {});
+    }
     this.#range.abort();
     let closeFailure: ReaderError | null = null;
 
@@ -331,6 +452,8 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
     }
 
     await Promise.allSettled([...this.#rangePending]);
+    this.#activeTextReaders.clear();
+    this.#textCache.clear();
     const sourceResult = await this.#source.close(this.#sourceHandle.id);
     if (!sourceResult.ok) return sourceResult;
     if (closeFailure !== null) return { ok: false, error: closeFailure };

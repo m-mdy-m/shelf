@@ -1,0 +1,163 @@
+import type { PageRect, TextAnchor } from "./annotation.js";
+import type { DocumentFingerprint, DocumentId } from "./ids.js";
+import type { PageIndex } from "./page-index.js";
+
+export type TextDirection = "ltr" | "rtl" | "ttb";
+
+export interface ExtractedTextRun {
+  readonly text: string;
+  /** UTF-16 offsets into ExtractedPageText.text, end-exclusive. */
+  readonly startOffset: number;
+  readonly endOffset: number;
+  readonly direction: TextDirection;
+  readonly fontName: string | null;
+  readonly rectangles: readonly PageRect[];
+}
+
+export interface ExtractedPageText {
+  readonly pageIndex: PageIndex;
+  /** Normalized page text used by search and text anchors. */
+  readonly text: string;
+  readonly runs: readonly ExtractedTextRun[];
+  readonly hasSelectableText: boolean;
+}
+
+export interface TextSearchMatch {
+  readonly pageIndex: PageIndex;
+  readonly startOffset: number;
+  readonly endOffset: number;
+  readonly matchedText: string;
+  readonly snippet: string;
+}
+
+export interface TextSelection extends TextAnchor {
+  readonly documentId: DocumentId;
+  readonly pageIndex: PageIndex;
+  readonly rectangles: readonly PageRect[];
+  readonly offsetConfidence: "exact" | "nearest-text-match";
+}
+
+interface NormalizedText {
+  readonly value: string;
+  readonly sourceStarts: readonly number[];
+  readonly sourceEnds: readonly number[];
+}
+
+function normalizeWithOffsets(source: string): NormalizedText {
+  let value = "";
+  const sourceStarts: number[] = [];
+  const sourceEnds: number[] = [];
+  let pendingWhitespace: { readonly start: number; readonly end: number } | null = null;
+
+  for (let offset = 0; offset < source.length;) {
+    const codePoint = source.codePointAt(offset);
+    if (codePoint === undefined) break;
+    const character = String.fromCodePoint(codePoint);
+    const end = offset + character.length;
+    const normalized = character.normalize("NFKC").toLowerCase();
+
+    if (/^\s+$/u.test(normalized)) {
+      if (value.length > 0) {
+        pendingWhitespace = {
+          start: pendingWhitespace?.start ?? offset,
+          end,
+        };
+      }
+    } else {
+      if (pendingWhitespace !== null) {
+        value += " ";
+        sourceStarts.push(pendingWhitespace.start);
+        sourceEnds.push(pendingWhitespace.end);
+        pendingWhitespace = null;
+      }
+      for (let index = 0; index < normalized.length; index += 1) {
+        value += normalized[index];
+        sourceStarts.push(offset);
+        sourceEnds.push(end);
+      }
+    }
+    offset = end;
+  }
+
+  return { value, sourceStarts, sourceEnds };
+}
+
+function normalizedQuery(query: string): string {
+  return normalizeWithOffsets(query).value.trim();
+}
+
+/** Find case/compatibility-insensitive matches while returning offsets in the original page text. */
+export function findTextMatches(
+  page: ExtractedPageText,
+  query: string,
+  maxMatches = 100,
+): readonly TextSearchMatch[] {
+  if (!Number.isSafeInteger(maxMatches) || maxMatches < 1 || maxMatches > 1_000) {
+    throw new RangeError("Maximum text search matches must be between 1 and 1000.");
+  }
+
+  const needle = normalizedQuery(query);
+  if (needle.length === 0 || !page.hasSelectableText) return [];
+
+  const normalized = normalizeWithOffsets(page.text);
+  const matches: TextSearchMatch[] = [];
+  let searchFrom = 0;
+
+  while (searchFrom <= normalized.value.length - needle.length && matches.length < maxMatches) {
+    const found = normalized.value.indexOf(needle, searchFrom);
+    if (found < 0) break;
+
+    const finalIndex = found + needle.length - 1;
+    const startOffset = normalized.sourceStarts[found];
+    const lastSourceEnd = normalized.sourceEnds[finalIndex];
+    if (startOffset !== undefined && lastSourceEnd !== undefined && lastSourceEnd > startOffset) {
+      const endOffset = lastSourceEnd;
+      const contextStart = Math.max(0, startOffset - 48);
+      const contextEnd = Math.min(page.text.length, endOffset + 64);
+      matches.push({
+        pageIndex: page.pageIndex,
+        startOffset,
+        endOffset,
+        matchedText: page.text.slice(startOffset, endOffset),
+        snippet: page.text.slice(contextStart, contextEnd).replace(/\s+/gu, " ").trim(),
+      });
+    }
+    searchFrom = found + Math.max(1, needle.length);
+  }
+
+  return matches;
+}
+
+/** Resolve browser-selected text to the closest occurrence in the extracted page representation. */
+export function resolveTextSelectionOffsets(
+  pageText: string,
+  selectedText: string,
+  approximateStart: number,
+): {
+  readonly startOffset: number;
+  readonly endOffset: number;
+  readonly confidence: TextSelection["offsetConfidence"];
+} | null {
+  const page: ExtractedPageText = {
+    pageIndex: 0 as PageIndex,
+    text: pageText,
+    runs: [],
+    hasSelectableText: pageText.length > 0,
+  };
+  const matches = findTextMatches(page, selectedText, 1_000);
+  if (matches.length === 0) return null;
+
+  const closest = matches.reduce((best, match) =>
+    Math.abs(match.startOffset - approximateStart) < Math.abs(best.startOffset - approximateStart)
+      ? match
+      : best,
+  );
+  const selectedNormalized = normalizedQuery(selectedText);
+  const exact = pageText.slice(closest.startOffset, closest.endOffset) === selectedText;
+  if (selectedNormalized.length === 0) return null;
+  return {
+    startOffset: closest.startOffset,
+    endOffset: closest.endOffset,
+    confidence: exact ? "exact" : "nearest-text-match",
+  };
+}

@@ -97,3 +97,35 @@
   border: 1px solid #8754bc;
   background: rgb(135 84 188 / 12%);
 }
+
+
+.shelf-pdf-interaction-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.shelf-pdf-search-highlight,
+.shelf-pdf-selection-highlight {
+  position: absolute;
+  display: block;
+  border-radius: 0.12rem;
+  pointer-events: none;
+}
+
+.shelf-pdf-search-highlight {
+  background: rgb(242 190 60 / 38%);
+  outline: 1px solid rgb(185 128 18 / 34%);
+}
+
+.shelf-pdf-search-highlight--active {
+  background: rgb(242 143 46 / 52%);
+  outline-color: rgb(160 81 16 / 60%);
+}
+
+.shelf-pdf-selection-highlight {
+  background: rgb(68 132 225 / 26%);
+  outline: 1px solid rgb(48 104 189 / 26%);
+}

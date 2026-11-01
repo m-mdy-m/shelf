@@ -21,7 +21,7 @@ function namedError(name, message = "fixture error") {
   return error;
 }
 
-function createFakePage({ width = 612, height = 792, rotate = 0, renderCalls = [] } = {}) {
+function createFakePage({ width = 612, height = 792, rotate = 0, renderCalls = [], textItems = [] } = {}) {
   return {
     rotate,
     getViewport({ scale }) {
@@ -31,7 +31,14 @@ function createFakePage({ width = 612, height = 792, rotate = 0, renderCalls = [
         height: (swaps ? width : height) * scale,
         rotation: rotate,
         scale,
+        convertToViewportRectangle(rectangle) {
+          const [left, bottom, right, top] = rectangle;
+          return [left, height - bottom, right, height - top];
+        },
       };
+    },
+    async getTextContent() {
+      return { items: textItems };
     },
     render(options) {
       renderCalls.push(options);
@@ -40,7 +47,7 @@ function createFakePage({ width = 612, height = 792, rotate = 0, renderCalls = [
     streamTextContent() {
       return new ReadableStream({
         start(controller) {
-          controller.enqueue({ items: [], styles: {} });
+          controller.enqueue({ items: textItems, styles: {} });
           controller.close();
         },
       });
@@ -68,7 +75,7 @@ function createFakeEnvironment(options = {}) {
   let passwordPromptCalls = 0;
 
   const pages = [
-    createFakePage({ width: 612, height: 792, rotate: 0, renderCalls }),
+    createFakePage({ width: 612, height: 792, rotate: 0, renderCalls, textItems: options.textItems ?? [] }),
     createFakePage({ width: 360, height: 540, rotate: 90, renderCalls }),
     createFakePage({ width: 595, height: 842, rotate: 270, renderCalls }),
   ];
@@ -365,6 +372,120 @@ test("Shelf page indexes map to PDF.js one-based pages without leaking PDF.js pr
   await session.close();
 });
 
+test("PDF text extraction normalizes ligatures and reconstructs punctuation, lines, and page geometry", async () => {
+  const environment = createFakeEnvironment({
+    textItems: [
+      { str: "Hello", dir: "ltr", transform: [1, 0, 0, 10, 50, 700], width: 25, height: 10, fontName: "f1" },
+      { str: "world", dir: "ltr", transform: [1, 0, 0, 10, 78, 700], width: 28, height: 10, fontName: "f1" },
+      { str: "!", dir: "ltr", transform: [1, 0, 0, 10, 107, 700], width: 4, height: 10, fontName: "f1" },
+      { str: "The ﬁrst", dir: "ltr", transform: [1, 0, 0, 10, 50, 680], width: 45, height: 10, fontName: "f1" },
+      { str: "page.", dir: "ltr", transform: [1, 0, 0, 10, 100, 680], width: 25, height: 10, fontName: "f1" },
+    ],
+  });
+  const session = await openFixture(environment);
+  const page = await session.getPageText(toPageIndex(0));
+
+  assert.equal(page.ok, true);
+  if (page.ok) {
+    assert.equal(page.value.text, "Hello world!\nThe first page.");
+    assert.equal(page.value.hasSelectableText, true);
+    assert.equal(page.value.runs.length, 5);
+    assert.equal(page.value.runs[0].startOffset, 0);
+    assert.equal(page.value.runs.at(-1).endOffset, page.value.text.length);
+    assert.deepEqual(page.value.runs[0].rectangles[0], {
+      x: 50 / 612,
+      y: 92 / 792,
+      width: 25 / 612,
+      height: 10 / 792,
+    });
+  }
+  await session.close();
+});
+
+test("PDF text extraction reads two-column layouts column-by-column", async () => {
+  const environment = createFakeEnvironment({
+    textItems: [
+      { str: "Left A", dir: "ltr", transform: [1, 0, 0, 10, 40, 700], width: 60, height: 10, fontName: "f1" },
+      { str: "Right A", dir: "ltr", transform: [1, 0, 0, 10, 360, 700], width: 70, height: 10, fontName: "f1" },
+      { str: "Left B", dir: "ltr", transform: [1, 0, 0, 10, 40, 680], width: 60, height: 10, fontName: "f1" },
+      { str: "Right B", dir: "ltr", transform: [1, 0, 0, 10, 360, 680], width: 70, height: 10, fontName: "f1" },
+    ],
+  });
+  const session = await openFixture(environment);
+  const page = await session.getPageText(toPageIndex(0));
+  assert.equal(page.ok, true);
+  if (page.ok) assert.equal(page.value.text, "Left A\nLeft B\nRight A\nRight B");
+  await session.close();
+});
+
+test("PDF text extraction preserves RTL ordering and reports image-only pages without selectable text", async () => {
+  const rtl = createFakeEnvironment({
+    textItems: [
+      { str: "שלום", dir: "rtl", transform: [1, 0, 0, 10, 350, 700], width: 35, height: 10, fontName: "f1" },
+      { str: "עולם", dir: "rtl", transform: [1, 0, 0, 10, 300, 700], width: 40, height: 10, fontName: "f1" },
+    ],
+  });
+  const rtlSession = await openFixture(rtl);
+  const rtlPage = await rtlSession.getPageText(toPageIndex(0));
+  assert.equal(rtlPage.ok, true);
+  if (rtlPage.ok) assert.equal(rtlPage.value.text, "שלום עולם");
+  await rtlSession.close();
+
+  const scanned = createFakeEnvironment();
+  const scannedSession = await openFixture(scanned);
+  const scannedPage = await scannedSession.getPageText(toPageIndex(0));
+  assert.equal(scannedPage.ok, true);
+  if (scannedPage.ok) {
+    assert.equal(scannedPage.value.text, "");
+    assert.equal(scannedPage.value.hasSelectableText, false);
+  }
+  await scannedSession.close();
+});
+
+test("PDF text extraction retains mixed RTL/LTR script runs and paragraph gaps", async () => {
+  const environment = createFakeEnvironment({
+    textItems: [
+      { str: "Shelf", dir: "ltr", transform: [1, 0, 0, 10, 40, 700], width: 32, height: 10, fontName: "latin" },
+      { str: "یادگیری", dir: "rtl", transform: [1, 0, 0, 10, 80, 700], width: 50, height: 10, fontName: "arabic" },
+      { str: "2026", dir: "ltr", transform: [1, 0, 0, 10, 140, 700], width: 25, height: 10, fontName: "latin" },
+      { str: "New paragraph", dir: "ltr", transform: [1, 0, 0, 10, 40, 660], width: 100, height: 10, fontName: "latin" },
+    ],
+  });
+  const session = await openFixture(environment);
+  const page = await session.getPageText(toPageIndex(0));
+  assert.equal(page.ok, true);
+  if (page.ok) {
+    assert.equal(page.value.text, "Shelf یادگیری 2026\n\nNew paragraph");
+    assert.deepEqual(page.value.runs.slice(0, 3).map((run) => run.direction), ["ltr", "rtl", "ltr"]);
+    assert.ok(page.value.runs.every((run) =>
+      run.rectangles.every((rectangle) =>
+        rectangle.x >= 0 && rectangle.y >= 0 &&
+        rectangle.x + rectangle.width <= 1 &&
+        rectangle.y + rectangle.height <= 1,
+      ),
+    ));
+  }
+  await session.close();
+});
+
+test("PDF text extraction honors cancellation and a bounded per-page character budget", async () => {
+  const huge = "x".repeat(500_100);
+  const environment = createFakeEnvironment({
+    textItems: [{ str: huge, dir: "ltr", transform: [1, 0, 0, 10, 10, 700], width: 500, height: 10, fontName: "f1" }],
+  });
+  const session = await openFixture(environment);
+  const page = await session.getPageText(toPageIndex(0));
+  assert.equal(page.ok, true);
+  if (page.ok) assert.equal(page.value.text.length, 500_000);
+
+  const controller = new AbortController();
+  controller.abort();
+  const cancelled = await session.getPageText(toPageIndex(1), controller.signal);
+  assert.equal(cancelled.ok, false);
+  if (!cancelled.ok) assert.equal(cancelled.error.code, "cancelled");
+  await session.close();
+});
+
 test("password-protected and malformed PDFs produce explicit safe errors", async () => {
   const passwordEnvironment = createFakeEnvironment({ passwordEvent: true });
   const passwordResult = await passwordEnvironment.adapter.open(documentId);
@@ -490,7 +611,7 @@ test("page renderer keeps canvas, text, and Shelf annotation layers separate", a
 
   const root = new FakeElement(new FakeDocument(), "div");
   const layers = createPdfPageLayers(root);
-  assert.deepEqual(root.children, [layers.canvas, layers.text, layers.annotations]);
+  assert.deepEqual(root.children, [layers.canvas, layers.text, layers.interaction, layers.annotations]);
 
   const annotation = {
     id: "annotation-1",
