@@ -22,6 +22,9 @@ interface RenderState {
 
 const renderStates = new WeakMap<HTMLElement, RenderState>();
 
+/** Maximum annotation DOM markers materialized for one page render. */
+const MAX_ANNOTATION_MARKERS_PER_PAGE = 200;
+
 function failure(code: ReaderError["code"], message: string): Result<never, ReaderError> {
   return { ok: false, error: { code, message, retryable: false } };
 }
@@ -61,10 +64,15 @@ function renderShelfAnnotations(
 ): void {
   layer.replaceChildren();
 
-  for (const annotation of annotations) {
+  let markerCount = 0;
+  // The caller supplies annotations scoped to this page. Bound both the
+  // record scan and rectangle materialization to defend against corrupt data.
+  for (const annotation of annotations.slice(0, MAX_ANNOTATION_MARKERS_PER_PAGE)) {
     if (annotation.pageIndex !== pageIndex) continue;
 
     for (const rectangle of annotation.rectangles) {
+      if (markerCount >= MAX_ANNOTATION_MARKERS_PER_PAGE) return;
+      markerCount += 1;
       if (!isValidRect(rectangle)) continue;
       const marker = layer.ownerDocument.createElement("span");
       marker.classList.add("shelf-pdf-annotation", "shelf-pdf-annotation--" + annotation.kind);

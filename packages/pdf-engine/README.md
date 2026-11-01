@@ -45,15 +45,15 @@ PDF.js is configured with a custom `PDFDataRangeTransport`. The default range ch
 
 ## Worker lifecycle and errors
 
-The worker is awaited before document loading. The returned session owns the PDF.js loading task and source handle. `close()` is idempotent: it aborts outstanding ranges, awaits `PDFDocumentLoadingTask.destroy()` (which tears down the worker), waits for outstanding source reads, then closes the platform source handle.
+Each open session receives a unique worker name, so closing one view cannot tear down another concurrently opened view of the same document. The worker is awaited before document loading. The returned session owns the PDF.js loading task and source handle. `close()` is idempotent: it aborts outstanding ranges, awaits `PDFDocumentLoadingTask.destroy()` (which tears down the worker), waits for outstanding source reads, then closes the platform source handle.
 
-PDF.js password requests are bridged to the optional asynchronous `passwordPrompt`. The default attempt limit is three, and values outside 1–10 are rejected. Missing/cancelled passwords, malformed files, unavailable sources, invalid ranges, and read failures map to safe `ReaderError` results; provider errors and locators are not exposed.
+PDF.js password requests are bridged to the optional asynchronous `passwordPrompt`. Late prompt results are ignored after teardown, and password callbacks are guarded against synchronous failures. The default attempt limit is three, and values outside 1–10 are rejected. Missing/cancelled passwords, malformed files, unavailable sources, invalid ranges, and read failures map to safe `ReaderError` results; provider errors and locators are not exposed. A byte-range failure terminates the current PDF.js loading task and is marked non-retryable for that session; callers must close and reopen the document to retry against the source.
 
 ## Rendering layers
 
 `createPdfPageLayers(root)` creates separate canvas, text, and Shelf annotation elements. `PdfPageRenderer` renders PDF.js into the canvas with the built-in annotation layer disabled, runs the PDF.js TextLayer separately, and draws only persisted Shelf annotation markers in the annotation overlay. The package stylesheet implements PDF.js TextLayer positioning and selection rules inside Shelf's isolated page classes. Text selection therefore remains independent from saved bookmarks/highlights/notes and no global PDF.js viewer stylesheet is required.
 
-The canvas pixel budget defaults to 16,777,216 pixels. Page scale is capped at 8 and device pixel ratio at 4. Render tasks and text streams can be cancelled before a virtual page is unmounted. The renderer also rejects allocations above the configured pixel budget before touching canvas memory.
+The renderer materializes at most 200 annotation markers per page render and expects the caller to supply records scoped to the requested page. The canvas pixel budget defaults to 16,777,216 pixels. Page scale is capped at 8 and device pixel ratio at 4. Render tasks and text streams can be cancelled before a virtual page is unmounted. The renderer also rejects allocations above the configured pixel budget before touching canvas memory.
 
 ## Page virtualization
 
@@ -69,7 +69,7 @@ The web build copies the pinned PDF.js worker and auxiliary assets into same-ori
 - image decoders, standard fonts, and WebAssembly decoders
 - the upstream Apache-2.0 license and per-asset license notices
 
-It copies Shelf's isolated page-layer/TextLayer stylesheet. `resolvePdfJsAssetUrls`/`createPdfDocumentAdapter` resolve the worker and auxiliary data relative to the web base URL. Serve the copied assets with the application and permit same-origin workers and WebAssembly compilation in the Content Security Policy.
+It copies Shelf's isolated page-layer/TextLayer stylesheet. `resolvePdfJsAssetUrls`/`createPdfDocumentAdapter` resolve the worker and auxiliary data relative to the web base URL. Serve the copied assets with the application and permit same-origin workers and WebAssembly compilation in the Content Security Policy. Blob-backed workers are not enabled; the adapter uses the copied same-origin worker asset.
 
 ## Tests
 

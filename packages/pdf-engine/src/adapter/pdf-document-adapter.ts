@@ -23,6 +23,8 @@ import type {
 import type { PageVirtualizerOptions } from "../virtualization/page-virtualizer.js";
 import { PageVirtualizer } from "../virtualization/page-virtualizer.js";
 
+let nextPdfWorkerInstanceId = 0;
+
 export type PdfPasswordReason = "needed" | "incorrect";
 
 export interface PdfPasswordRequest {
@@ -187,6 +189,9 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
     if (this.#closedRef.current) {
       return { ok: false, error: errorResult("cancelled", "The PDF document is closed.") };
     }
+    if (this.#rangeFailureRef.current !== null) {
+      return { ok: false, error: this.#rangeFailureRef.current };
+    }
     if (!Number.isSafeInteger(numericIndex) || numericIndex < 0 || numericIndex >= this.#info.pageCount) {
       return { ok: false, error: errorResult("invalid-input", "Page index is outside this PDF document.") };
     }
@@ -302,7 +307,8 @@ export class PdfDocumentAdapter {
     let rangeAborted = false;
 
     const failRange = (failure: ReaderError): void => {
-      rangeFailureRef.current ??= failure;
+      // A failed range terminates this session; callers must reopen the document to retry.
+      rangeFailureRef.current ??= { ...failure, retryable: false };
       // A failed source read must reject the active PDF.js operation, not send
       // an empty range which could leave its range reader waiting forever.
       void destroyLoadingTask().catch(() => {});
@@ -353,7 +359,13 @@ export class PdfDocumentAdapter {
           rangeAborted = true;
         },
       );
-      worker = this.#runtime.createWorker("shelf-" + String(documentId));
+      nextPdfWorkerInstanceId += 1;
+      if (!Number.isSafeInteger(nextPdfWorkerInstanceId)) {
+        throw new Error("PDF worker instance identifier space is exhausted.");
+      }
+      worker = this.#runtime.createWorker(
+        "shelf-" + String(documentId) + "-" + String(nextPdfWorkerInstanceId),
+      );
       await worker.promise;
       loadingTask = this.#runtime.getDocument({
         range,
@@ -369,27 +381,51 @@ export class PdfDocumentAdapter {
 
       loadingTask.onPassword = (updatePassword, reason) => {
         passwordAttempt += 1;
+        const isRequestCurrent = (): boolean =>
+          !closedRef.current && !rangeAborted && loadingTaskDestroyPromise === null;
+        const respond = (value: string | Error): void => {
+          if (!isRequestCurrent()) return;
+          try {
+            updatePassword(value);
+          } catch {
+            passwordFailure = "cancelled";
+          }
+        };
+
         const prompt = this.#options.passwordPrompt;
         if (prompt === undefined || passwordAttempt > maxPasswordAttempts) {
           passwordFailure = "password-required";
-          updatePassword(new Error("Shelf requires a PDF password."));
+          respond(new Error("Shelf requires a PDF password."));
           return;
         }
 
         const passwordReason: PdfPasswordReason =
           reason === this.#runtime.passwordResponses.INCORRECT_PASSWORD ? "incorrect" : "needed";
-        void prompt({ documentId, reason: passwordReason, attempt: passwordAttempt })
+        let passwordRequest: Promise<string | null>;
+        try {
+          passwordRequest = Promise.resolve(
+            prompt({ documentId, reason: passwordReason, attempt: passwordAttempt }),
+          );
+        } catch {
+          passwordFailure = "cancelled";
+          respond(new Error("Password prompt failed."));
+          return;
+        }
+
+        void passwordRequest
           .then((password) => {
+            if (!isRequestCurrent()) return;
             if (password === null) {
               passwordFailure = "cancelled";
-              updatePassword(new Error("Password prompt cancelled."));
+              respond(new Error("Password prompt cancelled."));
             } else {
-              updatePassword(password);
+              respond(password);
             }
           })
           .catch(() => {
+            if (!isRequestCurrent()) return;
             passwordFailure = "cancelled";
-            updatePassword(new Error("Password prompt failed."));
+            respond(new Error("Password prompt failed."));
           });
       };
 

@@ -117,18 +117,8 @@ export function resolvePdfJsAssetUrls(baseUrl: string): PdfJsAssetUrls {
   };
 }
 
-let configuredWorkerSrc: string | null = null;
-
 /** Construct the production runtime; PDF.js remains inside this adapter package. */
 export function createPdfJsRuntime(assets: PdfJsAssetUrls): PdfJsRuntime {
-  if (configuredWorkerSrc !== null && configuredWorkerSrc !== assets.workerSrc) {
-    throw new Error("PDF.js worker source is already configured for this runtime.");
-  }
-  if (configuredWorkerSrc === null) {
-    GlobalWorkerOptions.workerSrc = assets.workerSrc;
-    configuredWorkerSrc = assets.workerSrc;
-  }
-
   return {
     annotationModeDisable: AnnotationMode.DISABLE,
     passwordResponses: {
@@ -136,6 +126,9 @@ export function createPdfJsRuntime(assets: PdfJsAssetUrls): PdfJsRuntime {
       INCORRECT_PASSWORD: PasswordResponses.INCORRECT_PASSWORD,
     },
     createWorker(name) {
+      // PDF.js keeps workerSrc globally, so set it immediately before each
+      // worker creation. Already-created workers retain their own Worker.
+      GlobalWorkerOptions.workerSrc = assets.workerSrc;
       return PDFWorker.create({ name }) as unknown as PdfJsWorker;
     },
     createRangeTransport(length, filename, requestRange, onAbort) {
