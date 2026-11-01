@@ -9,7 +9,7 @@ timeout_seconds = 300
 fail_fast = true
 
 [tasks.project-check]
-description = "Validate Shelf spec, archive, and project metadata"
+description = "Validate Shelf spec, archive, public assets, and project metadata"
 command = ["python", "scripts/check_project.py"]
 timeout_seconds = 60
 
@@ -18,14 +18,19 @@ description = "Compile repository maintenance scripts"
 command = ["python", "-m", "compileall", "-q", "scripts"]
 timeout_seconds = 60
 
+[tasks.application-check]
+description = "Run format, lint, typecheck, unit tests, and production build"
+command = ["npm", "run", "ci"]
+timeout_seconds = 300
+
 [tasks.check]
-description = "Run repository scaffold checks"
-command = ["python", "-c", "print('Shelf repository checks passed')"]
-depends_on = ["project-check", "compile"]
-timeout_seconds = 60
+description = "Run all repository and application checks"
+command = ["python", "-c", "print('Shelf checks passed')"]
+depends_on = ["project-check", "compile", "application-check"]
+timeout_seconds = 300
 
 [tasks.ci]
 description = "CI task graph for local and GitHub Actions execution"
 command = ["python", "-c", "print('Shelf CI task graph passed')"]
 depends_on = ["check"]
-timeout_seconds = 60
+timeout_seconds = 300
