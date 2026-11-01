@@ -101,6 +101,10 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(workspace.includes("Loading PDF page"), true);
   assert.equal(workspace.includes("Retry page"), true);
   assert.equal(workspace.includes("Retry contents"), true);
+  assert.equal(workspace.includes("searchPdfDocument"), true);
+  assert.equal(workspace.includes("mapPdfSelectionRange"), true);
+  assert.equal(workspace.includes("AbortController"), true);
+  assert.equal(shell.includes("shelf:pdf-selection"), true);
   assert.equal(workspace.includes("let outlineLoaded = false"), true);
   assert.equal(workspace.includes("await loadOutline()"), false);
   assert.equal(store.includes("function isReadingProgress"), true);

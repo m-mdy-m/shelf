@@ -11,7 +11,15 @@ import type {
   PdfPageRenderer,
   PdfPageLayers,
 } from "@shelf/pdf-engine";
-import { createPdfPageLayers } from "@shelf/pdf-engine";
+import {
+  createPdfPageLayers,
+  mapPdfSelectionRange,
+  searchPdfDocument,
+} from "@shelf/pdf-engine";
+import type {
+  PdfTextSearchMatch,
+  PdfTextSelection,
+} from "@shelf/pdf-engine";
 
 interface ReaderWorkspaceOptions {
   readonly root: HTMLElement;
@@ -21,6 +29,7 @@ interface ReaderWorkspaceOptions {
   readonly initialProgress: ReadingProgress | null;
   readonly onStatus: (message: string, isError?: boolean) => void;
   readonly onClose: () => void;
+  readonly onSelection?: (selections: readonly PdfTextSelection[]) => void;
 }
 
 export interface ReaderWorkspaceController {
@@ -89,6 +98,10 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   let zoom = validZoom(options.initialProgress?.zoom ?? 1) ? options.initialProgress?.zoom ?? 1 : 1;
   let mode: ReadingMode = options.initialProgress?.readingMode === "single-page" ? "single-page" : "continuous";
   let lastScrollPosition = 0;
+  let searchController: AbortController | null = null;
+  let searchGeneration = 0;
+  let selectionFrame: number | null = null;
+  let activeSearchMatch: PdfTextSearchMatch | null = null;
 
   const toolbar = element(owner, "div", "reader-toolbar");
   const navigation = element(owner, "div", "reader-control-group reader-navigation");
@@ -128,6 +141,28 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   const closeButton = createButton(owner, "Close", "button button-small");
   trailingControls.append(outlineButton, closeButton);
   toolbar.append(navigation, modeControls, zoomControls, trailingControls);
+
+  const searchPanel = element(owner, "section", "reader-search-panel");
+  const searchForm = element(owner, "form", "reader-search-form") as HTMLFormElement;
+  const searchInput = element(owner, "input", "reader-search-input") as HTMLInputElement;
+  searchInput.type = "search";
+  searchInput.maxLength = 256;
+  searchInput.placeholder = "Search this PDF";
+  searchInput.setAttribute("aria-label", "Search PDF text");
+  const searchButton = createButton(owner, "Search");
+  searchButton.type = "submit";
+  const cancelSearchButton = createButton(owner, "Cancel", "button button-small");
+  cancelSearchButton.disabled = true;
+  cancelSearchButton.setAttribute("aria-label", "Cancel text search");
+  searchForm.append(searchInput, searchButton, cancelSearchButton);
+  const searchStatus = element(owner, "p", "reader-search-status", "Search stays on this device.");
+  searchStatus.setAttribute("role", "status");
+  searchStatus.setAttribute("aria-live", "polite");
+  const searchResults = element(owner, "ol", "reader-search-results") as HTMLOListElement;
+  const selectionStatus = element(owner, "p", "reader-selection-status");
+  selectionStatus.setAttribute("role", "status");
+  selectionStatus.setAttribute("aria-live", "polite");
+  searchPanel.append(searchForm, searchStatus, searchResults, selectionStatus);
 
   const documentHeading = element(owner, "div", "reader-document-heading");
   const documentTitle = element(
@@ -170,7 +205,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   stage.append(spacer, loadingMessage);
   body.append(outline, stage);
 
-  root.replaceChildren(documentHeading, toolbar, body);
+  root.replaceChildren(documentHeading, toolbar, searchPanel, body);
   root.hidden = false;
 
   const savedPage = options.initialProgress?.pageIndex as number | undefined;
@@ -331,6 +366,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
 
       if (result.ok) {
         page.renderedScale = renderScale;
+        paintSearchMatch(index, page);
         if (index === currentPage && renderScale === zoom) setReaderBusy(false);
         if (renderScale !== zoom) scheduleRender();
       } else if (result.error.code !== "cancelled") {
@@ -590,6 +626,151 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     }
   }
 
+  function paintSearchMatch(index: number, page: MountedPage): void {
+    page.layers.annotations.querySelectorAll(".shelf-pdf-search-hit").forEach((node) => node.remove());
+    if (activeSearchMatch === null || (activeSearchMatch.pageIndex as number) !== index) return;
+
+    for (const rectangle of activeSearchMatch.rectangles) {
+      const marker = element(owner, "span", "shelf-pdf-search-hit");
+      marker.style.left = String(rectangle.x * 100) + "%";
+      marker.style.top = String(rectangle.y * 100) + "%";
+      marker.style.width = String(rectangle.width * 100) + "%";
+      marker.style.height = String(rectangle.height * 100) + "%";
+      page.layers.annotations.append(marker);
+    }
+  }
+
+  function clearSearch(): void {
+    searchController?.abort();
+    searchController = null;
+    searchGeneration += 1;
+    activeSearchMatch = null;
+    searchResults.replaceChildren();
+    searchStatus.textContent = "Search stays on this device.";
+    cancelSearchButton.disabled = true;
+    searchButton.disabled = false;
+    for (const page of pages.values()) {
+      page.layers.annotations.querySelectorAll(".shelf-pdf-search-hit").forEach((node) => node.remove());
+    }
+  }
+
+  async function runSearch(): Promise<void> {
+    searchController?.abort();
+    const controller = new AbortController();
+    const generation = searchGeneration + 1;
+    searchGeneration = generation;
+    searchController = controller;
+    activeSearchMatch = null;
+    searchResults.replaceChildren();
+    searchButton.disabled = true;
+    cancelSearchButton.disabled = false;
+    searchStatus.textContent = "Searching local PDF text…";
+
+    try {
+      const result = await searchPdfDocument(session, searchInput.value, {
+        startPage: toPageIndex(currentPage),
+        signal: controller.signal,
+        maxPages: 5_000,
+        maxMatches: 300,
+        onProgress: ({ pagesScanned, totalPages, matchesFound }) => {
+          if (disposed || generation !== searchGeneration) return;
+          searchStatus.textContent =
+            "Scanning " + String(pagesScanned) + " of " + String(totalPages) +
+            " pages · " + String(matchesFound) + " matches";
+        },
+      });
+      if (disposed || generation !== searchGeneration) return;
+
+      if (!result.ok) {
+        searchStatus.textContent = result.error.code === "cancelled"
+          ? "Search cancelled."
+          : result.error.message;
+        return;
+      }
+
+      const summary = result.value;
+      if (summary.matches.length === 0 && summary.pagesScanned > 0 &&
+          summary.pagesWithoutText === summary.pagesScanned) {
+        searchStatus.textContent =
+          "No selectable text was found in the scanned pages. This PDF may be image-only; OCR is not available.";
+      } else if (summary.matches.length === 0) {
+        searchStatus.textContent =
+          "No matches in " + String(summary.pagesScanned) + " scanned pages.";
+      } else {
+        searchStatus.textContent =
+          String(summary.matches.length) + " matches in " +
+          String(summary.pagesScanned) + " scanned pages" +
+          (summary.truncated ? " · result limit reached; refine the query to scan more." : ".");
+      }
+
+      for (const match of summary.matches) {
+        const item = element(owner, "li", "reader-search-result");
+        const button = createButton(owner, "", "reader-search-result-button");
+        button.textContent =
+          "Page " + String((match.pageIndex as number) + 1) + " · " +
+          match.contextBefore.slice(-48) + match.text + match.contextAfter.slice(0, 64);
+        button.addEventListener("click", () => {
+          activeSearchMatch = match;
+          jumpTo(match.pageIndex as number);
+          const page = pages.get(match.pageIndex as number);
+          if (page !== undefined && page.renderedScale === zoom) {
+            paintSearchMatch(match.pageIndex as number, page);
+          }
+        });
+        item.append(button);
+        searchResults.append(item);
+      }
+    } finally {
+      if (generation === searchGeneration) {
+        searchController = null;
+        searchButton.disabled = false;
+        cancelSearchButton.disabled = true;
+      }
+    }
+  }
+
+  function onSelectionChange(): void {
+    if (disposed || selectionFrame !== null) return;
+    selectionFrame = owner.defaultView?.requestAnimationFrame(() => {
+      selectionFrame = null;
+      if (disposed) return;
+      const browserSelection = owner.getSelection();
+      if (browserSelection === null || browserSelection.isCollapsed || browserSelection.rangeCount === 0) {
+        selectionStatus.textContent = "";
+        options.onSelection?.([]);
+        return;
+      }
+
+      const range = browserSelection.getRangeAt(0);
+      const fragments: PdfTextSelection[] = [];
+      for (const [index, page] of pages) {
+        try {
+          const mapped = mapPdfSelectionRange(
+            range,
+            page.root,
+            page.layers.text,
+            toPageIndex(index),
+          );
+          if (mapped !== null) fragments.push(mapped);
+        } catch {
+          // A page can be unmounted while selectionchange is being delivered.
+        }
+      }
+
+      if (fragments.length === 0) {
+        selectionStatus.textContent = "";
+        options.onSelection?.([]);
+        return;
+      }
+
+      const selectedCharacters = fragments.reduce((total, fragment) => total + fragment.exactText.length, 0);
+      const pagesSelected = fragments.map((fragment) => String((fragment.pageIndex as number) + 1)).join(", ");
+      selectionStatus.textContent =
+        String(selectedCharacters) + " characters selected · page " + pagesSelected;
+      options.onSelection?.(fragments);
+    }) ?? null;
+  }
+
   function onScroll(): void {
     if (mode !== "continuous" || disposed) return;
     if (Math.abs(stage.scrollTop - lastScrollPosition) < 1) return;
@@ -650,6 +831,17 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     if (!outline.hidden) void loadOutline();
   });
   closeButton.addEventListener("click", onClose);
+  searchForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void runSearch();
+  });
+  cancelSearchButton.addEventListener("click", () => {
+    searchController?.abort();
+  });
+  searchInput.addEventListener("input", () => {
+    if (searchInput.value.trim().length === 0) clearSearch();
+  });
+  owner.addEventListener("selectionchange", onSelectionChange);
   stage.addEventListener("scroll", onScroll, { passive: true });
   stage.addEventListener("keydown", onKeyDown);
 
@@ -677,6 +869,11 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       disposed = true;
       if (renderFrame !== null) owner.defaultView?.cancelAnimationFrame(renderFrame);
       if (saveTimer !== null) owner.defaultView?.clearTimeout(saveTimer);
+      searchController?.abort();
+      searchController = null;
+      searchGeneration += 1;
+      if (selectionFrame !== null) owner.defaultView?.cancelAnimationFrame(selectionFrame);
+      owner.removeEventListener("selectionchange", onSelectionChange);
       stage.removeEventListener("scroll", onScroll);
       stage.removeEventListener("keydown", onKeyDown);
       clearPagesExcept(new Set());

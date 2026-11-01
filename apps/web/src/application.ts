@@ -175,6 +175,15 @@ export function mountShelf(root: HTMLElement): void {
         void closeActiveDocument();
         setStatus("The PDF was closed. Your library remains available offline.");
       },
+      onSelection: (selections) => {
+        viewer.dispatchEvent(new CustomEvent("shelf:pdf-selection", {
+          bubbles: true,
+          detail: {
+            documentId: opened.value.info.documentId,
+            selections,
+          },
+        }));
+      },
     });
   }
 

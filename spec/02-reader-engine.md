@@ -61,3 +61,12 @@ Persist last document, page/scroll, zoom, reading mode, and timestamps; debounce
 - The outline is loaded only when the Contents panel is first opened. Destination lookups use bounded concurrency (at most 12 active PDF.js lookups) and preserve source ordering; failed outline loads can be retried.
 - Page rendering keeps each mount in a loading state until its render task settles. Failed page renders expose an explicit Retry action and are not retried on every scroll or layout pass.
 - Previous/next, page jump, outline activation, and keyboard commands share the same navigation path. Native scrolling and touch panning remain available in continuous mode.
+
+## Text extraction, local search, and selection
+
+- Extract selectable text page-by-page from the PDF.js text stream; each page has a strict item and character budget, and extraction accepts an AbortSignal.
+- Preserve exact source text, UTF-16 offsets, direction, reading order, and normalized page-relative geometry. Use Unicode NFKC for search without replacing the original text.
+- Infer separators conservatively from PDF.js line metadata and text geometry. Do not reorder text items spatially; this avoids corrupting RTL and multi-column reading order.
+- Search on-device only with bounded query length, page scan, result count, and cancellation. Map normalized matches back to exact source offsets and page rectangles. Never send document text or queries to an external service.
+- Convert browser selections into per-page fragments with exact/normalized text, offsets explicitly labeled as PDF.js text-layer DOM offsets, bounded prefix/suffix context, and normalized rectangles.
+- Image-only pages remain explicitly non-searchable/non-selectable until an independent OCR feature is designed and consented to.

@@ -13,6 +13,13 @@ export interface PdfJsViewport {
   readonly height: number;
   readonly rotation: number;
   readonly scale: number;
+  convertToViewportPoint(x: number, y: number): readonly [number, number];
+}
+
+export interface PdfJsTextContentChunk {
+  readonly items: readonly unknown[];
+  readonly styles?: Readonly<Record<string, unknown>>;
+  readonly lang?: string | null;
 }
 
 export interface PdfJsRenderTask {
@@ -34,7 +41,10 @@ export interface PdfJsPageProxy {
     readonly annotationMode: number;
     readonly transform?: readonly number[] | null;
   }): PdfJsRenderTask;
-  streamTextContent(): ReadableStream<unknown>;
+  streamTextContent(options?: {
+    readonly includeMarkedContent?: boolean;
+    readonly disableNormalization?: boolean;
+  }): ReadableStream<PdfJsTextContentChunk>;
 }
 
 export interface PdfJsOutlineItem {

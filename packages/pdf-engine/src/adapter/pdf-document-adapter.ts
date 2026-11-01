@@ -16,6 +16,7 @@ import type {
 import type {
   PdfJsDocumentProxy,
   PdfJsLoadingTask,
+  PdfJsTextContentChunk,
   PdfJsOutlineItem,
   PdfJsPageProxy,
   PdfJsRangeTransport,
@@ -24,6 +25,8 @@ import type {
 } from "./pdfjs-runtime.js";
 import type { PageVirtualizerOptions } from "../virtualization/page-virtualizer.js";
 import { PageVirtualizer } from "../virtualization/page-virtualizer.js";
+import { buildPdfPageText } from "../text/page-text.js";
+import type { PdfPageText } from "../text/page-text.js";
 
 let nextPdfWorkerInstanceId = 0;
 
@@ -67,6 +70,13 @@ export interface PdfPageGeometry {
   readonly rotation: number;
 }
 
+export interface PdfPageTextOptions {
+  readonly signal?: AbortSignal;
+}
+
+const MAX_PDF_TEXT_ITEMS_PER_PAGE = 50_000;
+const MAX_PDF_TEXT_CHARACTERS_PER_PAGE = 500_000;
+
 export interface PdfOutlineItem {
   readonly title: string;
   readonly pageIndex: PageIndex | null;
@@ -81,6 +91,7 @@ export interface PdfPageHandle {
 export interface PdfDocumentSession {
   readonly info: PdfDocumentInfo;
   getPage(index: PageIndex): Promise<Result<PdfPageHandle, ReaderError>>;
+  getPageText(index: PageIndex, options?: PdfPageTextOptions): Promise<Result<PdfPageText, ReaderError>>;
   getOutline(): Promise<Result<readonly PdfOutlineItem[], ReaderError>>;
   createVirtualizer(options?: PageVirtualizerOptions): PageVirtualizer;
   close(): Promise<Result<void, ReaderError>>;
@@ -215,6 +226,116 @@ class PdfDocumentSessionImpl implements PdfDocumentSession {
         ok: false,
         error: mapPdfJsFailure(error, this.#rangeFailureRef.current, null),
       };
+    }
+  }
+
+  async getPageText(
+    index: PageIndex,
+    options: PdfPageTextOptions = {},
+  ): Promise<Result<PdfPageText, ReaderError>> {
+    const numericIndex = index as number;
+    if (this.#closedRef.current) {
+      return { ok: false, error: errorResult("cancelled", "The PDF document is closed.") };
+    }
+    if (this.#rangeFailureRef.current !== null) {
+      return { ok: false, error: this.#rangeFailureRef.current };
+    }
+    if (!Number.isSafeInteger(numericIndex) || numericIndex < 0 || numericIndex >= this.#info.pageCount) {
+      return { ok: false, error: errorResult("invalid-input", "Page index is outside this PDF document.") };
+    }
+    if (options.signal?.aborted === true) {
+      return { ok: false, error: errorResult("cancelled", "PDF text extraction was cancelled.") };
+    }
+
+    let reader: ReadableStreamDefaultReader<PdfJsTextContentChunk> | null = null;
+    let streamTruncated = false;
+    let collectedCharacters = 0;
+    const items: unknown[] = [];
+
+    try {
+      const page = await this.#document.getPage(numericIndex + 1);
+      if (this.#closedRef.current || options.signal?.aborted === true) {
+        return { ok: false, error: errorResult("cancelled", "PDF text extraction was cancelled.") };
+      }
+      const viewport = page.getViewport({ scale: 1 });
+      reader = page.streamTextContent({
+        includeMarkedContent: false,
+        disableNormalization: false,
+      }).getReader();
+
+      const cancelReader = (): void => {
+        void reader?.cancel().catch(() => {});
+      };
+      options.signal?.addEventListener("abort", cancelReader, { once: true });
+
+      try {
+        while (true) {
+          if (options.signal?.aborted === true || this.#closedRef.current) {
+            await reader.cancel();
+            return { ok: false, error: errorResult("cancelled", "PDF text extraction was cancelled.") };
+          }
+
+          const chunk = await reader.read();
+          if (chunk.done) break;
+          for (const item of chunk.value.items) {
+            if (
+              items.length >= MAX_PDF_TEXT_ITEMS_PER_PAGE ||
+              collectedCharacters >= MAX_PDF_TEXT_CHARACTERS_PER_PAGE
+            ) {
+              streamTruncated = true;
+              await reader.cancel();
+              break;
+            }
+
+            const textItem = typeof item === "object" && item !== null &&
+              "str" in item && typeof (item as { str: unknown }).str === "string"
+              ? item as { str: string }
+              : null;
+            if (textItem !== null) {
+              const remaining = MAX_PDF_TEXT_CHARACTERS_PER_PAGE - collectedCharacters;
+              if (textItem.str.length > remaining) {
+                items.push({ ...textItem, str: textItem.str.slice(0, remaining) });
+                collectedCharacters += remaining;
+                streamTruncated = true;
+                await reader.cancel();
+                break;
+              }
+              collectedCharacters += textItem.str.length;
+            }
+            items.push(item);
+          }
+          if (streamTruncated) break;
+        }
+      } finally {
+        options.signal?.removeEventListener("abort", cancelReader);
+      }
+
+      if (options.signal?.aborted === true || this.#closedRef.current) {
+        return { ok: false, error: errorResult("cancelled", "PDF text extraction was cancelled.") };
+      }
+
+      const pageText = buildPdfPageText(index, items, viewport, {
+        maxItems: MAX_PDF_TEXT_ITEMS_PER_PAGE,
+        maxCharacters: MAX_PDF_TEXT_CHARACTERS_PER_PAGE,
+      });
+      return {
+        ok: true,
+        value: streamTruncated ? { ...pageText, truncated: true } : pageText,
+      };
+    } catch (error) {
+      if (options.signal?.aborted === true || this.#closedRef.current) {
+        return { ok: false, error: errorResult("cancelled", "PDF text extraction was cancelled.") };
+      }
+      return {
+        ok: false,
+        error: mapPdfJsFailure(error, this.#rangeFailureRef.current, null),
+      };
+    } finally {
+      try {
+        reader?.releaseLock();
+      } catch {
+        // A cancelled stream may already have released its reader lock.
+      }
     }
   }
 

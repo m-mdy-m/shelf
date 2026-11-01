@@ -522,3 +522,97 @@ button {
     flex: 1;
   }
 }
+
+/* Local PDF search and text-selection feedback. */
+.reader-search-panel {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #dedad0;
+  border-radius: 0.75rem;
+  background: #fffdf9;
+}
+
+.reader-search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.reader-search-input {
+  flex: 1 1 15rem;
+  min-width: 8rem;
+  min-height: 2.3rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #c9c5bb;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #292820;
+  font: inherit;
+}
+
+.reader-search-status,
+.reader-selection-status {
+  min-height: 1.2rem;
+  margin: 0;
+  color: #686458;
+  font-size: 0.8rem;
+}
+
+.reader-selection-status:empty {
+  display: none;
+}
+
+.reader-search-results {
+  display: grid;
+  gap: 0.2rem;
+  max-height: 13rem;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reader-search-result-button {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: #333127;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.reader-search-result-button:hover,
+.reader-search-result-button:focus-visible {
+  background: #f0ede5;
+}
+
+.shelf-pdf-search-hit {
+  position: absolute;
+  display: block;
+  z-index: 3;
+  background: rgb(245 190 57 / 48%);
+  border: 1px solid rgb(179 126 17 / 65%);
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+@media (max-width: 640px) {
+  .reader-search-form {
+    align-items: stretch;
+  }
+
+  .reader-search-input {
+    flex-basis: 100%;
+  }
+
+  .reader-search-form .button {
+    flex: 1 1 40%;
+  }
+}

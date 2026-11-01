@@ -21,7 +21,7 @@ function namedError(name, message = "fixture error") {
   return error;
 }
 
-function createFakePage({ width = 612, height = 792, rotate = 0, renderCalls = [] } = {}) {
+function createFakePage({ width = 612, height = 792, rotate = 0, renderCalls = [], textItems = [] } = {}) {
   return {
     rotate,
     getViewport({ scale }) {
@@ -31,6 +31,9 @@ function createFakePage({ width = 612, height = 792, rotate = 0, renderCalls = [
         height: (swaps ? width : height) * scale,
         rotation: rotate,
         scale,
+        convertToViewportPoint(x, y) {
+          return [x * scale, ((swaps ? width : height) - y) * scale];
+        },
       };
     },
     render(options) {
@@ -40,7 +43,7 @@ function createFakePage({ width = 612, height = 792, rotate = 0, renderCalls = [
     streamTextContent() {
       return new ReadableStream({
         start(controller) {
-          controller.enqueue({ items: [], styles: {} });
+          controller.enqueue({ items: textItems, styles: {} });
           controller.close();
         },
       });
@@ -68,9 +71,18 @@ function createFakeEnvironment(options = {}) {
   let passwordPromptCalls = 0;
 
   const pages = [
-    createFakePage({ width: 612, height: 792, rotate: 0, renderCalls }),
-    createFakePage({ width: 360, height: 540, rotate: 90, renderCalls }),
-    createFakePage({ width: 595, height: 842, rotate: 270, renderCalls }),
+    createFakePage({
+      width: 612, height: 792, rotate: 0, renderCalls,
+      textItems: options.pageTextItems?.[0] ?? [],
+    }),
+    createFakePage({
+      width: 360, height: 540, rotate: 90, renderCalls,
+      textItems: options.pageTextItems?.[1] ?? [],
+    }),
+    createFakePage({
+      width: 595, height: 842, rotate: 270, renderCalls,
+      textItems: options.pageTextItems?.[2] ?? [],
+    }),
   ];
 
   const pdfDocument = {
@@ -290,6 +302,70 @@ test("PDF.js range requests are capped and use the Reader source port", async ()
   assert.deepEqual(environment.deliveredRanges, [{ begin: 4096, byteLength: MAX_DOCUMENT_READ_BYTES }]);
   assert.ok(environment.reads.every((range) => range.length <= MAX_DOCUMENT_READ_BYTES));
 
+  await session.close();
+});
+
+test("streaming PDF text extraction preserves ligatures, columns, RTL and paragraph geometry", async () => {
+  const makeItem = (str, x, baseline, width, dir = "ltr", hasEOL = false) => ({
+    str,
+    dir,
+    transform: [10, 0, 0, 10, x, baseline],
+    width,
+    height: 10,
+    hasEOL,
+  });
+  const environment = createFakeEnvironment({
+    pageTextItems: [[
+      makeItem("of\uFB01ce", 20, 780, 28),
+      makeItem("manual", 54, 780, 38),
+      makeItem("Right column", 350, 780, 82),
+      makeItem("ستون", 300, 750, 22, "rtl"),
+      makeItem("الف", 260, 750, 16, "rtl", true),
+      makeItem("Second paragraph", 20, 710, 96),
+    ]],
+  });
+  const session = await openFixture(environment);
+  const page = await session.getPageText(toPageIndex(0));
+
+  assert.equal(page.ok, true);
+  if (!page.ok) return;
+  assert.match(page.value.text, /of\uFB01ce manual Right column/u);
+  assert.match(page.value.text, /ستون الف/u);
+  assert.match(page.value.text, /\n\nSecond paragraph/u);
+  assert.match(page.value.normalizedText, /office manual Right column/u);
+  assert.equal(page.value.hasSelectableText, true);
+  assert.equal(page.value.runs[0].startOffset, 0);
+  assert.equal(page.value.runs[0].rectangle?.x, 20 / 612);
+  assert.ok(page.value.runs.every((run) =>
+    run.rectangle === null ||
+    [run.rectangle.x, run.rectangle.y, run.rectangle.width, run.rectangle.height]
+      .every((value) => Number.isFinite(value) && value >= 0 && value <= 1)
+  ));
+
+  await session.close();
+});
+
+test("page text extraction reports image-only pages without fabricating text", async () => {
+  const environment = createFakeEnvironment({ pageTextItems: [[], [], []] });
+  const session = await openFixture(environment);
+  const result = await session.getPageText(toPageIndex(1));
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.value.text, "");
+    assert.equal(result.value.hasSelectableText, false);
+    assert.equal(result.value.runs.length, 0);
+  }
+  await session.close();
+});
+
+test("page text extraction observes AbortSignal and cancels its stream", async () => {
+  const environment = createFakeEnvironment();
+  const session = await openFixture(environment);
+  const controller = new AbortController();
+  controller.abort();
+  const result = await session.getPageText(toPageIndex(0), { signal: controller.signal });
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.error.code, "cancelled");
   await session.close();
 });
 

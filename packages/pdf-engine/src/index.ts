@@ -23,3 +23,30 @@ export type {
   VirtualPage,
 } from "./virtualization/page-virtualizer.js";
 export { createPdfDocumentAdapter } from "./create-pdf-document-adapter.js";
+
+export { buildPdfPageText, normalizePdfText } from "./text/page-text.js";
+export type {
+  PdfPageText,
+  PdfTextDirection,
+  PdfTextExtractionOptions,
+  PdfTextRectangle,
+  PdfTextRun,
+} from "./text/page-text.js";
+export { searchPdfDocument } from "./text/search.js";
+export type {
+  PdfTextSearchMatch,
+  PdfTextSearchOptions,
+  PdfTextSearchResult,
+  PdfTextSession,
+} from "./text/search.js";
+export {
+  createPdfTextSelection,
+  mapPdfSelectionRange,
+  normalizeSelectedText,
+} from "./selection/pdf-selection.js";
+export type {
+  PdfSelectionAnchorHint,
+  PdfTextSelection,
+  SelectionBounds,
+  SelectionClientRectangle,
+} from "./selection/pdf-selection.js";
