@@ -15,22 +15,23 @@ concurrency:
 
 jobs:
   quality:
-    name: Quality
+    name: Pipeline quality checks
     runs-on: ubuntu-latest
     steps:
-      - name: Smoke
-        run: echo "quality job"
+      - name: Check out Shelf
+        uses: actions/checkout@v7
 
-  structure:
-    name: Structure
-    runs-on: ubuntu-latest
-    steps:
-      - name: Smoke
-        run: echo "structure job"
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
 
-  git_flow:
-    name: Git flow
-    runs-on: ubuntu-latest
-    steps:
-      - name: Smoke
-        run: echo "git flow job"
+      - name: Fetch pinned Pipeline source
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/m-mdy-m/pipeline.git .pipeline
+          git -C .pipeline checkout --detach f4e05487193a653ecb96cd09f9a6b2da7ba4822
+
+      - name: Run Shelf task graph
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.pipeline/src
+        run: python -m pipeline.providers.github task ci --root "$GITHUB_WORKSPACE" --config "$GITHUB_WORKSPACE/pipeline.toml" --json
