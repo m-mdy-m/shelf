@@ -13,6 +13,21 @@ export interface PdfJsViewport {
   readonly height: number;
   readonly rotation: number;
   readonly scale: number;
+  convertToViewportRectangle(rectangle: readonly number[]): readonly number[];
+}
+
+export interface PdfJsTextContentItem {
+  readonly str: string;
+  readonly dir?: string;
+  readonly transform: readonly number[];
+  readonly width: number;
+  readonly height: number;
+  readonly fontName?: string | null;
+  readonly hasEOL?: boolean;
+}
+
+export interface PdfJsTextContent {
+  readonly items: readonly unknown[];
 }
 
 export interface PdfJsRenderTask {

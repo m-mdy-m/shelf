@@ -23,3 +23,4 @@ export type {
   VirtualPage,
 } from "./virtualization/page-virtualizer.js";
 export { createPdfDocumentAdapter } from "./create-pdf-document-adapter.js";
+
