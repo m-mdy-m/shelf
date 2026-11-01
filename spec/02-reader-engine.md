@@ -48,3 +48,14 @@ Persist last document, page/scroll, zoom, reading mode, and timestamps; debounce
 - Page windows use measured page geometry plus bounded overscan. The UI mounts only returned page descriptors; it must not render every page in a long PDF.
 - Canvas, selectable text, and Shelf annotations are separate layers. PDF.js annotations are disabled in the canvas renderer to avoid mixing vendor-owned and Shelf-owned annotation state.
 - Deploy the version-matched worker, CMaps, ICC profiles, standard fonts, and WASM assets from the locked pdfjs-dist dependency on the same origin as the web app.
+
+
+## Reader navigation and reading state
+
+- The web Reader mounts only the pages returned by the PDF engine's virtual window. Mounted pages are cancelled and removed as they leave the bounded window.
+- Navigation uses Shelf's zero-based PageIndex internally and one-based page numbers only in the page input and labels.
+- Continuous mode derives the current page from the scroll container and measured page offsets. Single-page mode mounts only the selected page.
+- Zoom is bounded between 25% and 400%; Fit Width and Fit Page derive scale from the selected page geometry and the visible reader viewport.
+- Outline entries expose safe titles, child items, and resolved zero-based page indexes. External outline URLs and PDF.js objects do not cross the adapter boundary; unresolved destinations remain non-navigable labels.
+- The browser stores per-document page, normalized intra-page scroll, zoom, and reading mode in a versioned IndexedDB object store. Writes are debounced and flushed when the Reader is closed or the page is hidden.
+- Previous/next, page jump, outline activation, and keyboard commands share the same navigation path. Native scrolling and touch panning remain available in continuous mode.

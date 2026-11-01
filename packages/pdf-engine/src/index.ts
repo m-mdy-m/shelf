@@ -5,6 +5,7 @@ export type {
   PdfDocumentSession,
   PdfPageGeometry,
   PdfPageHandle,
+  PdfOutlineItem,
   PdfPasswordPrompt,
   PdfPasswordReason,
   PdfPasswordRequest,

@@ -4,6 +4,8 @@ import type {
   DocumentLocator,
   DocumentLocatorStorePort,
   DocumentRepositoryPort,
+  ReadingProgress,
+  ReadingProgressRepositoryPort,
   ReaderError,
   Result,
 } from "@shelf/reader-core";
@@ -27,7 +29,7 @@ interface StoredReference {
   readonly handle: BrowserFileHandleLike;
 }
 
-type StoreName = "documents" | "locators" | "copies" | "references";
+type StoreName = "documents" | "locators" | "copies" | "references" | "readingProgress";
 
 function storageError(
   code: ReaderError["code"],
@@ -38,7 +40,7 @@ function storageError(
 
 /** One local database stores safe records, opaque locators, and source bytes separately. */
 export class IndexedDbShelfStore
-implements DocumentRepositoryPort, DocumentLocatorStorePort, BrowserDocumentStoragePort {
+implements DocumentRepositoryPort, ReadingProgressRepositoryPort, DocumentLocatorStorePort, BrowserDocumentStoragePort {
   readonly #factory: IDBFactory | null;
   readonly #databaseName: string;
   #databasePromise: Promise<IDBDatabase> | null = null;
@@ -56,22 +58,39 @@ implements DocumentRepositoryPort, DocumentLocatorStorePort, BrowserDocumentStor
     if (factory === null) {
       throw new Error("IndexedDB is not available in this browser.");
     }
-    this.#databasePromise ??= new Promise((resolve, reject) => {
-      const request = factory.open(this.#databaseName, 1);
+    this.#databasePromise ??= new Promise<IDBDatabase>((resolve, reject) => {
+      const request = factory.open(this.#databaseName, 2);
+      let settled = false;
+      const fail = (error: unknown): void => {
+        if (settled) return;
+        settled = true;
+        reject(error);
+      };
       request.onupgradeneeded = () => {
         const database = request.result;
-        for (const name of ["documents", "locators", "copies", "references"] as const) {
+        for (const name of ["documents", "locators", "copies", "references", "readingProgress"] as const) {
           if (!database.objectStoreNames.contains(name)) {
             database.createObjectStore(name, {
               keyPath: name === "documents" ? "id" :
-                name === "locators" ? "documentId" : "key",
+                name === "locators" || name === "readingProgress" ? "documentId" : "key",
             });
           }
         }
       };
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error ?? new Error("IndexedDB open failed."));
-      request.onblocked = () => reject(new Error("IndexedDB upgrade is blocked by another Shelf tab."));
+      request.onsuccess = () => {
+        if (settled) {
+          request.result.close();
+          return;
+        }
+        settled = true;
+        request.result.onversionchange = () => request.result.close();
+        resolve(request.result);
+      };
+      request.onerror = () => fail(request.error ?? new Error("IndexedDB open failed."));
+      request.onblocked = () => fail(new Error("IndexedDB upgrade is blocked by another Shelf tab."));
+    }).catch((error: unknown) => {
+      this.#databasePromise = null;
+      throw error;
     });
     return this.#databasePromise;
   }
@@ -114,12 +133,41 @@ implements DocumentRepositoryPort, DocumentLocatorStorePort, BrowserDocumentStor
     }
   }
 
-  async save(document: Document): Promise<Result<void, ReaderError>> {
+  async save(document: Document): Promise<Result<void, ReaderError>>;
+  async save(progress: ReadingProgress): Promise<Result<void, ReaderError>>;
+  async save(record: Document | ReadingProgress): Promise<Result<void, ReaderError>> {
     try {
-      await this.saveDocument(document);
+      if ("documentId" in record) {
+        await this.#run("readingProgress", "readwrite", (store) => store.put(record));
+      } else {
+        await this.saveDocument(record);
+      }
       return { ok: true, value: undefined };
     } catch {
-      return { ok: false, error: storageError("write-failed", "Shelf could not save the document record.") };
+      const message = "documentId" in record
+        ? "Shelf could not save the reading position."
+        : "Shelf could not save the document record.";
+      return { ok: false, error: storageError("write-failed", message) };
+    }
+  }
+
+  async getByDocumentId(id: DocumentId): Promise<Result<ReadingProgress | null, ReaderError>> {
+    try {
+      const value = await this.#run<ReadingProgress | undefined>(
+        "readingProgress", "readonly", (store) => store.get(String(id)),
+      );
+      return { ok: true, value: value ?? null };
+    } catch {
+      return { ok: false, error: storageError("read-failed", "Shelf could not restore the reading position.") };
+    }
+  }
+
+  async deleteByDocumentId(id: DocumentId): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("readingProgress", "readwrite", (store) => store.delete(String(id)));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not remove the reading position.") };
     }
   }
 
