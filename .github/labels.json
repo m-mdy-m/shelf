@@ -95,11 +95,6 @@
     "description": "Knowledge capture, concepts, flashcards, and quizzes."
   },
   {
-    "name": "area:integration",
-    "color": "bfdadc",
-    "description": "Optional integration with the IDIOS ecosystem."
-  },
-  {
     "name": "area:quality",
     "color": "e99695",
     "description": "Testing, validation, accessibility, and performance."
@@ -148,5 +143,15 @@
     "name": "platform:all",
     "color": "0366d6",
     "description": "Affects all supported platform families."
+  },
+  {
+    "name": "area:export",
+    "color": "bfdadc",
+    "description": "Portable reading data, serialization, import, and export."
+  },
+  {
+    "name": "area:links",
+    "color": "c5def5",
+    "description": "Shelf document, page, annotation, and job deep links."
   }
 ]
