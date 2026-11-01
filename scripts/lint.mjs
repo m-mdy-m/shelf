@@ -100,6 +100,9 @@ for (const file of files) {
     if (file.includes("/domain/") && /^(?:react|react-dom|pdfjs-dist|better-sqlite3|@capacitor\/|node:)/u.test(specifier)) {
       report(file, 1, `domain code must remain platform and framework independent (${specifier})`);
     }
+    if (specifier === "pdfjs-dist" && file !== "packages/pdf-engine/src/adapter/pdfjs-runtime.ts") {
+      report(file, 1, `PDF.js may only be imported by the isolated PDF.js runtime adapter (${specifier})`);
+    }
   }
 }
 

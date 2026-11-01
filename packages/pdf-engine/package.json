@@ -1,0 +1,19 @@
+{
+  "name": "@shelf/pdf-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PDF.js adapter, page rendering layers, and virtualization for Shelf",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./src/styles.css"
+  },
+  "dependencies": {
+    "@shelf/reader-core": "0.1.0",
+    "pdfjs-dist": "6.4.299"
+  }
+}
