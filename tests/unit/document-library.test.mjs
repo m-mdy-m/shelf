@@ -235,3 +235,23 @@ test("a missing locator returns unavailable without opening a source", async () 
   if (!result.ok) assert.equal(result.error.code, "document-not-found");
   assert.equal(env.opened.length, 0);
 });
+
+
+test("re-registering the same locator never discards the source still owned by the existing record", async () => {
+  const env = setup();
+  const original = env.locator("same-source");
+  const first = await env.service.importDocument({
+    locator: original,
+    sourceKind: "imported-copy",
+  });
+  const duplicate = await env.service.importDocument({
+    locator: original,
+    sourceKind: "imported-copy",
+  });
+
+  assert.equal(first.ok, true);
+  assert.equal(duplicate.ok, true);
+  assert.equal(env.records.size, 1);
+  assert.equal(env.locators.size, 1);
+  assert.deepEqual(env.discarded, []);
+});

@@ -82,6 +82,12 @@ function isPdfMetadata(mediaType: string, displayName: string | null): boolean {
     (displayName !== null && displayName.toLowerCase().endsWith(".pdf"));
 }
 
+function sameLocator(left: DocumentLocator, right: DocumentLocator): boolean {
+  return left.kind === right.kind &&
+    left.providerId === right.providerId &&
+    left.value === right.value;
+}
+
 export class DocumentLibraryService {
   readonly #dependencies: DocumentLibraryDependencies;
 
@@ -150,7 +156,16 @@ export class DocumentLibraryService {
       document.source.sizeBytes === size
     );
     if (duplicate !== undefined) {
-      await this.#dependencies.cleanup?.discard(input.locator);
+      const existingLocator = await this.#dependencies.locators.getLocator(duplicate.id);
+      if (!existingLocator.ok) return existingLocator;
+      // A caller may retry registration with the same locator. Never clean up
+      // a source that the existing library record still owns.
+      if (
+        existingLocator.value === null ||
+        !sameLocator(existingLocator.value, input.locator)
+      ) {
+        await this.#dependencies.cleanup?.discard(input.locator);
+      }
       return { ok: true, value: { document: duplicate, duplicate: true } };
     }
 
