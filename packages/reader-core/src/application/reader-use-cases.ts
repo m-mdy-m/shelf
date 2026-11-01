@@ -1,6 +1,7 @@
 import type { Annotation } from "../domain/annotation.js";
 import type { Bookmark } from "../domain/bookmark.js";
-import type { Document, DocumentLocator } from "../domain/document.js";
+import type { Document } from "../domain/document.js";
+import type { DocumentLocator } from "../domain/document-locator.js";
 import type { ReaderError } from "../domain/errors.js";
 import type {
   AnnotationId,
