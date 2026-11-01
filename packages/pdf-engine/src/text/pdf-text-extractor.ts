@@ -87,8 +87,8 @@ function positionedItems(
   let characterCount = 0;
 
   for (const candidate of content.items.slice(0, MAX_TEXT_ITEMS_PER_PAGE)) {
-    if (!isRecord(candidate) || typeof candidate.str !== "string" || !Array.isArray(candidate.transform)) continue;
-    const text = candidate.str.normalize("NFKC").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/gu, "");
+    if (!isRecord(candidate) || typeof candidate["str"] !== "string" || !Array.isArray(candidate["transform"])) continue;
+    const text = candidate["str"].normalize("NFKC").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/gu, "");
     if (text.length === 0) continue;
     if (characterCount + text.length > MAX_TEXT_CHARACTERS_PER_PAGE) {
       const remaining = MAX_TEXT_CHARACTERS_PER_PAGE - characterCount;
@@ -106,18 +106,18 @@ function positionedItemFromRecord(
   candidate: Record<string, unknown>,
   viewport: PdfJsViewport,
 ): PositionedTextItem[] {
-  const text = typeof candidate.str === "string" ? candidate.str : "";
-  const transform = candidate.transform;
+  const text = typeof candidate["str"] === "string" ? candidate["str"] : "";
+  const transform = candidate["transform"];
   if (!Array.isArray(transform) || !transform.every(finiteNumber)) return [];
 
   const item: PdfJsTextContentItem = {
     str: text,
-    dir: typeof candidate.dir === "string" ? candidate.dir : "ltr",
+    dir: typeof candidate["dir"] === "string" ? candidate["dir"] : "ltr",
     transform,
-    width: finiteNumber(candidate.width) ? candidate.width : 0,
-    height: finiteNumber(candidate.height) ? candidate.height : 0,
-    fontName: typeof candidate.fontName === "string" ? candidate.fontName : null,
-    hasEOL: candidate.hasEOL === true,
+    width: finiteNumber(candidate["width"]) ? candidate["width"] : 0,
+    height: finiteNumber(candidate["height"]) ? candidate["height"] : 0,
+    fontName: typeof candidate["fontName"] === "string" ? candidate["fontName"] : null,
+    hasEOL: candidate["hasEOL"] === true,
   };
   const positioned = rectangleFor(item, viewport);
   if (positioned === null) return [];
