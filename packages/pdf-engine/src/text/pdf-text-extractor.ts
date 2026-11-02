@@ -1,6 +1,8 @@
 import { toPageIndex } from "@shelf/reader-core";
 import type { ExtractedPageText, ExtractedTextRun, PageRect, TextDirection } from "@shelf/reader-core";
 import type { PdfJsTextContent, PdfJsTextContentItem, PdfJsViewport } from "../adapter/pdfjs-runtime.js";
+import { groupPdfTextItemsByReadingOrder } from "./pdf-text-reading-order.js";
+import type { PdfReadingLine } from "./pdf-text-reading-order.js";
 
 interface PositionedTextItem {
   readonly text: string;
@@ -16,13 +18,7 @@ interface PositionedTextItem {
   readonly hasEOL: boolean;
 }
 
-interface TextLine {
-  readonly items: readonly PositionedTextItem[];
-  readonly top: number;
-  readonly bottom: number;
-  readonly centerY: number;
-  readonly height: number;
-}
+type TextLine = PdfReadingLine<PositionedTextItem>;
 
 const MAX_TEXT_ITEMS_PER_PAGE = 50_000;
 const MAX_TEXT_CHARACTERS_PER_PAGE = 500_000;
@@ -136,60 +132,6 @@ function positionedItemFromRecord(
   }];
 }
 
-function groupIntoLines(items: readonly PositionedTextItem[]): TextLine[] {
-  const sorted = [...items].sort((left, right) => left.centerY - right.centerY || left.left - right.left);
-  const lines: Array<{ items: PositionedTextItem[]; top: number; bottom: number; centerY: number; height: number }> = [];
-
-  for (const item of sorted) {
-    const previous = lines[lines.length - 1];
-    const previousItem = previous?.items[previous.items.length - 1];
-    const tolerance = Math.max(2.5, Math.min(item.height, previous?.height ?? item.height) * 0.55);
-    if (previous !== undefined && previousItem?.hasEOL !== true &&
-        Math.abs(item.centerY - previous.centerY) <= tolerance) {
-      previous.items.push(item);
-      previous.top = Math.min(previous.top, item.top);
-      previous.bottom = Math.max(previous.bottom, item.bottom);
-      previous.centerY = (previous.top + previous.bottom) / 2;
-      previous.height = Math.max(previous.height, item.height);
-    } else {
-      lines.push({
-        items: [item],
-        top: item.top,
-        bottom: item.bottom,
-        centerY: item.centerY,
-        height: item.height,
-      });
-    }
-  }
-  return lines;
-}
-
-function predominantDirection(items: readonly PositionedTextItem[]): TextDirection {
-  const rtl = items.filter((item) => item.direction === "rtl").length;
-  const vertical = items.filter((item) => item.direction === "ttb").length;
-  if (vertical > items.length / 2) return "ttb";
-  return rtl > items.length / 2 ? "rtl" : "ltr";
-}
-
-function detectColumnSplit(lines: readonly TextLine[], pageWidth: number): number | null {
-  let largestGap = 0;
-  let splitAt: number | null = null;
-  for (const line of lines) {
-    const ordered = [...line.items].sort((left, right) => left.left - right.left);
-    for (let index = 1; index < ordered.length; index += 1) {
-      const previous = ordered[index - 1];
-      const current = ordered[index];
-      if (previous === undefined || current === undefined) continue;
-      const gap = current.left - previous.right;
-      if (gap > pageWidth * COLUMN_GUTTER_RATIO && gap > largestGap) {
-        largestGap = gap;
-        splitAt = (previous.right + current.left) / 2;
-      }
-    }
-  }
-  return splitAt;
-}
-
 function joinLine(line: TextLine): readonly { readonly text: string; readonly item: PositionedTextItem }[] {
   const direction = predominantDirection(line.items);
   const items = [...line.items].sort((left, right) =>
@@ -233,46 +175,33 @@ export function extractPdfPageText(
     return { pageIndex: toPageIndex(pageIndex), text: "", runs: [], hasSelectableText: false, truncated };
   }
 
-  const initialLines = groupIntoLines(items);
-  const splitAt = detectColumnSplit(initialLines, viewport.width);
-  const columns = splitAt === null
-    ? [items]
-    : [
-      items.filter((item) => item.left + item.right < splitAt * 2),
-      items.filter((item) => item.left + item.right >= splitAt * 2),
-    ].filter((column) => column.length > 0);
-
-  if (predominantDirection(items) === "rtl") columns.reverse();
-
+  const readingLines = groupPdfTextItemsByReadingOrder(items, viewport.width);
   let text = "";
   const runs: ExtractedTextRun[] = [];
   let previousLine: TextLine | null = null;
 
-  for (const column of columns) {
-    const lines = groupIntoLines(column);
-    for (const line of lines) {
-      if (text.length > 0) {
-        const gap = previousLine === null ? 0 : line.top - previousLine.bottom;
-        const typicalHeight = previousLine?.height ?? line.height;
-        text += gap > typicalHeight * 1.65 ? "\n\n" : "\n";
-      }
-
-      for (const entry of joinLine(line)) {
-        const startOffset = text.length;
-        text += entry.text;
-        const endOffset = text.length;
-        if (endOffset <= startOffset) continue;
-        runs.push({
-          text: entry.text,
-          startOffset,
-          endOffset,
-          direction: entry.item.direction,
-          fontName: entry.item.fontName,
-          rectangles: entry.item.rectangle === null ? [] : [entry.item.rectangle],
-        });
-      }
-      previousLine = line;
+  for (const line of readingLines) {
+    if (text.length > 0) {
+      const gap = previousLine === null ? 0 : line.top - previousLine.bottom;
+      const typicalHeight = previousLine?.height ?? line.height;
+      text += gap > typicalHeight * 1.65 ? "\n\n" : "\n";
     }
+
+    for (const entry of joinLine(line)) {
+      const startOffset = text.length;
+      text += entry.text;
+      const endOffset = text.length;
+      if (endOffset <= startOffset) continue;
+      runs.push({
+        text: entry.text,
+        startOffset,
+        endOffset,
+        direction: entry.item.direction,
+        fontName: entry.item.fontName,
+        rectangles: entry.item.rectangle === null ? [] : [entry.item.rectangle],
+      });
+    }
+    previousLine = line;
   }
 
   const normalizedText = text.trim();

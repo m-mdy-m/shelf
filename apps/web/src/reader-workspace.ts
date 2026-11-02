@@ -588,6 +588,11 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     const generation = ++selectionGeneration;
     const selected = owner.getSelection();
     if (selected === null || selected.rangeCount === 0) {
+      // Keep the saved selection while a user activates an annotation action.
+      // Mouse mousedown is also cancelled on those controls; this guard covers
+      // keyboard focus and browser-specific selectionchange timing.
+      if (activeSelection !== null && owner.activeElement !== null &&
+          selectionPanel.contains(owner.activeElement)) return;
       activeSelection = null;
       selectionPanel.hidden = true;
       annotationsFeature?.setSelection(null);
