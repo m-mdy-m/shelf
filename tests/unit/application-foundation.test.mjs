@@ -141,11 +141,16 @@ test("the repository declares explicit application boundaries", async () => {
 
 test("Web annotations are a public feature module and Tailwind is compiled as a local asset", async () => {
   const controller = await readFile(path.join(root, "apps/web/src/features/annotations/annotation-controller.ts"), "utf8");
+  const panel = await readFile(path.join(root, "apps/web/src/features/annotations/components/saved-items-panel.ts"), "utf8");
   const entry = await readFile(path.join(root, "apps/web/src/features/annotations/index.ts"), "utf8");
   const tailwind = await readFile(path.join(root, "apps/web/src/tailwind.css"), "utf8");
   const build = await readFile(path.join(root, "scripts/build-web.mjs"), "utf8");
   assert.equal(entry.includes("mountReaderAnnotationsFeature"), true);
   assert.equal(controller.includes("ReaderAnnotationUseCases"), true);
+  assert.equal(controller.includes('savedToggle.setAttribute("aria-controls", savedPanel.element.id)'), true);
+  assert.equal(controller.includes("scheduleSavedItemsRender"), true);
+  assert.equal(controller.includes("supportedColors.includes(normalizedColor)"), true);
+  assert.equal(panel.includes("nextSavedItemsPanelId"), true);
   assert.equal(controller.includes("reader-workspace"), false);
   assert.equal(controller.includes("ReaderAnnotationService"), false);
   assert.equal(tailwind.includes('@import "tailwindcss"'), true);

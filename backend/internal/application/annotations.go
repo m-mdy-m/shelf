@@ -155,7 +155,11 @@ func (s *AnnotationService) UpdateBookmark(ctx context.Context, item domain.Book
 	if strings.TrimSpace(item.ID) == "" {
 		return domain.Bookmark{}, fmt.Errorf("%w: bookmark ID is required", domain.ErrInvalid)
 	}
-	if err := validateDocumentPage(item.DocumentID, item.PageIndex); err != nil {
+	existing, err := s.repository.GetBookmark(ctx, item.ID)
+	if err != nil {
+		return domain.Bookmark{}, err
+	}
+	if err := validateDocumentPage(existing.DocumentID, item.PageIndex); err != nil {
 		return domain.Bookmark{}, err
 	}
 	if len(item.Label) > 200 {
@@ -164,14 +168,13 @@ func (s *AnnotationService) UpdateBookmark(ctx context.Context, item domain.Book
 	if err := validateAnchor(item.Anchor); err != nil {
 		return domain.Bookmark{}, err
 	}
-	item.Label = strings.TrimSpace(item.Label)
-	if item.CreatedAt.IsZero() {
-		item.CreatedAt = s.clock.Now()
-	}
-	if err := s.repository.SaveBookmark(ctx, item); err != nil {
+	existing.PageIndex = item.PageIndex
+	existing.Label = strings.TrimSpace(item.Label)
+	existing.Anchor = item.Anchor
+	if err := s.repository.UpdateBookmark(ctx, existing); err != nil {
 		return domain.Bookmark{}, err
 	}
-	return item, nil
+	return existing, nil
 }
 
 func (s *AnnotationService) DeleteBookmark(ctx context.Context, id string) error {
@@ -191,8 +194,11 @@ func (s *AnnotationService) ListAnnotations(ctx context.Context, documentID stri
 func (s *AnnotationService) CreateAnnotation(ctx context.Context, input CreateAnnotationInput) (domain.Annotation, error) {
 	item := domain.Annotation{
 		DocumentID: input.DocumentID, PageIndex: input.PageIndex, Kind: input.Kind,
-		Color: strings.TrimSpace(input.Color), Content: strings.TrimSpace(input.Content),
+		Color: strings.ToLower(strings.TrimSpace(input.Color)), Content: strings.TrimSpace(input.Content),
 		Anchor: input.Anchor, Rectangles: append([]domain.PageRect(nil), input.Rectangles...),
+	}
+	if item.Kind == domain.AnnotationHighlight && item.Color == "" {
+		item.Color = "yellow"
 	}
 	if err := validateAnnotation(item); err != nil {
 		return domain.Annotation{}, err
@@ -203,9 +209,6 @@ func (s *AnnotationService) CreateAnnotation(ctx context.Context, input CreateAn
 	}
 	now := s.clock.Now()
 	item.ID, item.CreatedAt, item.UpdatedAt = id, now, now
-	if item.Kind == domain.AnnotationHighlight && item.Color == "" {
-		item.Color = "yellow"
-	}
 	if err := s.repository.SaveAnnotation(ctx, item); err != nil {
 		return domain.Annotation{}, err
 	}
@@ -216,21 +219,27 @@ func (s *AnnotationService) UpdateAnnotation(ctx context.Context, item domain.An
 	if strings.TrimSpace(item.ID) == "" {
 		return domain.Annotation{}, fmt.Errorf("%w: annotation ID is required", domain.ErrInvalid)
 	}
-	if item.Kind == domain.AnnotationHighlight && strings.TrimSpace(item.Color) == "" {
-		item.Color = "yellow"
-	}
-	item.Content = strings.TrimSpace(item.Content)
-	if err := validateAnnotation(item); err != nil {
+	existing, err := s.repository.GetAnnotation(ctx, item.ID)
+	if err != nil {
 		return domain.Annotation{}, err
 	}
-	if item.CreatedAt.IsZero() {
-		item.CreatedAt = s.clock.Now()
+	existing.PageIndex = item.PageIndex
+	existing.Kind = item.Kind
+	existing.Color = strings.ToLower(strings.TrimSpace(item.Color))
+	existing.Content = strings.TrimSpace(item.Content)
+	existing.Anchor = item.Anchor
+	existing.Rectangles = append([]domain.PageRect(nil), item.Rectangles...)
+	if existing.Kind == domain.AnnotationHighlight && existing.Color == "" {
+		existing.Color = "yellow"
 	}
-	item.UpdatedAt = s.clock.Now()
-	if err := s.repository.SaveAnnotation(ctx, item); err != nil {
+	if err := validateAnnotation(existing); err != nil {
 		return domain.Annotation{}, err
 	}
-	return item, nil
+	existing.UpdatedAt = s.clock.Now()
+	if err := s.repository.UpdateAnnotation(ctx, existing); err != nil {
+		return domain.Annotation{}, err
+	}
+	return existing, nil
 }
 
 func (s *AnnotationService) DeleteAnnotation(ctx context.Context, id string) error {

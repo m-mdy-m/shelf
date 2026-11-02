@@ -5,7 +5,10 @@ import (
 	"time"
 )
 
-var ErrInvalid = errors.New("invalid reader annotation input")
+var (
+	ErrInvalid  = errors.New("invalid reader annotation input")
+	ErrNotFound = errors.New("reader annotation record not found")
+)
 
 type TextAnchor struct {
 	SelectedText        string `json:"selected_text"`

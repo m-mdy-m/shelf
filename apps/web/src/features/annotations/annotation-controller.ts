@@ -87,7 +87,6 @@ export function mountReaderAnnotationsFeature(
   const bookmarkButton = createButton(owner, "Bookmark page");
   const savedToggle = createButton(owner, "Saved items");
   savedToggle.setAttribute("aria-expanded", "false");
-  savedToggle.setAttribute("aria-controls", "reader-saved-items");
   toolbarGroup.append(bookmarkButton, savedToggle);
   toolbar.append(toolbarGroup);
 
@@ -108,10 +107,21 @@ export function mountReaderAnnotationsFeature(
     onOpenQuote: (quote) => jumpToPage(quote.pageIndex),
     onDeleteQuote: (quote) => void deleteQuote(quote),
   });
+  savedToggle.setAttribute("aria-controls", savedPanel.element.id);
   readerPanels.append(savedPanel.element);
 
   function renderSavedItems(): void {
     savedPanel.render({ bookmarks, annotations, quotes, anchorStates });
+  }
+
+  let savedItemsRenderQueued = false;
+  function scheduleSavedItemsRender(): void {
+    if (savedItemsRenderQueued || savedPanel.element.hidden) return;
+    savedItemsRenderQueued = true;
+    void Promise.resolve().then(() => {
+      savedItemsRenderQueued = false;
+      if (!disposed && !savedPanel.element.hidden) renderSavedItems();
+    });
   }
 
   function setSelection(next: TextSelection | null): void {
@@ -244,7 +254,13 @@ export function mountReaderAnnotationsFeature(
         annotation.color,
       ) ?? null;
       if (color === null) return;
-      updated = { ...annotation, color: color as typeof annotation.color };
+      const normalizedColor = color.trim().toLowerCase();
+      const supportedColors: readonly string[] = ["yellow", "green", "blue", "pink", "purple"];
+      if (!supportedColors.includes(normalizedColor)) {
+        onStatus("Choose one of: yellow, green, blue, pink, purple.", true);
+        return;
+      }
+      updated = { ...annotation, color: normalizedColor as typeof annotation.color };
     } else {
       const content = owner.defaultView?.prompt("Edit passage note", annotation.content) ?? null;
       if (content === null) return;
@@ -323,7 +339,7 @@ export function mountReaderAnnotationsFeature(
     setAnchorState(annotationId, state) {
       if (disposed || anchorStates.get(annotationId) === state) return;
       anchorStates.set(annotationId, state);
-      if (!savedPanel.element.hidden) renderSavedItems();
+      scheduleSavedItemsRender();
     },
     dispose() {
       disposed = true;
