@@ -66,3 +66,24 @@ make ci
 - Record material runtime or packaging choices as ADRs under `docs/decisions/`.
 
 The architecture and package directories are deliberately established before feature code is added. A directory existing in the scaffold is not evidence that its feature is implemented.
+
+
+## Reader data backup and restore
+
+Shelf can export a versioned JSON backup of the portable Reader records: document
+metadata, reading progress, bookmarks, highlights, notes, and quotes. Export reads
+these stores in one IndexedDB readonly transaction. Restore validates the complete
+bundle before opening a single readwrite transaction; a failed restore is rolled
+back rather than leaving a partial library.
+
+Backups intentionally exclude PDF bytes, browser file handles, opaque filesystem or
+content-URI locators, credentials, and provider secrets. Restoring on another browser
+or device restores the Reader metadata and saved work, not the underlying PDF files
+or OS permissions. Re-link original files or import the PDFs again to read them.
+Existing same-device source records are retained only when their document IDs are
+also present in the restored bundle.
+
+The JSON format is identified by `format: "shelf-reader-data"` and a numeric
+`version`. Import rejects unsupported versions, duplicate record IDs, malformed
+page geometry/progress, and saved items whose document is absent. IndexedDB schema
+version 4 adds update-time indexes while retaining the version 3 stores and records.
