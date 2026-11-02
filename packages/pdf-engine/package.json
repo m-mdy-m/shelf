@@ -13,7 +13,7 @@
     "./styles.css": "./src/styles.css"
   },
   "dependencies": {
-    "@shelf/reader-core": "0.1.0",
+    "@shelf/reader-core": "workspace:0.1.0",
     "pdfjs-dist": "6.4.299"
   }
 }

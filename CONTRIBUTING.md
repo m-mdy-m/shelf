@@ -13,7 +13,7 @@ Shelf uses [m-mdy-m/gix](https://github.com/m-mdy-m/gix) with `main` and `develo
 Finish topic branches with the matching `gix ... finish` command. Do not merge feature work directly into `main`; open a PR and link the related Issue.
 
 ## Checks
-Install the pinned shared task runner with `make setup`; run `make check` / `make ci`. Use `psx check` for structure and `gix doctor` for flow diagnostics.
+Install pnpm 12.17.0 and the pinned shared task runner with `make setup`; run `make check` / `make ci`. Use `psx check` for structure and `gix doctor` for flow diagnostics. Install dependencies with `pnpm install --frozen-lockfile`.
 
 ## Pull requests
 Keep PRs focused. Link the Issue and list only the checks and platforms actually tested.

@@ -1,4 +1,5 @@
 import { access, cp, mkdir } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -7,7 +8,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const source = path.join(root, "apps", "web");
 const output = path.join(root, "dist", "web");
 const entryAsset = path.join(output, "assets", "main.js");
-const pdfPackage = path.join(root, "node_modules", "pdfjs-dist");
+const pdfEngineRequire = createRequire(path.join(root, "packages", "pdf-engine", "package.json"));
+const pdfEntry = pdfEngineRequire.resolve("pdfjs-dist/legacy/build/pdf.mjs");
+const pdfPackage = path.resolve(path.dirname(pdfEntry), "../..");
 
 try {
   await access(entryAsset);
@@ -17,24 +20,10 @@ try {
 
 await mkdir(path.join(output, "assets"), { recursive: true });
 await cp(path.join(source, "index.html"), path.join(output, "index.html"));
-const npm = process.platform === "win32" ? "npm.cmd" : "npm";
-const installTailwind = spawnSync(npm, [
-  "install",
-  "--no-save",
-  "--package-lock=false",
-  "--no-audit",
-  "--no-fund",
-  "tailwindcss@4.3.3",
-  "@tailwindcss/cli@4.3.3",
-], { cwd: root, stdio: "inherit" });
-if (installTailwind.error) throw installTailwind.error;
-if (installTailwind.status !== 0) {
-  throw new Error("Tailwind CSS dependencies could not be installed with the pinned versions.");
-}
 
-const tailwind = spawnSync(npm, [
+const pnpm = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+const tailwind = spawnSync(pnpm, [
   "exec",
-  "--",
   "tailwindcss",
   "-i",
   path.join(source, "src", "tailwind.css"),

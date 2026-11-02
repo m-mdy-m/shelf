@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@shelf/library": "0.1.0",
-    "@shelf/platform-adapters": "0.1.0",
-    "@shelf/pdf-engine": "0.1.0",
-    "@shelf/reader-core": "0.1.0"
+    "@shelf/library": "workspace:0.1.0",
+    "@shelf/platform-adapters": "workspace:0.1.0",
+    "@shelf/pdf-engine": "workspace:0.1.0",
+    "@shelf/reader-core": "workspace:0.1.0"
   }
 }

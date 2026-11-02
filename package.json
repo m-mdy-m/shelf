@@ -3,34 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "description": "A local-first PDF reading workspace",
-  "packageManager": "npm@10.9.4",
+  "packageManager": "pnpm@12.17.0",
   "engines": {
     "node": ">=22.16.0 <23",
-    "npm": ">=10.9.0 <11"
+    "pnpm": ">=12.17.0 <13"
   },
-  "workspaces": [
-    "apps/web",
-    "packages/reader-core",
-    "packages/pdf-engine",
-    "packages/library",
-    "packages/platform-adapters"
-  ],
   "scripts": {
     "format:check": "node scripts/format-check.mjs",
     "lint": "node scripts/lint.mjs",
-    "typecheck": "npm run build:core && npm run build:library && npm run build:platform && npm run build:pdf && tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p packages/reader-core/tsconfig.json && tsc --noEmit -p packages/pdf-engine/tsconfig.json && tsc --noEmit -p packages/library/tsconfig.json && tsc --noEmit -p packages/platform-adapters/tsconfig.json",
+    "typecheck": "pnpm run build:core && pnpm run build:library && pnpm run build:platform && pnpm run build:pdf && tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p packages/reader-core/tsconfig.json && tsc --noEmit -p packages/pdf-engine/tsconfig.json && tsc --noEmit -p packages/library/tsconfig.json && tsc --noEmit -p packages/platform-adapters/tsconfig.json",
     "test:run": "node scripts/run-tests.mjs",
-    "test": "npm run build:core && npm run build:library && npm run build:platform && npm run build:pdf && npm run test:run",
+    "test": "pnpm run build:core && pnpm run build:library && pnpm run build:platform && pnpm run build:pdf && pnpm run test:run",
     "build:core": "tsc -p packages/reader-core/tsconfig.build.json",
     "build:library": "tsc -p packages/library/tsconfig.build.json",
     "build:platform": "tsc -p packages/platform-adapters/tsconfig.build.json",
     "build:pdf": "tsc -p packages/pdf-engine/tsconfig.build.json",
-    "build": "npm run clean && npm run build:core && npm run build:library && npm run build:platform && npm run build:pdf && tsc -p apps/web/tsconfig.build.json && node scripts/build-web.mjs",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run build && npm run test:run",
-    "ci": "npm run check",
+    "build": "pnpm run clean && pnpm run build:core && pnpm run build:library && pnpm run build:platform && pnpm run build:pdf && tsc -p apps/web/tsconfig.build.json && node scripts/build-web.mjs",
+    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run build && pnpm run test:run",
+    "ci": "pnpm run check",
     "clean": "node scripts/clean.mjs"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "4.3.3",
+    "tailwindcss": "4.3.3",
     "typescript": "5.8.3"
   }
 }
