@@ -21,6 +21,7 @@ import {
   BrowserDocumentSource,
   BrowserPdfPicker,
   IndexedDbShelfStore,
+  createIndexedDbReaderRepositories,
   WebCryptoSha256Digest,
 } from "@shelf/platform-adapters";
 
@@ -55,10 +56,9 @@ export function mountShelf(root: HTMLElement): void {
       return toOpaqueId<Kind>(kind.toLowerCase() + "-" + globalThis.crypto.randomUUID());
     },
   };
+  const readerRepositories = createIndexedDbReaderRepositories(store);
   const annotationUseCases = new ReaderAnnotationService({
-    bookmarks: store,
-    annotations: store,
-    quotes: store,
+    ...readerRepositories,
     ids,
     clock: { now: () => Date.now() },
   });
