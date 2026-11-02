@@ -242,21 +242,21 @@ function uniqueIds(items: readonly { readonly id: string }[]): boolean {
 
 /** Validate untrusted import JSON and copy only export-safe fields into the result. */
 export function parseReaderDataBundle(input: unknown): Result<ReaderDataBundle, ReaderError> {
-  if (!isRecord(input) || input.format !== READER_DATA_BUNDLE_FORMAT ||
-      input.version !== READER_DATA_BUNDLE_VERSION ||
-      !isSafeNonNegativeInteger(input.sourceSchemaVersion) ||
-      !isFiniteNumber(input.exportedAt) ||
-      !Array.isArray(input.documents) || !Array.isArray(input.readingProgress) ||
-      !Array.isArray(input.bookmarks) || !Array.isArray(input.annotations) ||
-      !Array.isArray(input.quotes)) {
+  if (!isRecord(input) || input["format"] !== READER_DATA_BUNDLE_FORMAT ||
+      input["version"] !== READER_DATA_BUNDLE_VERSION ||
+      !isSafeNonNegativeInteger(input["sourceSchemaVersion"]) ||
+      !isFiniteNumber(input["exportedAt"]) ||
+      !Array.isArray(input["documents"]) || !Array.isArray(input["readingProgress"]) ||
+      !Array.isArray(input["bookmarks"]) || !Array.isArray(input["annotations"]) ||
+      !Array.isArray(input["quotes"])) {
     return invalid("This file is not a supported Shelf Reader data bundle.");
   }
 
-  const documents = input.documents.map(sanitizeDocument);
-  const readingProgress = input.readingProgress.map(sanitizeProgress);
-  const bookmarks = input.bookmarks.map(sanitizeBookmark);
-  const annotations = input.annotations.map(sanitizeAnnotation);
-  const quotes = input.quotes.map(sanitizeQuote);
+  const documents = input["documents"].map(sanitizeDocument);
+  const readingProgress = input["readingProgress"].map(sanitizeProgress);
+  const bookmarks = input["bookmarks"].map(sanitizeBookmark);
+  const annotations = input["annotations"].map(sanitizeAnnotation);
+  const quotes = input["quotes"].map(sanitizeQuote);
   if ([...documents, ...readingProgress, ...bookmarks, ...annotations, ...quotes].some((item) => item === null)) {
     return invalid("The Shelf backup contains an invalid or unsupported Reader record.");
   }
@@ -285,8 +285,8 @@ export function parseReaderDataBundle(input: unknown): Result<ReaderDataBundle, 
     value: {
       format: READER_DATA_BUNDLE_FORMAT,
       version: READER_DATA_BUNDLE_VERSION,
-      sourceSchemaVersion: input.sourceSchemaVersion,
-      exportedAt: input.exportedAt,
+      sourceSchemaVersion: input["sourceSchemaVersion"],
+      exportedAt: input["exportedAt"],
       documents: safeDocuments,
       readingProgress: safeProgress,
       bookmarks: safeBookmarks,
