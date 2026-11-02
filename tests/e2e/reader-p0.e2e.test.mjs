@@ -189,6 +189,7 @@ async function waitUntil(predicate, description, timeoutMs = 12000) {
 function connectCdp(url) {
   const socket = new WebSocket(url);
   const pending = new Map();
+  const events = [];
   let nextId = 0;
   const opened = new Promise((resolve, reject) => {
     socket.addEventListener("open", resolve, { once: true });
@@ -196,7 +197,10 @@ function connectCdp(url) {
   });
   socket.addEventListener("message", (event) => {
     const message = JSON.parse(String(event.data));
-    if (typeof message.id !== "number") return;
+    if (typeof message.id !== "number") {
+      events.push(message);
+      return;
+    }
     const waiter = pending.get(message.id);
     if (waiter === undefined) return;
     pending.delete(message.id);
@@ -205,6 +209,7 @@ function connectCdp(url) {
   });
   return {
     socket,
+    events() { return [...events]; },
     async opened() { await opened; },
     async send(method, params = {}) {
       const id = ++nextId;
@@ -297,6 +302,8 @@ test("Chromium Reader selection remains column-bounded and highlight/note action
     await cdp.opened();
     await cdp.send("Page.enable");
     await cdp.send("Runtime.enable");
+    await cdp.send("Log.enable");
+    await cdp.send("Network.enable");
     await cdp.send("Emulation.setDeviceMetricsOverride", {
       width: 1200,
       height: 1100,
@@ -305,9 +312,27 @@ test("Chromium Reader selection remains column-bounded and highlight/note action
     });
     await cdp.send("Page.navigate", { url: baseUrl + "/p0-harness.html" });
 
-    await waitUntil(async () => await cdp.evaluate(
-      "Boolean(window.__shelfE2E && document.querySelector('.shelf-pdf-text-layer > span'))",
-    ), "Reader page rendering");
+    try {
+      await waitUntil(async () => await cdp.evaluate(
+        "Boolean(window.__shelfE2E && document.querySelector('.shelf-pdf-text-layer > span'))",
+      ), "Reader page rendering");
+    } catch (cause) {
+      const pageState = await cdp.evaluate(`(() => ({
+        readyState: document.readyState,
+        title: document.title,
+        bodyText: document.body.innerText,
+        harnessLoaded: Boolean(window.__shelfE2E),
+        readerChildren: document.querySelector("#reader")?.innerHTML.slice(0, 3000) ?? null,
+        resources: performance.getEntriesByType("resource").map((entry) => entry.name).slice(-30),
+      }))()`);
+      const browserEvents = cdp.events().filter((event) =>
+        event.method === "Runtime.exceptionThrown" ||
+        event.method === "Runtime.consoleAPICalled" ||
+        event.method === "Log.entryAdded" ||
+        event.method === "Network.loadingFailed",
+      ).slice(-30);
+      throw new Error(String(cause) + " Browser diagnostics: " + JSON.stringify({ pageState, browserEvents }));
+    }
 
     const selected = await cdp.evaluate(`(() => {
       const layer = document.querySelector(".shelf-pdf-text-layer");
