@@ -226,7 +226,7 @@ function connectCdp(url) {
       if (response.exceptionDetails) {
         throw new Error(response.exceptionDetails.exception?.description ?? response.exceptionDetails.text);
       }
-      return response.result?.result?.value;
+      return response.result?.value;
     },
   };
 }
