@@ -72,14 +72,14 @@ function sanitizeDocument(value: unknown): Document | null {
   const metadata = value["metadata"];
   const source = value["source"];
   const sourceKinds = ["local-file", "imported-copy", "external-reference", "provider"];
-  if (!isString(metadata.title) || !strings(metadata.authors) ||
-      !isNullableString(metadata.language) ||
-      !(metadata.pageCount === null || isSafeNonNegativeInteger(metadata.pageCount)) ||
-      !isNullableString(metadata.pdfTitle) || !isNullableString(metadata.pdfSubject) ||
-      !isString(source.kind) || !sourceKinds.includes(source.kind) ||
-      !isNullableString(source.displayName) || !isString(source.mediaType) ||
-      !(source.sizeBytes === null || isSafeNonNegativeInteger(source.sizeBytes)) ||
-      !(source.modifiedAt === null || isFiniteNumber(source.modifiedAt)) ||
+  if (!isString(metadata["title"]) || !strings(metadata["authors"]) ||
+      !isNullableString(metadata["language"]) ||
+      !(metadata["pageCount"] === null || isSafeNonNegativeInteger(metadata["pageCount"])) ||
+      !isNullableString(metadata["pdfTitle"]) || !isNullableString(metadata["pdfSubject"]) ||
+      !isString(source["kind"]) || !sourceKinds.includes(source["kind"]) ||
+      !isNullableString(source["displayName"]) || !isString(source["mediaType"]) ||
+      !(source["sizeBytes"] === null || isSafeNonNegativeInteger(source["sizeBytes"])) ||
+      !(source["modifiedAt"] === null || isFiniteNumber(source["modifiedAt"])) ||
       !isFiniteNumber(value["createdAt"]) || !isFiniteNumber(value["updatedAt"]) ||
       !(value["fingerprint"] === null || (isString(value["fingerprint"]) && value["fingerprint"].length > 0))) {
     return null;
@@ -88,19 +88,19 @@ function sanitizeDocument(value: unknown): Document | null {
   return {
     id: value["id"] as DocumentId,
     metadata: {
-      title: metadata.title,
-      authors: [...metadata.authors],
-      language: metadata.language,
-      pageCount: metadata.pageCount,
-      pdfTitle: metadata.pdfTitle,
-      pdfSubject: metadata.pdfSubject,
+      title: metadata["title"],
+      authors: [...metadata["authors"]],
+      language: metadata["language"],
+      pageCount: metadata["pageCount"],
+      pdfTitle: metadata["pdfTitle"],
+      pdfSubject: metadata["pdfSubject"],
     },
     source: {
-      kind: source.kind as Document["source"]["kind"],
-      displayName: source.displayName,
-      mediaType: source.mediaType,
-      sizeBytes: source.sizeBytes,
-      modifiedAt: source.modifiedAt,
+      kind: source["kind"] as Document["source"]["kind"],
+      displayName: source["displayName"],
+      mediaType: source["mediaType"],
+      sizeBytes: source["sizeBytes"],
+      modifiedAt: source["modifiedAt"],
     },
     fingerprint: value["fingerprint"] as Document["fingerprint"],
     createdAt: value["createdAt"],
