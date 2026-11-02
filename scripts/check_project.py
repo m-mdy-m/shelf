@@ -168,6 +168,8 @@ def check_application_workspace() -> None:
         fail("pnpm engine range must match the pinned pnpm 12 release")
     if manifest.get("devDependencies", {}).get("typescript") != "5.8.3":
         fail("TypeScript must remain pinned to the reviewed 5.8.3 version")
+    if manifest.get("devDependencies", {}).get("pdfjs-dist") != "6.4.299":
+        fail("PDF.js must be a direct root development dependency for the fixture tests")
     for dependency in ("tailwindcss", "@tailwindcss/cli"):
         if manifest.get("devDependencies", {}).get(dependency) != "4.3.3":
             fail(f"{dependency} must be pinned to 4.3.3 at the workspace root")

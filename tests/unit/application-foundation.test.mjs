@@ -27,7 +27,7 @@ test("web, reader, PDF, library, and platform adapters are locked pnpm workspace
   const platformManifest = await json("packages/platform-adapters/package.json");
   const workspace = await readFile(path.join(root, "pnpm-workspace.yaml"), "utf8");
   const lock = await readFile(path.join(root, "pnpm-lock.yaml"), "utf8");
-  const workspacePackages = [...workspace.matchAll(/^\\s+-\\s+([^\\s#]+)\\s*$/gm)].map((match) => match[1]);
+  const workspacePackages = [...workspace.matchAll(/^\s+-\s+([^\s#]+)\s*$/gm)].map((match) => match[1]);
 
   assert.equal(rootManifest.packageManager, "pnpm@12.17.0");
   assert.equal(rootManifest.engines.pnpm, ">=12.17.0 <13");
@@ -36,7 +36,7 @@ test("web, reader, PDF, library, and platform adapters are locked pnpm workspace
     "apps/web", "packages/reader-core", "packages/pdf-engine",
     "packages/library", "packages/platform-adapters",
   ]);
-  assert.match(lock, /^lockfileVersion:\\s*['"]?9\\.0/m);
+  assert.match(lock, /^lockfileVersion:\s*['"]?9\.0/m);
   for (const importer of [".", "apps/web", "packages/reader-core", "packages/pdf-engine", "packages/library", "packages/platform-adapters"]) {
     assert.equal(lock.includes("  " + importer + ":"), true, "missing pnpm importer: " + importer);
   }
@@ -155,7 +155,7 @@ test("Web annotations are a public feature module and Tailwind is compiled as a 
   assert.equal(tailwind.includes('@import "tailwindcss"'), true);
   assert.equal(tailwind.includes("@source"), true);
   assert.equal(build.includes("pnpm"), true);
-  assert.equal(build.includes("npm"), false);
+  assert.equal(/\bnpm(?:\.cmd)?\b/.test(build), false);
   assert.equal(build.includes('pdfEngineRequire.resolve("pdfjs-dist/legacy/build/pdf.mjs")'), true);
   assert.equal(build.includes('path.join(output, "styles.css")'), true);
 });
