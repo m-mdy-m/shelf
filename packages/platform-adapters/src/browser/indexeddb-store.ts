@@ -1,8 +1,6 @@
 import type {
   Annotation,
-  AnnotationRepositoryPort,
   Bookmark,
-  BookmarkRepositoryPort,
   Document,
   DocumentId,
   DocumentLocator,
@@ -12,7 +10,6 @@ import type {
   ReadingProgressRepositoryPort,
   ReaderError,
   Quote,
-  QuoteRepositoryPort,
   Result,
 } from "@shelf/reader-core";
 import type {
@@ -65,9 +62,6 @@ implements
   DocumentRepositoryPort,
   ReadingProgressRepositoryPort,
   DocumentLocatorStorePort,
-  BookmarkRepositoryPort,
-  AnnotationRepositoryPort,
-  QuoteRepositoryPort,
   BrowserDocumentStoragePort {
   readonly #factory: IDBFactory | null;
   readonly #databaseName: string;

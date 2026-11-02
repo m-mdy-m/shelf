@@ -87,6 +87,7 @@ test("the web entry point contains local import and reader wiring", async () => 
   const shell = await readFile(path.join(root, "apps/web/src/application.ts"), "utf8");
   const workspace = await readFile(path.join(root, "apps/web/src/reader-workspace.ts"), "utf8");
   const store = await readFile(path.join(root, "packages/platform-adapters/src/browser/indexeddb-store.ts"), "utf8");
+  const repositories = await readFile(path.join(root, "packages/platform-adapters/src/browser/indexeddb-reader-repositories.ts"), "utf8");
   const pdfRenderer = await readFile(path.join(root, "packages/pdf-engine/src/renderer/pdf-page-renderer.ts"), "utf8");
   const buildScript = await readFile(path.join(root, "scripts/build-web.mjs"), "utf8");
 
@@ -183,6 +184,11 @@ test("Reader annotation use cases are composed outside the Web feature", async (
   assert.equal(store.includes("async listBookmarks"), true);
   assert.equal(store.includes("async listAnnotations"), true);
   assert.equal(store.includes("async listQuotes"), true);
+  assert.equal(store.includes("BookmarkRepositoryPort"), false);
+  assert.equal(repositories.includes("createIndexedDbReaderRepositories"), true);
+  assert.equal(repositories.includes("BookmarkRepositoryPort"), true);
+  assert.equal(repositories.includes("AnnotationRepositoryPort"), true);
+  assert.equal(repositories.includes("QuoteRepositoryPort"), true);
 });
 
 test("backend is split into domain, application, ports, HTTP and SQLite adapters", async () => {
