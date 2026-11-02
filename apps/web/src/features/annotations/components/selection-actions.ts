@@ -23,7 +23,7 @@ export function createSelectionActions(
     element.textContent = label;
     element.disabled = true;
     element.className = [
-      "inline-flex min-h-9 items-center justify-center rounded-lg border border-stone-300",
+      "inline-flex min-h-11 items-center justify-center rounded-lg border border-stone-300",
       "bg-white px-3 py-2 text-sm font-medium text-stone-800 shadow-sm",
       "transition-colors hover:bg-stone-50 focus-visible:outline-2",
       "focus-visible:outline-offset-2 focus-visible:outline-emerald-700",

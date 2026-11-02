@@ -49,7 +49,7 @@ function createButton(owner: Document, label: string): HTMLButtonElement {
   button.type = "button";
   button.textContent = label;
   button.className = [
-    "inline-flex min-h-9 items-center justify-center rounded-lg border border-stone-300",
+    "inline-flex min-h-11 items-center justify-center rounded-lg border border-stone-300",
     "bg-white px-3 py-2 text-sm font-medium text-stone-800 shadow-sm",
     "hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2",
     "focus-visible:outline-emerald-700",

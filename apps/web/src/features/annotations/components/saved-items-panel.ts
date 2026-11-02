@@ -28,7 +28,7 @@ export interface SavedItemsPanelView {
 let nextSavedItemsPanelId = 0;
 
 const actionClassName = [
-  "inline-flex min-h-8 items-center justify-center rounded-md border border-stone-300",
+  "inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300",
   "bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700",
   "hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2",
   "focus-visible:outline-emerald-700",
@@ -62,9 +62,30 @@ function appendRecord(
   const heading = owner.createElement("h4");
   heading.className = "m-0 break-words text-sm font-semibold text-stone-800";
   heading.textContent = title;
+  heading.dir = "auto";
   const description = owner.createElement("p");
   description.className = "mt-1 break-words text-xs leading-5 text-stone-500";
-  description.textContent = detail + (state ? " · " + state : "");
+  description.dir = "ltr";
+  const separator = detail.indexOf(" · ");
+  if (separator >= 0) {
+    const prefix = owner.createElement("span");
+    prefix.textContent = detail.slice(0, separator + 3);
+    const excerpt = owner.createElement("bdi");
+    excerpt.dir = "auto";
+    excerpt.textContent = detail.slice(separator + 3);
+    description.append(prefix, excerpt);
+  } else {
+    const excerpt = owner.createElement("bdi");
+    excerpt.dir = "auto";
+    excerpt.textContent = detail;
+    description.append(excerpt);
+  }
+  if (state) {
+    const stateText = owner.createElement("bdi");
+    stateText.dir = "auto";
+    stateText.textContent = " · " + state;
+    description.append(stateText);
+  }
   copy.append(heading, description);
 
   const controls = owner.createElement("div");
