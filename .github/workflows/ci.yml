@@ -78,3 +78,30 @@ jobs:
       - name: Test modular Reader backend
         working-directory: backend
         run: go test ./...
+ 
+  browser_e2e:
+    name: Chromium Reader selection and annotation E2E
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Shelf
+        uses: actions/checkout@v7
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v3
+        with:
+          version: 12.17.0
+          runtime: node@22.16.0
+          install: false
+          cache: true
+      - name: Install locked workspace dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build the production web application
+        run: pnpm run build
+      - name: Install Chromium
+        uses: browser-actions/setup-chrome@v1
+      - name: Locate Chromium
+        run: |
+          CHROME_BIN="$(command -v chrome || command -v google-chrome || command -v chromium)"
+          test -n "$CHROME_BIN"
+          echo "CHROME_BIN=$CHROME_BIN" >> "$GITHUB_ENV"
+      - name: Run real-browser Reader regressions
+        run: pnpm run test:e2e

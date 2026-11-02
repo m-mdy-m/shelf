@@ -6,6 +6,7 @@ import {
   PageVirtualizer,
   createPdfPageLayers,
   createPdfJsRuntime,
+  groupPdfTextItemsByReadingOrder,
 } from "../../packages/pdf-engine/dist/index.js";
 import { MAX_DOCUMENT_READ_BYTES, toPageIndex } from "../../packages/reader-core/dist/index.js";
 import {
@@ -886,4 +887,45 @@ test("virtualizer exposes measured page tops and sizes for scroll synchronizatio
   assert.deepEqual(virtualizer.getPageSize(toPageIndex(0)), { width: 400, height: 500 });
   assert.throws(() => virtualizer.getPageTop(toPageIndex(4)), RangeError);
   assert.throws(() => virtualizer.getPageTop(toPageIndex(0), 9), RangeError);
+});
+
+
+test("shared PDF reading order keeps interleaved two-column text in column order", () => {
+  const items = [
+    { text: "Left A", left: 40, right: 110, top: 70, bottom: 82, direction: "ltr" },
+    { text: "Right A", left: 360, right: 430, top: 70, bottom: 82, direction: "ltr" },
+    { text: "Left B", left: 40, right: 110, top: 100, bottom: 112, direction: "ltr" },
+    { text: "Right B", left: 360, right: 430, top: 100, bottom: 112, direction: "ltr" },
+  ];
+
+  const lines = groupPdfTextItemsByReadingOrder(items, 612);
+  assert.deepEqual(
+    lines.flatMap((line) => line.items.map((item) => item.text)),
+    ["Left A", "Left B", "Right A", "Right B"],
+  );
+});
+
+test("shared PDF reading order reverses column and line direction for RTL pages", () => {
+  const items = [
+    { text: "Left A", left: 40, right: 110, top: 70, bottom: 82, direction: "rtl" },
+    { text: "Right A", left: 360, right: 430, top: 70, bottom: 82, direction: "rtl" },
+    { text: "Left B", left: 40, right: 110, top: 100, bottom: 112, direction: "rtl" },
+    { text: "Right B", left: 360, right: 430, top: 100, bottom: 112, direction: "rtl" },
+  ];
+
+  const lines = groupPdfTextItemsByReadingOrder(items, 612);
+  assert.deepEqual(
+    lines.flatMap((line) => line.items.map((item) => item.text)),
+    ["Right A", "Right B", "Left A", "Left B"],
+  );
+});
+
+test("shared PDF reading order does not invent columns for a single-column page", () => {
+  const items = [
+    { text: "First", left: 48, right: 120, top: 70, bottom: 82, direction: "ltr" },
+    { text: "Second", left: 48, right: 130, top: 100, bottom: 112, direction: "ltr" },
+  ];
+
+  const lines = groupPdfTextItemsByReadingOrder(items, 612);
+  assert.deepEqual(lines.map((line) => line.items[0]?.text), ["First", "Second"]);
 });
