@@ -62,15 +62,15 @@ function isSafeNonNegativeInteger(value: unknown): value is number {
 }
 
 function strings(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every(isString);
+  return Array.isArray(value) && value["every"](isString);
 }
 
 function sanitizeDocument(value: unknown): Document | null {
-  if (!isRecord(value) || !isString(value.id) || value.id.trim() === "" ||
-      !isRecord(value.metadata) || !isRecord(value.source)) return null;
+  if (!isRecord(value) || !isString(value["id"]) || value["id"].trim() === "" ||
+      !isRecord(value["metadata"]) || !isRecord(value["source"])) return null;
 
-  const metadata = value.metadata;
-  const source = value.source;
+  const metadata = value["metadata"];
+  const source = value["source"];
   const sourceKinds = ["local-file", "imported-copy", "external-reference", "provider"];
   if (!isString(metadata.title) || !strings(metadata.authors) ||
       !isNullableString(metadata.language) ||
@@ -80,13 +80,13 @@ function sanitizeDocument(value: unknown): Document | null {
       !isNullableString(source.displayName) || !isString(source.mediaType) ||
       !(source.sizeBytes === null || isSafeNonNegativeInteger(source.sizeBytes)) ||
       !(source.modifiedAt === null || isFiniteNumber(source.modifiedAt)) ||
-      !isFiniteNumber(value.createdAt) || !isFiniteNumber(value.updatedAt) ||
-      !(value.fingerprint === null || (isString(value.fingerprint) && value.fingerprint.length > 0))) {
+      !isFiniteNumber(value["createdAt"]) || !isFiniteNumber(value["updatedAt"]) ||
+      !(value["fingerprint"] === null || (isString(value["fingerprint"]) && value["fingerprint"].length > 0))) {
     return null;
   }
 
   return {
-    id: value.id as DocumentId,
+    id: value["id"] as DocumentId,
     metadata: {
       title: metadata.title,
       authors: [...metadata.authors],
@@ -102,68 +102,68 @@ function sanitizeDocument(value: unknown): Document | null {
       sizeBytes: source.sizeBytes,
       modifiedAt: source.modifiedAt,
     },
-    fingerprint: value.fingerprint as Document["fingerprint"],
-    createdAt: value.createdAt,
-    updatedAt: value.updatedAt,
+    fingerprint: value["fingerprint"] as Document["fingerprint"],
+    createdAt: value["createdAt"],
+    updatedAt: value["updatedAt"],
   };
 }
 
 function sanitizeAnchor(value: unknown): TextAnchor | null | undefined {
   if (value === null) return null;
-  if (!isRecord(value) || !isString(value.selectedText) ||
-      !isString(value.normalizedText) ||
-      !isSafeNonNegativeInteger(value.startOffset) ||
-      !isSafeNonNegativeInteger(value.endOffset) ||
-      value.endOffset <= value.startOffset ||
-      !(value.documentFingerprint === null || isString(value.documentFingerprint)) ||
-      !isSafeNonNegativeInteger(value.anchorVersion) || value.anchorVersion < 1) {
+  if (!isRecord(value) || !isString(value["selectedText"]) ||
+      !isString(value["normalizedText"]) ||
+      !isSafeNonNegativeInteger(value["startOffset"]) ||
+      !isSafeNonNegativeInteger(value["endOffset"]) ||
+      value["endOffset"] <= value["startOffset"] ||
+      !(value["documentFingerprint"] === null || isString(value["documentFingerprint"])) ||
+      !isSafeNonNegativeInteger(value["anchorVersion"]) || value["anchorVersion"] < 1) {
     return undefined;
   }
   return {
-    selectedText: value.selectedText,
-    normalizedText: value.normalizedText,
-    startOffset: value.startOffset,
-    endOffset: value.endOffset,
-    documentFingerprint: value.documentFingerprint as TextAnchor["documentFingerprint"],
-    anchorVersion: value.anchorVersion,
+    selectedText: value["selectedText"],
+    normalizedText: value["normalizedText"],
+    startOffset: value["startOffset"],
+    endOffset: value["endOffset"],
+    documentFingerprint: value["documentFingerprint"] as TextAnchor["documentFingerprint"],
+    anchorVersion: value["anchorVersion"],
   };
 }
 
 function sanitizeProgress(value: unknown): ReadingProgress | null {
-  if (!isRecord(value) || !isString(value.documentId) ||
-      !isSafeNonNegativeInteger(value.pageIndex) ||
-      !isFiniteNumber(value.scrollOffset) || value.scrollOffset < 0 || value.scrollOffset > 1 ||
-      !isFiniteNumber(value.zoom) || value.zoom < 0.25 || value.zoom > 4 ||
-      (value.readingMode !== "continuous" && value.readingMode !== "single-page") ||
-      !isFiniteNumber(value.updatedAt)) return null;
+  if (!isRecord(value) || !isString(value["documentId"]) ||
+      !isSafeNonNegativeInteger(value["pageIndex"]) ||
+      !isFiniteNumber(value["scrollOffset"]) || value["scrollOffset"] < 0 || value["scrollOffset"] > 1 ||
+      !isFiniteNumber(value["zoom"]) || value["zoom"] < 0.25 || value["zoom"] > 4 ||
+      (value["readingMode"] !== "continuous" && value["readingMode"] !== "single-page") ||
+      !isFiniteNumber(value["updatedAt"])) return null;
   return {
-    documentId: value.documentId as DocumentId,
-    pageIndex: value.pageIndex as PageIndex,
-    scrollOffset: value.scrollOffset,
-    zoom: value.zoom,
-    readingMode: value.readingMode,
-    updatedAt: value.updatedAt,
+    documentId: value["documentId"] as DocumentId,
+    pageIndex: value["pageIndex"] as PageIndex,
+    scrollOffset: value["scrollOffset"],
+    zoom: value["zoom"],
+    readingMode: value["readingMode"],
+    updatedAt: value["updatedAt"],
   };
 }
 
 function sanitizeBookmark(value: unknown): Bookmark | null {
-  if (!isRecord(value) || !isString(value.id) || value.id.trim() === "" ||
-      !isString(value.documentId) || !isSafeNonNegativeInteger(value.pageIndex) ||
-      !isNullableString(value.label) || !isFiniteNumber(value.createdAt)) return null;
-  const anchor = sanitizeAnchor(value.anchor);
+  if (!isRecord(value) || !isString(value["id"]) || value["id"].trim() === "" ||
+      !isString(value["documentId"]) || !isSafeNonNegativeInteger(value["pageIndex"]) ||
+      !isNullableString(value["label"]) || !isFiniteNumber(value["createdAt"])) return null;
+  const anchor = sanitizeAnchor(value["anchor"]);
   if (anchor === undefined) return null;
   return {
-    id: value.id as Bookmark["id"],
-    documentId: value.documentId as DocumentId,
-    pageIndex: value.pageIndex as PageIndex,
-    label: value.label,
+    id: value["id"] as Bookmark["id"],
+    documentId: value["documentId"] as DocumentId,
+    pageIndex: value["pageIndex"] as PageIndex,
+    label: value["label"],
     anchor,
-    createdAt: value.createdAt,
+    createdAt: value["createdAt"],
   };
 }
 
 function sanitizeRectangles(value: unknown): Annotation["rectangles"] | null {
-  if (!Array.isArray(value) || value.length > 512) return null;
+  if (!Array.isArray(value) || value["length"] > 512) return null;
   const rectangles: Annotation["rectangles"][number][] = [];
   for (const item of value) {
     if (!isRecord(item) || !isFiniteNumber(item.x) || !isFiniteNumber(item.y) ||
@@ -176,63 +176,63 @@ function sanitizeRectangles(value: unknown): Annotation["rectangles"] | null {
 }
 
 function sanitizeAnnotation(value: unknown): Annotation | null {
-  if (!isRecord(value) || !isString(value.id) || value.id.trim() === "" ||
-      !isString(value.documentId) || !isSafeNonNegativeInteger(value.pageIndex) ||
-      !isFiniteNumber(value.createdAt) || !isFiniteNumber(value.updatedAt)) return null;
-  const anchor = sanitizeAnchor(value.anchor);
-  const rectangles = sanitizeRectangles(value.rectangles);
+  if (!isRecord(value) || !isString(value["id"]) || value["id"].trim() === "" ||
+      !isString(value["documentId"]) || !isSafeNonNegativeInteger(value["pageIndex"]) ||
+      !isFiniteNumber(value["createdAt"]) || !isFiniteNumber(value["updatedAt"])) return null;
+  const anchor = sanitizeAnchor(value["anchor"]);
+  const rectangles = sanitizeRectangles(value["rectangles"]);
   if (anchor === undefined || rectangles === null) return null;
-  if (value.kind === "highlight") {
-    if (!["yellow", "green", "blue", "pink", "purple"].includes(String(value.color))) return null;
+  if (value["kind"] === "highlight") {
+    if (!["yellow", "green", "blue", "pink", "purple"].includes(String(value["color"]))) return null;
     return {
-      id: value.id as Annotation["id"],
-      documentId: value.documentId as DocumentId,
-      pageIndex: value.pageIndex as PageIndex,
+      id: value["id"] as Annotation["id"],
+      documentId: value["documentId"] as DocumentId,
+      pageIndex: value["pageIndex"] as PageIndex,
       kind: "highlight",
-      color: value.color as Extract<Annotation, { kind: "highlight" }>["color"],
+      color: value["color"] as Extract<Annotation, { kind: "highlight" }>["color"],
       anchor,
       rectangles,
-      createdAt: value.createdAt,
-      updatedAt: value.updatedAt,
+      createdAt: value["createdAt"],
+      updatedAt: value["updatedAt"],
     };
   }
-  if (value.kind === "note" && isString(value.content) && value.content.trim() !== "") {
+  if (value["kind"] === "note" && isString(value["content"]) && value["content"].trim() !== "") {
     return {
-      id: value.id as Annotation["id"],
-      documentId: value.documentId as DocumentId,
-      pageIndex: value.pageIndex as PageIndex,
+      id: value["id"] as Annotation["id"],
+      documentId: value["documentId"] as DocumentId,
+      pageIndex: value["pageIndex"] as PageIndex,
       kind: "note",
-      content: value.content,
+      content: value["content"],
       anchor,
       rectangles,
-      createdAt: value.createdAt,
-      updatedAt: value.updatedAt,
+      createdAt: value["createdAt"],
+      updatedAt: value["updatedAt"],
     };
   }
   return null;
 }
 
 function sanitizeQuote(value: unknown): Quote | null {
-  if (!isRecord(value) || !isString(value.id) || value.id.trim() === "" ||
-      !isString(value.documentId) || !isSafeNonNegativeInteger(value.pageIndex) ||
-      !isString(value.text) || value.text.trim() === "" ||
-      !isNullableString(value.attribution) ||
-      !(value.annotationId === null || isString(value.annotationId)) ||
-      !strings(value.tags) || !isFiniteNumber(value.createdAt) ||
-      !isFiniteNumber(value.updatedAt)) return null;
-  const anchor = sanitizeAnchor(value.anchor);
+  if (!isRecord(value) || !isString(value["id"]) || value["id"].trim() === "" ||
+      !isString(value["documentId"]) || !isSafeNonNegativeInteger(value["pageIndex"]) ||
+      !isString(value["text"]) || value["text"].trim() === "" ||
+      !isNullableString(value["attribution"]) ||
+      !(value["annotationId"] === null || isString(value["annotationId"])) ||
+      !strings(value["tags"]) || !isFiniteNumber(value["createdAt"]) ||
+      !isFiniteNumber(value["updatedAt"])) return null;
+  const anchor = sanitizeAnchor(value["anchor"]);
   if (anchor === undefined) return null;
   return {
-    id: value.id as Quote["id"],
-    documentId: value.documentId as DocumentId,
-    pageIndex: value.pageIndex as PageIndex,
-    text: value.text,
-    attribution: value.attribution,
-    annotationId: value.annotationId as Quote["annotationId"],
+    id: value["id"] as Quote["id"],
+    documentId: value["documentId"] as DocumentId,
+    pageIndex: value["pageIndex"] as PageIndex,
+    text: value["text"],
+    attribution: value["attribution"],
+    annotationId: value["annotationId"] as Quote["annotationId"],
     anchor,
-    tags: [...value.tags],
-    createdAt: value.createdAt,
-    updatedAt: value.updatedAt,
+    tags: [...value["tags"]],
+    createdAt: value["createdAt"],
+    updatedAt: value["updatedAt"],
   };
 }
 
