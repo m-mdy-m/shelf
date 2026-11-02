@@ -21,7 +21,8 @@
     "build": "pnpm run clean && pnpm run build:core && pnpm run build:library && pnpm run build:platform && pnpm run build:pdf && tsc -p apps/web/tsconfig.build.json && node scripts/build-web.mjs",
     "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run build && pnpm run test:run",
     "ci": "pnpm run check",
-    "clean": "node scripts/clean.mjs"
+    "clean": "node scripts/clean.mjs",
+    "test:e2e": "node --test tests/e2e/*.test.mjs"
   },
   "devDependencies": {
     "@tailwindcss/cli": "4.3.3",
