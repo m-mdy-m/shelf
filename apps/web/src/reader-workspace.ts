@@ -118,7 +118,6 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   let disposed = false;
   let renderFrame: number | null = null;
   let saveTimer: number | null = null;
-  let persistQueue: Promise<void> = Promise.resolve();
   let currentPage = 0;
   let zoom = validZoom(options.initialProgress?.zoom ?? 1) ? options.initialProgress?.zoom ?? 1 : 1;
   let mode: ReadingMode = options.initialProgress?.readingMode === "single-page" ? "single-page" : "continuous";
@@ -192,6 +191,8 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     String(session.info.pageCount) + " pages · " + sizeLabel +
       (metadataText.length > 0 ? " · " + metadataText : ""),
   );
+  documentTitle.dir = "auto";
+  documentMeta.dir = "auto";
   documentHeading.append(documentTitle, documentMeta);
 
   const readerPanels = element(owner, "div", "reader-panels");
@@ -208,7 +209,9 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   selectionPanel.setAttribute("aria-label", "Selected PDF text");
   const selectionHeading = element(owner, "h3", "reader-selection-heading", "Selection");
   const selectionText = element(owner, "blockquote", "reader-selection-text");
+  selectionText.dir = "auto";
   const selectionMeta = element(owner, "p", "reader-selection-meta");
+  selectionMeta.dir = "ltr";
   selectionPanel.append(selectionHeading, selectionText, selectionMeta);
   readerPanels.append(searchPanel, selectionPanel);
 
@@ -225,6 +228,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   stage.tabIndex = 0;
   stage.setAttribute("role", "region");
   stage.setAttribute("aria-label", "PDF pages. Use arrow keys or Page Up and Page Down to navigate.");
+  stage.setAttribute("aria-keyshortcuts", "ArrowDown ArrowUp PageDown PageUp");
   const spacer = element(owner, "div", "reader-scroll-spacer");
   const loadingMessage = element(owner, "p", "reader-loading", "Loading PDF page…");
   loadingMessage.setAttribute("role", "status");
@@ -536,11 +540,15 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
         for (let matchIndex = 0; matchIndex < searchMatches.length; matchIndex += 1) {
           const match = searchMatches[matchIndex];
           if (match === undefined) continue;
-          const resultButton = createButton(
-            owner,
-            "Page " + String((match.pageIndex as number) + 1) + " · " + match.snippet,
-            "reader-search-result",
+          const resultButton = createButton(owner, "", "reader-search-result");
+          const pageLabel = element(
+            owner, "span", "reader-search-result-page",
+            "Page " + String((match.pageIndex as number) + 1),
           );
+          pageLabel.dir = "ltr";
+          const snippet = element(owner, "bdi", "reader-search-result-snippet", match.snippet);
+          snippet.dir = "auto";
+          resultButton.append(pageLabel, snippet);
           resultButton.addEventListener("click", () => {
             void jumpToSearchMatch(match, matchIndex);
           });
@@ -916,24 +924,18 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     }, SAVE_DEBOUNCE_MS) ?? null;
   }
 
-  function persist(): Promise<void> {
-    const saveLatestPosition = async (): Promise<void> => {
-      const position = readPosition();
-      const progress: ReadingProgress = {
-        documentId: session.info.documentId,
-        pageIndex: toPageIndex(position.pageIndex),
-        scrollOffset: position.scrollOffset,
-        zoom,
-        readingMode: mode,
-        updatedAt: Date.now(),
-      };
-      const result = await progressRepository.save(progress);
-      if (!result.ok) onStatus("Shelf could not save this reading position.", true);
+  async function persist(): Promise<void> {
+    const position = readPosition();
+    const progress: ReadingProgress = {
+      documentId: session.info.documentId,
+      pageIndex: toPageIndex(position.pageIndex),
+      scrollOffset: position.scrollOffset,
+      zoom,
+      readingMode: mode,
+      updatedAt: Date.now(),
     };
-    // Serialize debounced, visibility-change, and close-time writes so an older
-    // snapshot can never finish after and overwrite a newer reading position.
-    persistQueue = persistQueue.then(saveLatestPosition, saveLatestPosition);
-    return persistQueue;
+    const result = await progressRepository.save(progress);
+    if (!result.ok) onStatus("Shelf could not save this reading position.", true);
   }
 
   async function ensurePageGeometry(index: number): Promise<PdfPageHandle | null> {
@@ -1048,6 +1050,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     for (const item of items) {
       const entry = element(owner, "li", "reader-outline-item");
       const link = createButton(owner, item.title, "reader-outline-link");
+      link.dir = "auto";
       link.disabled = item.pageIndex === null;
       if (item.pageIndex !== null) {
         link.addEventListener("click", () => {
