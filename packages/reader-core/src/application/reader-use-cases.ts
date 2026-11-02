@@ -31,7 +31,24 @@ export interface SaveReadingProgressInput {
   readonly readingMode: ReadingProgress["readingMode"];
 }
 
-export interface ReaderUseCases {
+/** Application contract shared by Web, desktop, and native mobile shells. */
+export interface ReaderAnnotationUseCases {
+  listBookmarks(id: DocumentId): Promise<Result<readonly Bookmark[], ReaderError>>;
+  addBookmark(input: NewBookmark): Promise<Result<Bookmark, ReaderError>>;
+  updateBookmark(bookmark: Bookmark): Promise<Result<Bookmark, ReaderError>>;
+  deleteBookmark(id: BookmarkId): Promise<Result<void, ReaderError>>;
+
+  listAnnotations(id: DocumentId): Promise<Result<readonly Annotation[], ReaderError>>;
+  saveAnnotation(input: NewAnnotation): Promise<Result<Annotation, ReaderError>>;
+  updateAnnotation(annotation: Annotation): Promise<Result<Annotation, ReaderError>>;
+  deleteAnnotation(id: AnnotationId): Promise<Result<void, ReaderError>>;
+
+  listQuotes(id: DocumentId): Promise<Result<readonly Quote[], ReaderError>>;
+  addQuote(input: NewQuote): Promise<Result<Quote, ReaderError>>;
+  deleteQuote(id: QuoteId): Promise<Result<void, ReaderError>>;
+}
+
+export interface ReaderUseCases extends ReaderAnnotationUseCases {
   importDocument(locator: DocumentLocator): Promise<Result<Document, ReaderError>>;
   getDocument(id: DocumentId): Promise<Result<Document | null, ReaderError>>;
   listDocuments(): Promise<Result<readonly Document[], ReaderError>>;
@@ -40,16 +57,4 @@ export interface ReaderUseCases {
 
   getReadingProgress(id: DocumentId): Promise<Result<ReadingProgress | null, ReaderError>>;
   saveReadingProgress(input: SaveReadingProgressInput): Promise<Result<ReadingProgress, ReaderError>>;
-
-  listBookmarks(id: DocumentId): Promise<Result<readonly Bookmark[], ReaderError>>;
-  addBookmark(input: NewBookmark): Promise<Result<Bookmark, ReaderError>>;
-  deleteBookmark(id: BookmarkId): Promise<Result<void, ReaderError>>;
-
-  listAnnotations(id: DocumentId): Promise<Result<readonly Annotation[], ReaderError>>;
-  saveAnnotation(input: NewAnnotation): Promise<Result<Annotation, ReaderError>>;
-  deleteAnnotation(id: AnnotationId): Promise<Result<void, ReaderError>>;
-
-  listQuotes(id: DocumentId): Promise<Result<readonly Quote[], ReaderError>>;
-  addQuote(input: NewQuote): Promise<Result<Quote, ReaderError>>;
-  deleteQuote(id: QuoteId): Promise<Result<void, ReaderError>>;
 }

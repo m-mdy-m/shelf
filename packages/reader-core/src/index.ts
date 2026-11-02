@@ -16,5 +16,6 @@ export type * from "./domain/result.js";
 
 export type * from "./ports/index.js";
 export type * from "./application/reader-use-cases.js";
-export { findTextMatches, resolveTextSelectionOffsets } from "./domain/text.js";
+export { ReaderAnnotationService } from "./application/reader-annotations.js";
+export { findTextMatches, resolveTextAnchor, resolveTextSelectionOffsets } from "./domain/text.js";
 export type * from "./domain/text.js";

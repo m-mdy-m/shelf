@@ -56,7 +56,8 @@ See [the full specification](spec/README.md) and [the work plan](spec/08-github-
 
 ## Technology direction
 
-- React + TypeScript for shared interface code.
+- TypeScript for the shared application core and platform-neutral contracts; shell-specific UI stays in small feature modules.
+- Tailwind CSS is compiled into a local static asset at build time; it is not loaded from a runtime CDN.
 - Mozilla PDF.js behind a Shelf-owned adapter.
 - Go application services and SQLite for the initial desktop/local runtime.
 - Capacitor and native adapters for mobile.
@@ -83,3 +84,10 @@ These are implementation choices to validate against acceptance criteria; they a
 Read [Contributing](CONTRIBUTING.md), [Development docs](docs/development/README.md), and the [Architecture specification](spec/01-architecture.md) before changing project structure.
 
 The project uses [PSX](https://github.com/m-mdy-m/PSX) for repository structure conventions, [GIX](https://github.com/m-mdy-m/gix) for Git flow, and [Pipeline](https://github.com/m-mdy-m/pipeline) for the shared task graph and CI workflow.
+
+
+## Cross-platform Reader modules
+
+Reader annotation use cases are shared from `@shelf/reader-core`; platform shells provide repository, ID, clock, and document-rendering adapters. Browser persistence is implemented by IndexedDB. Desktop/native implementations can reuse the exact use-case contract without importing browser APIs.
+
+The optional Go backend mirrors the same domain/application/ports/adapter boundaries and provides SQLite and HTTP adapters for connected/desktop compositions. It is not required to use the local-first Web/PWA reader.

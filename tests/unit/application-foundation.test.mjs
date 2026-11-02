@@ -136,3 +136,72 @@ test("the repository declares explicit application boundaries", async () => {
     "backend/internal/application", "backend/internal/ports", "backend/internal/adapters",
   ]) await access(path.join(root, relative));
 });
+
+
+test("Web annotations are a public feature module and Tailwind is compiled as a local asset", async () => {
+  const controller = await readFile(path.join(root, "apps/web/src/features/annotations/annotation-controller.ts"), "utf8");
+  const entry = await readFile(path.join(root, "apps/web/src/features/annotations/index.ts"), "utf8");
+  const tailwind = await readFile(path.join(root, "apps/web/src/tailwind.css"), "utf8");
+  const build = await readFile(path.join(root, "scripts/build-web.mjs"), "utf8");
+  assert.equal(entry.includes("mountReaderAnnotationsFeature"), true);
+  assert.equal(controller.includes("ReaderAnnotationUseCases"), true);
+  assert.equal(controller.includes("reader-workspace"), false);
+  assert.equal(controller.includes("ReaderAnnotationService"), false);
+  assert.equal(tailwind.includes('@import "tailwindcss"'), true);
+  assert.equal(tailwind.includes("@source"), true);
+  assert.equal(build.includes("@tailwindcss/cli@4.3.3"), true);
+  assert.equal(build.includes('path.join(output, "styles.css")'), true);
+});
+
+
+test("Reader annotation use cases are composed outside the Web feature", async () => {
+  const service = await readFile(path.join(root, "packages/reader-core/src/application/reader-annotations.ts"), "utf8");
+  const contract = await readFile(path.join(root, "packages/reader-core/src/application/reader-use-cases.ts"), "utf8");
+  const app = await readFile(path.join(root, "apps/web/src/application.ts"), "utf8");
+  const workspace = await readFile(path.join(root, "apps/web/src/reader-workspace.ts"), "utf8");
+  const feature = await readFile(path.join(root, "apps/web/src/features/annotations/annotation-controller.ts"), "utf8");
+  const store = await readFile(path.join(root, "packages/platform-adapters/src/browser/indexeddb-store.ts"), "utf8");
+
+  assert.equal(contract.includes("ReaderAnnotationUseCases"), true);
+  assert.equal(contract.includes("updateAnnotation(annotation"), true);
+  assert.equal(service.includes("class ReaderAnnotationService"), true);
+  assert.equal(service.includes("BookmarkRepositoryPort"), true);
+  assert.equal(service.includes("ClockPort"), true);
+  assert.equal(service.includes("IdGeneratorPort"), true);
+  assert.equal(app.includes("new ReaderAnnotationService"), true);
+  assert.equal(app.includes("annotationUseCases"), true);
+  assert.equal(workspace.includes("mountReaderAnnotationsFeature"), true);
+  assert.equal(workspace.includes("new ReaderAnnotationService"), false);
+  assert.equal(feature.includes("ReaderAnnotationUseCases"), true);
+  assert.equal(feature.includes("IndexedDbShelfStore"), false);
+  assert.equal(feature.includes("PdfPageRenderer"), false);
+  assert.equal(store.includes("factory.open(this.#databaseName, 3)"), true);
+  assert.equal(store.includes('"bookmarks"'), true);
+  assert.equal(store.includes('"annotations"'), true);
+  assert.equal(store.includes('"quotes"'), true);
+  assert.equal(store.includes('createIndex("documentId", "documentId"'), true);
+  assert.equal(store.includes("async listBookmarks"), true);
+  assert.equal(store.includes("async listAnnotations"), true);
+  assert.equal(store.includes("async listQuotes"), true);
+});
+
+test("backend is split into domain, application, ports, HTTP and SQLite adapters", async () => {
+  const workflow = await readFile(path.join(root, ".github/workflows/ci.yml"), "utf8");
+  const backendModule = await readFile(path.join(root, "backend/go.mod"), "utf8");
+  const service = await readFile(path.join(root, "backend/internal/application/annotations.go"), "utf8");
+  const ports = await readFile(path.join(root, "backend/internal/ports/annotations.go"), "utf8");
+  const sqlite = await readFile(path.join(root, "backend/internal/adapters/storage/sqlite/annotations.go"), "utf8");
+  const http = await readFile(path.join(root, "backend/internal/adapters/httpapi/annotations.go"), "utf8");
+  const migration = await readFile(path.join(root, "backend/migrations/0001_reader_annotations.sql"), "utf8");
+
+  assert.equal(backendModule.includes("module shelf/backend"), true);
+  assert.equal(service.includes("func (s *AnnotationService) CreateAnnotation"), true);
+  assert.equal(ports.includes("type ReaderAnnotationRepository interface"), true);
+  assert.equal(sqlite.includes("database/sql"), true);
+  assert.equal(http.includes("http.NewServeMux()"), true);
+  assert.equal(migration.includes("CREATE TABLE IF NOT EXISTS reader_bookmarks"), true);
+  assert.equal(migration.includes("CREATE TABLE IF NOT EXISTS reader_annotations"), true);
+  assert.equal(migration.includes("CREATE TABLE IF NOT EXISTS reader_quotes"), true);
+  assert.equal(workflow.includes("working-directory: backend"), true);
+  assert.equal(workflow.includes("go test ./..."), true);
+});

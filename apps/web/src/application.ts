@@ -1,4 +1,4 @@
-import { toOpaqueId } from "@shelf/reader-core";
+import { ReaderAnnotationService, toOpaqueId } from "@shelf/reader-core";
 import type {
   Document,
   DocumentId,
@@ -55,6 +55,13 @@ export function mountShelf(root: HTMLElement): void {
       return toOpaqueId<Kind>(kind.toLowerCase() + "-" + globalThis.crypto.randomUUID());
     },
   };
+  const annotationUseCases = new ReaderAnnotationService({
+    bookmarks: store,
+    annotations: store,
+    quotes: store,
+    ids,
+    clock: { now: () => Date.now() },
+  });
   const library = new DocumentLibraryService({
     documents: store,
     locators: store,
@@ -169,6 +176,7 @@ export function mountShelf(root: HTMLElement): void {
       session: opened.value,
       renderer,
       progressRepository: store,
+      annotationUseCases,
       initialProgress: savedProgress.value,
       onStatus: setStatus,
       onClose: () => {

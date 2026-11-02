@@ -38,3 +38,10 @@ Android and iOS do not guarantee arbitrary background execution. AI tasks must b
 ## Delivery
 
 Design all five platforms from day one; release in stages after real OS/device tests. Document the build/signing matrix and exact supported OS/architecture ranges before 1.0.
+
+
+## Shared Reader application boundary
+
+Bookmark/highlight/note/quote policy belongs to the platform-neutral Reader Core application service. Web, desktop, and mobile shells consume the same typed use cases and supply their own storage/runtime adapters. A browser WebView may use IndexedDB locally; desktop can inject the approved SQLite runtime; native mobile can inject a platform-owned local database. The optional Go HTTP adapter does not become a requirement for offline reading.
+
+Web feature modules live under `apps/web/src/features`, expose a small `index.ts`, and use Tailwind utility classes compiled into a local static stylesheet. Feature UI receives application interfaces and callbacks rather than reaching into the PDF renderer, persistence adapter, or backend implementation.

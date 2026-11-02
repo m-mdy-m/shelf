@@ -88,3 +88,28 @@ The TypeScript type tests assert ID separation, locator separation, PageIndex br
 
 
 The `ExtractedPageText.truncated` flag is true when the adapter stops at the per-page item/character budget. The Reader reports those pages in search summaries rather than implying full coverage. Search queries are capped at 256 characters, result count at 100, and transient interaction markers at 500 per page. Browser selection geometry is capped at 512 rectangles. `ReaderWorkspaceController.getSelection()` and the optional `onSelection` callback expose the current transient `TextSelection` to annotation workflows without persisting it.
+
+
+## Shared annotation application service
+
+`ReaderAnnotationService` implements the `ReaderAnnotationUseCases` interface in `packages/reader-core`. It depends only on bookmark, annotation, and quote repository ports plus `ClockPort` and `IdGeneratorPort`. Validation, ID/timestamp creation, and the rule that a record is reported saved only after its repository confirms success live here—not in a Web, desktop, or mobile shell.
+
+Each platform supplies its own adapter:
+- Web/PWA: IndexedDB stores keyed by record ID with DocumentId indexes.
+- Desktop: the host-owned local database adapter can implement the same repository ports.
+- Native mobile: an OS-compatible local store implements the same contracts without importing browser APIs.
+
+The Web presentation feature lives at `apps/web/src/features/annotations`. It exposes its public entry from `index.ts`, keeps selection actions and saved-items presentation in separate components, and consumes `ReaderAnnotationUseCases` through a small controller. It must not import the application service implementation, IndexedDB, PDF.js, or the backend package.
+
+`TextAnchor` deliberately excludes transient selection geometry and workspace fields. A `TextSelection` is projected to this durable anchor shape before it crosses the application boundary. On reopen, stored UTF-16 offsets are tried first; a unique normalized text match may relocate the anchor; ambiguous matches remain unresolved. Existing page geometry is a fallback only when the document fingerprint still matches.
+
+## Backend composition
+
+The optional Go module mirrors the same layering:
+- `internal/domain`: transport/storage-independent Reader records.
+- `internal/application`: validated annotation use cases and ID/clock injection.
+- `internal/ports`: narrow repository/runtime interfaces.
+- `internal/adapters/storage/sqlite`: `database/sql` implementation; a host composition root injects the SQLite driver and owns the connection lifecycle.
+- `internal/adapters/httpapi`: optional thin JSON transport; it does not become a dependency of offline Web/PWA reading.
+
+Run its tests from `backend/` with `go test ./...`. The SQL migration creates separate bookmark, annotation, and quote tables with document/page indexes.

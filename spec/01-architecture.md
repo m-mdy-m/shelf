@@ -94,3 +94,12 @@ The domain defines required capabilities; adapters implement them.
 ## Extraction readiness
 
 A module is ready to move into a separately published package only when its API is documented/versioned, it has no private cross-module imports, tests run in isolation, dependencies are behind ports, and standalone configuration/failure states are defined. Prove the boundary before creating another repository.
+
+
+## Reader feature modules
+
+Reader workflows are implemented once in the platform-independent `@shelf/reader-core` application layer and consumed through use-case interfaces. UI shells must not own annotation validation, ID/timestamp generation, repository writes, or anchor recovery. Browser, desktop, and native mobile supply their own repository/runtime adapters.
+
+Web-only composition belongs under `apps/web/src/features/{feature}/` with a public `index.ts`, a small controller, and isolated presentational components. The feature consumes use-case contracts; it does not import PDF.js, IndexedDB, backend internals, or the monolithic Reader workspace.
+
+Backend code follows `domain → application → ports → adapters`. The SQLite adapter receives a host-owned `database/sql` connection. HTTP is a thin optional adapter; local Reader operation does not require a server.

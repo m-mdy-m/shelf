@@ -1,17 +1,22 @@
 import {
   findTextMatches,
+  resolveTextAnchor,
   resolveTextSelectionOffsets,
   toPageIndex,
 } from "@shelf/reader-core";
 import type {
+  Annotation,
   ExtractedPageText,
   PageRect,
+  ReaderAnnotationUseCases,
   ReadingMode,
   ReadingProgress,
   ReadingProgressRepositoryPort,
   TextSearchMatch,
   TextSelection,
 } from "@shelf/reader-core";
+import { mountReaderAnnotationsFeature } from "./features/annotations/index.js";
+import type { ReaderAnnotationsController } from "./features/annotations/index.js";
 import type {
   PdfDocumentSession,
   PdfOutlineItem,
@@ -26,6 +31,7 @@ interface ReaderWorkspaceOptions {
   readonly session: PdfDocumentSession;
   readonly renderer: PdfPageRenderer;
   readonly progressRepository: ReadingProgressRepositoryPort;
+  readonly annotationUseCases: ReaderAnnotationUseCases;
   readonly initialProgress: ReadingProgress | null;
   readonly onStatus: (message: string, isError?: boolean) => void;
   readonly onSelection?: (selection: TextSelection | null) => void;
@@ -106,6 +112,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   let searchMatches: readonly TextSearchMatch[] = [];
   let activeSearchMatchIndex = -1;
   let activeSelection: TextSelection | null = null;
+  let annotationsFeature: ReaderAnnotationsController | null = null;
   let selectionTimer: number | null = null;
   let selectionGeneration = 0;
   let disposed = false;
@@ -574,6 +581,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     if (selected === null || selected.rangeCount === 0) {
       activeSelection = null;
       selectionPanel.hidden = true;
+      annotationsFeature?.setSelection(null);
       options.onSelection?.(null);
       updateAllInteractionOverlays();
       return;
@@ -589,6 +597,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
         selectedText.length > MAX_SELECTION_CHARACTERS) {
       activeSelection = null;
       selectionPanel.hidden = true;
+      annotationsFeature?.setSelection(null);
       options.onSelection?.(null);
       updateAllInteractionOverlays();
       return;
@@ -602,6 +611,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     const pageText = await getPageText(pageIndex);
     if (disposed || generation !== selectionGeneration) return;
     if (pageText === null) {
+      annotationsFeature?.setSelection(null);
       options.onSelection?.(null);
       return;
     }
@@ -610,6 +620,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     if (offsets === null) {
       activeSelection = null;
       selectionPanel.hidden = true;
+      annotationsFeature?.setSelection(null);
       options.onSelection?.(null);
       updateAllInteractionOverlays();
       return;
@@ -631,6 +642,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       .filter((rectangle) => rectangle.width > 0 && rectangle.height > 0);
 
     if (rectangles.length === 0) {
+      annotationsFeature?.setSelection(null);
       options.onSelection?.(null);
       return;
     }
@@ -651,6 +663,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       String(offsets.startOffset) + "–" + String(offsets.endOffset) + " · " +
       String(rectangles.length) + " geometry fragments · " + offsets.confidence + " offsets";
     selectionPanel.hidden = false;
+    annotationsFeature?.setSelection(activeSelection);
     options.onSelection?.(activeSelection);
     updateInteractionOverlay(pageIndex, page);
     onStatus("Selected " + String(selectedText.length) + " characters on page " + String(pageIndex + 1) + ".");
@@ -677,6 +690,66 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     page.root.style.top = String(Math.max(0, top)) + "px";
     page.root.style.width = String(width) + "px";
     page.root.style.left = "max(0px, calc((100% - " + String(width) + "px) / 2))";
+  }
+
+  async function resolvePageAnnotations(index: number): Promise<readonly Annotation[]> {
+    const pageIndex = toPageIndex(index);
+    const items = annotationsFeature?.getAnnotations(pageIndex) ?? [];
+    if (items.length === 0) return [];
+    const hasAnchors = items.some((item) => item.anchor !== null);
+    const pageText = hasAnchors ? await getPageText(index) : null;
+    const fingerprint = session.info.fingerprint as TextSelection["documentFingerprint"];
+    const visible: Annotation[] = [];
+
+    for (const annotation of items) {
+      const anchor = annotation.anchor;
+      if (anchor === null) {
+        visible.push(annotation);
+        continue;
+      }
+      if (pageText !== null && pageText.hasSelectableText) {
+        const resolution = resolveTextAnchor(pageText.text, anchor);
+        if (resolution.status === "unresolved" && resolution.reason === "ambiguous") {
+          annotationsFeature?.setAnchorState(annotation.id, "Unresolved: matching text is ambiguous");
+          continue;
+        }
+        if (resolution.status === "resolved") {
+          const rectangles = pageText.runs
+            .filter((run) => run.startOffset < resolution.endOffset && run.endOffset > resolution.startOffset)
+            .flatMap((run) => run.rectangles)
+            .slice(0, MAX_SELECTION_RECTANGLES);
+          if (rectangles.length > 0) {
+            visible.push({ ...annotation, rectangles });
+            annotationsFeature?.setAnchorState(
+              annotation.id,
+              resolution.confidence === "stored-offset" ? "Text anchor restored" : "Text anchor relocated",
+            );
+            continue;
+          }
+        }
+      }
+      if (fingerprint !== null && anchor.documentFingerprint === fingerprint && annotation.rectangles.length > 0) {
+        visible.push(annotation);
+        annotationsFeature?.setAnchorState(annotation.id, "Position restored from saved geometry");
+      } else {
+        annotationsFeature?.setAnchorState(
+          annotation.id,
+          pageText === null || !pageText.hasSelectableText
+            ? "Unresolved: page text is unavailable"
+            : "Unresolved: text could not be found",
+        );
+      }
+    }
+    return visible;
+  }
+
+  async function refreshPageAnnotations(index: number): Promise<void> {
+    const page = pages.get(index);
+    if (page === undefined || page.handle === null) return;
+    const pageAnnotations = await resolvePageAnnotations(index);
+    if (!disposed && pages.get(index) === page) {
+      renderer.updateAnnotations(page.layers, toPageIndex(index), pageAnnotations);
+    }
   }
 
   async function renderMountedPage(index: number, page: MountedPage): Promise<void> {
@@ -711,7 +784,9 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
         return;
       }
 
-      const result = await renderer.render(page.handle, page.layers, [], {
+      const pageAnnotations = await resolvePageAnnotations(index);
+      if (disposed || pages.get(index) !== page) return;
+      const result = await renderer.render(page.handle, page.layers, pageAnnotations, {
         scale: renderScale,
         devicePixelRatio: Math.min(globalThis.devicePixelRatio || 1, 2),
       });
@@ -1057,6 +1132,21 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     }
   }
 
+  annotationsFeature = mountReaderAnnotationsFeature({
+    owner,
+    toolbar,
+    selectionPanel,
+    readerPanels,
+    documentId: session.info.documentId,
+    useCases: options.annotationUseCases,
+    getCurrentPage: () => toPageIndex(currentPage),
+    getSelection: () => activeSelection,
+    jumpToPage: (pageIndex) => jumpTo(pageIndex as number),
+    onPageChanged: (pageIndex) => void refreshPageAnnotations(pageIndex as number),
+    onStatus,
+  });
+  void annotationsFeature.refresh();
+
   searchButton.addEventListener("click", () => void runSearch());
   searchInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -1128,6 +1218,8 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       pageHandleCache.clear();
       pageTextCache.clear();
       activeSelection = null;
+      annotationsFeature?.dispose();
+      annotationsFeature = null;
       options.onSelection?.(null);
     },
   };
