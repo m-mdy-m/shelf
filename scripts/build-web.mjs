@@ -18,11 +18,22 @@ try {
 await mkdir(path.join(output, "assets"), { recursive: true });
 await cp(path.join(source, "index.html"), path.join(output, "index.html"));
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+const installTailwind = spawnSync(npm, [
+  "install",
+  "--no-save",
+  "--package-lock=false",
+  "--no-audit",
+  "--no-fund",
+  "tailwindcss@4.3.3",
+  "@tailwindcss/cli@4.3.3",
+], { cwd: root, stdio: "inherit" });
+if (installTailwind.error) throw installTailwind.error;
+if (installTailwind.status !== 0) {
+  throw new Error("Tailwind CSS dependencies could not be installed with the pinned versions.");
+}
+
 const tailwind = spawnSync(npm, [
   "exec",
-  "--yes",
-  "--package=@tailwindcss/cli@4.3.3",
-  "--package=tailwindcss@4.3.3",
   "--",
   "tailwindcss",
   "-i",
