@@ -317,20 +317,23 @@ test("Chromium Reader selection remains column-bounded and highlight/note action
         "Boolean(window.__shelfE2E && document.querySelector('.shelf-pdf-text-layer > span'))",
       ), "Reader page rendering");
     } catch (cause) {
-      const pageState = await cdp.evaluate(`(() => ({
+      const pageState = await cdp.evaluate(`JSON.stringify({
+        href: location.href,
         readyState: document.readyState,
         title: document.title,
         bodyText: document.body.innerText,
         harnessLoaded: Boolean(window.__shelfE2E),
         readerChildren: document.querySelector("#reader")?.innerHTML.slice(0, 3000) ?? null,
-        resources: performance.getEntriesByType("resource").map((entry) => entry.name).slice(-30),
-      }))()`);
+        resources: performance.getEntriesByType("resource").map((entry) => entry.name).slice(-40),
+      })`);
       const browserEvents = cdp.events().filter((event) =>
         event.method === "Runtime.exceptionThrown" ||
         event.method === "Runtime.consoleAPICalled" ||
         event.method === "Log.entryAdded" ||
-        event.method === "Network.loadingFailed",
-      ).slice(-30);
+        event.method === "Network.loadingFailed" ||
+        event.method === "Network.requestWillBeSent" ||
+        event.method === "Network.responseReceived",
+      ).slice(-60);
       throw new Error(String(cause) + " Browser diagnostics: " + JSON.stringify({ pageState, browserEvents }));
     }
 
