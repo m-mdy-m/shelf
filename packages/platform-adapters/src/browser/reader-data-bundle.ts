@@ -166,11 +166,11 @@ function sanitizeRectangles(value: unknown): Annotation["rectangles"] | null {
   if (!Array.isArray(value) || value["length"] > 512) return null;
   const rectangles: Annotation["rectangles"][number][] = [];
   for (const item of value) {
-    if (!isRecord(item) || !isFiniteNumber(item.x) || !isFiniteNumber(item.y) ||
-        !isFiniteNumber(item.width) || !isFiniteNumber(item.height) ||
-        item.x < 0 || item.y < 0 || item.width <= 0 || item.height <= 0 ||
-        item.x + item.width > 1 || item.y + item.height > 1) return null;
-    rectangles.push({ x: item.x, y: item.y, width: item.width, height: item.height });
+    if (!isRecord(item) || !isFiniteNumber(item["x"]) || !isFiniteNumber(item["y"]) ||
+        !isFiniteNumber(item["width"]) || !isFiniteNumber(item["height"]) ||
+        item["x"] < 0 || item["y"] < 0 || item["width"] <= 0 || item["height"] <= 0 ||
+        item["x"] + item["width"] > 1 || item["y"] + item["height"] > 1) return null;
+    rectangles.push({ x: item["x"], y: item["y"], width: item["width"], height: item["height"] });
   }
   return rectangles;
 }
@@ -237,7 +237,7 @@ function sanitizeQuote(value: unknown): Quote | null {
 }
 
 function uniqueIds(items: readonly { readonly id: string }[]): boolean {
-  return new Set(items.map((item) => item.id)).size === items.length;
+  return new Set(items.map((item) => item["id"])).size === items.length;
 }
 
 /** Validate untrusted import JSON and copy only export-safe fields into the result. */
@@ -268,15 +268,15 @@ export function parseReaderDataBundle(input: unknown): Result<ReaderDataBundle, 
 
   if (!uniqueIds(safeDocuments) || !uniqueIds(safeBookmarks) ||
       !uniqueIds(safeAnnotations) || !uniqueIds(safeQuotes) ||
-      new Set(safeProgress.map((item) => item.documentId)).size !== safeProgress.length) {
+      new Set(safeProgress.map((item) => item["documentId"])).size !== safeProgress.length) {
     return invalid("The Shelf backup contains duplicate record identifiers.");
   }
 
-  const documentIds = new Set(safeDocuments.map((item) => String(item.id)));
+  const documentIds = new Set(safeDocuments.map((item) => String(item["id"])));
   const allScopedRecords = [
     ...safeProgress, ...safeBookmarks, ...safeAnnotations, ...safeQuotes,
   ];
-  if (allScopedRecords.some((item) => !documentIds.has(String(item.documentId)))) {
+  if (allScopedRecords.some((item) => !documentIds.has(String(item["documentId"])))) {
     return invalid("The Shelf backup contains saved Reader data without its document record.");
   }
 
