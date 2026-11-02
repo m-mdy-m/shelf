@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Browser storage, file access, and permission adapters",
   "dependencies": {
-    "@shelf/reader-core": "0.1.0"
+    "@shelf/reader-core": "workspace:0.1.0"
   },
   "types": "./dist/index.d.ts",
   "exports": {

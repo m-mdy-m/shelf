@@ -14,55 +14,54 @@ test("the root workspace exposes all required quality gates", async () => {
   const manifest = await json("package.json");
   const required = ["format:check", "lint", "typecheck", "test", "build:core", "build:library", "build:platform", "build:pdf", "build", "check", "ci"];
   for (const script of required) {
-    assert.equal(typeof manifest.scripts[script], "string", "missing npm script: " + script);
+    assert.equal(typeof manifest.scripts[script], "string", "missing pnpm script: " + script);
   }
 });
 
-test("web, reader, PDF, library, and platform adapters are locked workspaces", async () => {
+test("web, reader, PDF, library, and platform adapters are locked pnpm workspaces", async () => {
   const rootManifest = await json("package.json");
   const webManifest = await json("apps/web/package.json");
   const readerManifest = await json("packages/reader-core/package.json");
   const pdfManifest = await json("packages/pdf-engine/package.json");
   const libraryManifest = await json("packages/library/package.json");
   const platformManifest = await json("packages/platform-adapters/package.json");
-  const lock = await json("package-lock.json");
+  const workspace = await readFile(path.join(root, "pnpm-workspace.yaml"), "utf8");
+  const lock = await readFile(path.join(root, "pnpm-lock.yaml"), "utf8");
+  const workspacePackages = [...workspace.matchAll(/^\\s+-\\s+([^\\s#]+)\\s*$/gm)].map((match) => match[1]);
 
-  assert.deepEqual(rootManifest.workspaces, [
+  assert.equal(rootManifest.packageManager, "pnpm@12.17.0");
+  assert.equal(rootManifest.engines.pnpm, ">=12.17.0 <13");
+  assert.equal("workspaces" in rootManifest, false);
+  assert.deepEqual(workspacePackages, [
     "apps/web", "packages/reader-core", "packages/pdf-engine",
     "packages/library", "packages/platform-adapters",
   ]);
+  assert.match(lock, /^lockfileVersion:\\s*['"]?9\\.0/m);
+  for (const importer of [".", "apps/web", "packages/reader-core", "packages/pdf-engine", "packages/library", "packages/platform-adapters"]) {
+    assert.equal(lock.includes("  " + importer + ":"), true, "missing pnpm importer: " + importer);
+  }
+  for (const dependency of ["typescript@5.8.3", "pdfjs-dist@6.4.299", "tailwindcss@4.3.3", "@tailwindcss/cli@4.3.3"]) {
+    assert.equal(lock.includes(dependency), true, "missing locked dependency: " + dependency);
+  }
+
   assert.equal(webManifest.name, "@shelf/web");
   assert.equal(webManifest.private, true);
   for (const name of ["@shelf/library", "@shelf/platform-adapters", "@shelf/pdf-engine", "@shelf/reader-core"]) {
-    assert.equal(webManifest.dependencies[name], "0.1.0");
+    assert.equal(webManifest.dependencies[name], "workspace:0.1.0");
   }
   assert.equal(readerManifest.name, "@shelf/reader-core");
   assert.equal(readerManifest.private, true);
   assert.equal(readerManifest.types, "./dist/index.d.ts");
   assert.equal(pdfManifest.name, "@shelf/pdf-engine");
   assert.equal(pdfManifest.private, true);
-  assert.equal(pdfManifest.dependencies["@shelf/reader-core"], "0.1.0");
+  assert.equal(pdfManifest.dependencies["@shelf/reader-core"], "workspace:0.1.0");
   assert.equal(pdfManifest.dependencies["pdfjs-dist"], "6.4.299");
   assert.equal(libraryManifest.name, "@shelf/library");
   assert.equal(libraryManifest.private, true);
-  assert.equal(libraryManifest.dependencies["@shelf/reader-core"], "0.1.0");
+  assert.equal(libraryManifest.dependencies["@shelf/reader-core"], "workspace:0.1.0");
   assert.equal(platformManifest.name, "@shelf/platform-adapters");
   assert.equal(platformManifest.private, true);
-  assert.equal(platformManifest.dependencies["@shelf/reader-core"], "0.1.0");
-
-  for (const [key, name] of [
-    ["packages/reader-core", "@shelf/reader-core"],
-    ["packages/pdf-engine", "@shelf/pdf-engine"],
-    ["packages/library", "@shelf/library"],
-    ["packages/platform-adapters", "@shelf/platform-adapters"],
-  ]) {
-    assert.equal(lock.packages[key].name, name);
-    assert.equal(lock.packages["node_modules/" + name].resolved, key);
-  }
-  assert.equal(lock.packages["node_modules/typescript"].version, "5.8.3");
-  assert.equal(lock.packages["node_modules/pdfjs-dist"].version, "6.4.299");
-  assert.equal(lock.packages["node_modules/pdfjs-dist"].integrity.length > 20, true);
-  assert.equal(lock.lockfileVersion, 3);
+  assert.equal(platformManifest.dependencies["@shelf/reader-core"], "workspace:0.1.0");
 });
 
 test("Node runtime pin matches the declared engine range", async () => {
@@ -155,7 +154,9 @@ test("Web annotations are a public feature module and Tailwind is compiled as a 
   assert.equal(controller.includes("ReaderAnnotationService"), false);
   assert.equal(tailwind.includes('@import "tailwindcss"'), true);
   assert.equal(tailwind.includes("@source"), true);
-  assert.equal(build.includes("@tailwindcss/cli@4.3.3"), true);
+  assert.equal(build.includes("pnpm"), true);
+  assert.equal(build.includes("npm"), false);
+  assert.equal(build.includes('pdfEngineRequire.resolve("pdfjs-dist/legacy/build/pdf.mjs")'), true);
   assert.equal(build.includes('path.join(output, "styles.css")'), true);
 });
 
