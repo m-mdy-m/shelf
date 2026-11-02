@@ -1,0 +1,21 @@
+{
+  "format": "shelf-pdf-compatibility-corpus",
+  "version": 1,
+  "generatedBy": "tests/fixtures/pdf/create-corpus.mjs",
+  "license": "CC0-1.0",
+  "fixtures": [
+    { "file": "mixed-page-sizes.pdf", "profiles": ["mixed-page-dimensions", "multi-page"] },
+    { "file": "rotated-page.pdf", "profiles": ["page-rotation"] },
+    { "file": "two-columns.pdf", "profiles": ["two-column-text", "geometric-reading-order"] },
+    { "file": "ligature-search.pdf", "profiles": ["searchable-text", "search-normalization-input"] },
+    { "file": "large-250-pages.pdf", "profiles": ["large-document", "bounded-virtualization"] },
+    { "file": "image-only.pdf", "profiles": ["image-only", "no-selectable-text"] },
+    { "file": "password-protected.pdf", "profiles": ["standard-security-handler-r2", "password-shelf-test"], "testPassword": "shelf-test" },
+    { "file": "malformed-truncated.pdf", "profiles": ["malformed", "truncated-xref"] }
+  ],
+  "adapterTextStreamProfiles": [
+    { "name": "rtl-mixed-script", "coverage": "tests/unit/pdf-engine.test.mjs" },
+    { "name": "embedded-font-metadata", "coverage": "tests/unit/pdf-engine.test.mjs" },
+    { "name": "unicode-ligature-normalization", "coverage": "tests/unit/reader-contracts.test.mjs and tests/unit/pdf-engine.test.mjs" }
+  ]
+}
