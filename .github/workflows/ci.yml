@@ -78,7 +78,7 @@ jobs:
       - name: Test modular Reader backend
         working-directory: backend
         run: go test ./...
- 
+
   browser_e2e:
     name: Chromium Reader selection and annotation E2E
     runs-on: ubuntu-latest

@@ -364,7 +364,7 @@ test("Chromium Reader selection remains column-bounded and highlight/note action
       toggle.click();
     })()`);
     await waitUntil(async () => await cdp.evaluate(
-      "document.querySelector('[aria-label=\\\"Saved reader items\\\"]').textContent.includes('Browser E2E note')",
+      "Array.from(document.querySelectorAll('section')).some((item) => item.getAttribute('aria-label') === 'Saved reader items' && item.textContent.includes('Browser E2E note'))",
     ), "the saved highlight and note to be rendered");
 
     const rightSelected = await cdp.evaluate(`(() => {
