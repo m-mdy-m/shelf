@@ -4,3 +4,6 @@ packages:
   - packages/pdf-engine
   - packages/library
   - packages/platform-adapters
+
+allowBuilds:
+  '@parcel/watcher': true
