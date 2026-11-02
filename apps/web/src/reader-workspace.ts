@@ -118,6 +118,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   let disposed = false;
   let renderFrame: number | null = null;
   let saveTimer: number | null = null;
+  let persistQueue: Promise<void> = Promise.resolve();
   let currentPage = 0;
   let zoom = validZoom(options.initialProgress?.zoom ?? 1) ? options.initialProgress?.zoom ?? 1 : 1;
   let mode: ReadingMode = options.initialProgress?.readingMode === "single-page" ? "single-page" : "continuous";
@@ -915,18 +916,24 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     }, SAVE_DEBOUNCE_MS) ?? null;
   }
 
-  async function persist(): Promise<void> {
-    const position = readPosition();
-    const progress: ReadingProgress = {
-      documentId: session.info.documentId,
-      pageIndex: toPageIndex(position.pageIndex),
-      scrollOffset: position.scrollOffset,
-      zoom,
-      readingMode: mode,
-      updatedAt: Date.now(),
+  function persist(): Promise<void> {
+    const saveLatestPosition = async (): Promise<void> => {
+      const position = readPosition();
+      const progress: ReadingProgress = {
+        documentId: session.info.documentId,
+        pageIndex: toPageIndex(position.pageIndex),
+        scrollOffset: position.scrollOffset,
+        zoom,
+        readingMode: mode,
+        updatedAt: Date.now(),
+      };
+      const result = await progressRepository.save(progress);
+      if (!result.ok) onStatus("Shelf could not save this reading position.", true);
     };
-    const result = await progressRepository.save(progress);
-    if (!result.ok) onStatus("Shelf could not save this reading position.", true);
+    // Serialize debounced, visibility-change, and close-time writes so an older
+    // snapshot can never finish after and overwrite a newer reading position.
+    persistQueue = persistQueue.then(saveLatestPosition, saveLatestPosition);
+    return persistQueue;
   }
 
   async function ensurePageGeometry(index: number): Promise<PdfPageHandle | null> {
