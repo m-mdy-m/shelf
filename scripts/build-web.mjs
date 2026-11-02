@@ -36,8 +36,26 @@ if (tailwind.status !== 0) {
 }
 await cp(path.join(source, "public"), output, { recursive: true });
 
+// TypeScript preserves workspace package specifiers in browser ESM output.
+// Copy each compiled package to the URL path declared by the import map in index.html.
+const workspacePackages = ["reader-core", "library", "pdf-engine", "platform-adapters"];
+for (const packageName of workspacePackages) {
+  const packageDist = path.join(root, "packages", packageName, "dist");
+  const packageEntry = path.join(packageDist, "index.js");
+  try {
+    await access(packageEntry);
+  } catch {
+    throw new Error(`Compiled workspace entry is missing: packages/${packageName}/dist/index.js`);
+  }
+
+  const destination = path.join(output, "assets", "packages", packageName);
+  await mkdir(path.dirname(destination), { recursive: true });
+  await cp(packageDist, destination, { recursive: true });
+}
+
 const pdfAssets = [
   ["LICENSE", "assets/pdfjs/LICENSE"],
+  ["build/pdf.mjs", "assets/pdfjs/build/pdf.mjs"],
   ["build/pdf.worker.min.mjs", "assets/pdfjs/build/pdf.worker.min.mjs"],
   ["cmaps", "assets/pdfjs/cmaps"],
   ["iccs", "assets/pdfjs/iccs"],
@@ -65,5 +83,5 @@ await cp(
 );
 
 console.log(
-  `Built standalone web shell with the PDF.js worker, CMaps, ICC profiles, image decoders, standard fonts, WASM, license notices, and Reader layer styles at ${path.relative(root, output)}.`,
+  `Built standalone web shell with workspace runtime modules, the PDF.js runtime and worker, CMaps, ICC profiles, image decoders, standard fonts, WASM, license notices, and Reader layer styles at ${path.relative(root, output)}.`,
 );
