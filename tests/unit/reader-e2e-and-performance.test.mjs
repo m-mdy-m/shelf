@@ -192,7 +192,8 @@ test("redistributable PDF corpus contains valid mixed-size, rotated, columns, la
       assert.equal(validateBasicPdfStructure(sample), true);
     }
     assert.equal(validateBasicPdfStructure(malformed), false);
-    assert.ok(large.byteLength > mixed.byteLength);\n    assert.equal(large.toString("ascii").includes("/Count 250"), true);
+    assert.ok(large.byteLength > mixed.byteLength);
+    assert.equal(large.toString("ascii").includes("/Count 250"), true);
     assert.equal(encrypted.toString("ascii").includes("/Encrypt"), true);
     assert.equal(fixtures.size, 8);
   } finally {
