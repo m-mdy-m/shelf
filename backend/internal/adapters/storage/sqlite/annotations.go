@@ -51,6 +51,26 @@ func (r *AnnotationRepository) ListBookmarks(ctx context.Context, documentID str
 	return items, rows.Err()
 }
 
+func (r *AnnotationRepository) GetBookmark(ctx context.Context, id string) (domain.Bookmark, error) {
+	var item domain.Bookmark
+	var anchorJSON sql.NullString
+	var createdAt int64
+	err := r.db.QueryRowContext(ctx, `SELECT id, document_id, page_index, label, anchor_json, created_at FROM reader_bookmarks WHERE id = ?`, id).
+		Scan(&item.ID, &item.DocumentID, &item.PageIndex, &item.Label, &anchorJSON, &createdAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return domain.Bookmark{}, fmt.Errorf("%w: bookmark was not found", domain.ErrNotFound)
+		}
+		return domain.Bookmark{}, err
+	}
+	item.Anchor, err = decodeAnchor(anchorJSON)
+	if err != nil {
+		return domain.Bookmark{}, err
+	}
+	item.CreatedAt = time.UnixMilli(createdAt).UTC()
+	return item, nil
+}
+
 func (r *AnnotationRepository) SaveBookmark(ctx context.Context, item domain.Bookmark) error {
 	anchor, err := encode(item.Anchor)
 	if err != nil { return err }
@@ -60,6 +80,27 @@ ON CONFLICT(id) DO UPDATE SET document_id=excluded.document_id, page_index=exclu
 label=excluded.label, anchor_json=excluded.anchor_json`,
 		item.ID, item.DocumentID, item.PageIndex, item.Label, anchor, item.CreatedAt.UnixMilli())
 	return err
+}
+
+func (r *AnnotationRepository) UpdateBookmark(ctx context.Context, item domain.Bookmark) error {
+	anchor, err := encode(item.Anchor)
+	if err != nil {
+		return err
+	}
+	result, err := r.db.ExecContext(ctx, `UPDATE reader_bookmarks
+SET page_index = ?, label = ?, anchor_json = ? WHERE id = ?`,
+		item.PageIndex, item.Label, anchor, item.ID)
+	if err != nil {
+		return err
+	}
+	updated, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if updated == 0 {
+		return fmt.Errorf("%w: bookmark was not found", domain.ErrNotFound)
+	}
+	return nil
 }
 
 func (r *AnnotationRepository) DeleteBookmark(ctx context.Context, id string) error {
@@ -89,6 +130,32 @@ rectangles_json, created_at, updated_at FROM reader_annotations WHERE document_i
 	return items, rows.Err()
 }
 
+func (r *AnnotationRepository) GetAnnotation(ctx context.Context, id string) (domain.Annotation, error) {
+	var item domain.Annotation
+	var anchorJSON sql.NullString
+	var rectanglesJSON string
+	var createdAt, updatedAt int64
+	err := r.db.QueryRowContext(ctx, `SELECT id, document_id, page_index, kind, color, content, anchor_json,
+rectangles_json, created_at, updated_at FROM reader_annotations WHERE id = ?`, id).
+		Scan(&item.ID, &item.DocumentID, &item.PageIndex, &item.Kind, &item.Color, &item.Content,
+			&anchorJSON, &rectanglesJSON, &createdAt, &updatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return domain.Annotation{}, fmt.Errorf("%w: annotation was not found", domain.ErrNotFound)
+		}
+		return domain.Annotation{}, err
+	}
+	item.Anchor, err = decodeAnchor(anchorJSON)
+	if err != nil {
+		return domain.Annotation{}, err
+	}
+	if err := json.Unmarshal([]byte(rectanglesJSON), &item.Rectangles); err != nil {
+		return domain.Annotation{}, err
+	}
+	item.CreatedAt, item.UpdatedAt = time.UnixMilli(createdAt).UTC(), time.UnixMilli(updatedAt).UTC()
+	return item, nil
+}
+
 func (r *AnnotationRepository) SaveAnnotation(ctx context.Context, item domain.Annotation) error {
 	anchor, err := encode(item.Anchor)
 	if err != nil { return err }
@@ -103,6 +170,32 @@ rectangles_json=excluded.rectangles_json, updated_at=excluded.updated_at`,
 		item.ID, item.DocumentID, item.PageIndex, item.Kind, item.Color, item.Content, anchor, rectangles,
 		item.CreatedAt.UnixMilli(), item.UpdatedAt.UnixMilli())
 	return err
+}
+
+func (r *AnnotationRepository) UpdateAnnotation(ctx context.Context, item domain.Annotation) error {
+	anchor, err := encode(item.Anchor)
+	if err != nil {
+		return err
+	}
+	rectangles, err := encode(item.Rectangles)
+	if err != nil {
+		return err
+	}
+	result, err := r.db.ExecContext(ctx, `UPDATE reader_annotations
+SET page_index = ?, kind = ?, color = ?, content = ?, anchor_json = ?, rectangles_json = ?, updated_at = ?
+WHERE id = ?`,
+		item.PageIndex, item.Kind, item.Color, item.Content, anchor, rectangles, item.UpdatedAt.UnixMilli(), item.ID)
+	if err != nil {
+		return err
+	}
+	updated, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if updated == 0 {
+		return fmt.Errorf("%w: annotation was not found", domain.ErrNotFound)
+	}
+	return nil
 }
 
 func (r *AnnotationRepository) DeleteAnnotation(ctx context.Context, id string) error {

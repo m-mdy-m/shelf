@@ -25,6 +25,8 @@ export interface SavedItemsPanelView {
   render(snapshot: SavedItemsSnapshot): void;
 }
 
+let nextSavedItemsPanelId = 0;
+
 const actionClassName = [
   "inline-flex min-h-8 items-center justify-center rounded-md border border-stone-300",
   "bg-white px-2.5 py-1.5 text-xs font-medium text-stone-700",
@@ -78,7 +80,7 @@ export function createSavedItemsPanel(
   handlers: SavedItemsHandlers,
 ): SavedItemsPanelView {
   const panel = owner.createElement("section");
-  panel.id = "reader-saved-items";
+  panel.id = "reader-saved-items-" + String(++nextSavedItemsPanelId);
   panel.hidden = true;
   panel.setAttribute("aria-label", "Saved reader items");
   panel.className = "rounded-xl border border-stone-200 bg-stone-50 p-3";

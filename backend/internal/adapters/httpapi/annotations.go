@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	"shelf/backend/internal/application"
 	"shelf/backend/internal/domain"
@@ -78,14 +77,26 @@ func writeError(w http.ResponseWriter, err error) {
 	status, code := http.StatusInternalServerError, "reader-storage-failed"
 	if errors.Is(err, domain.ErrInvalid) {
 		status, code = http.StatusBadRequest, "invalid-input"
+	} else if errors.Is(err, domain.ErrNotFound) {
+		status, code = http.StatusNotFound, "not-found"
 	}
 	message := "Shelf could not complete the Reader request."
-	if errors.Is(err, domain.ErrInvalid) {
+	if errors.Is(err, domain.ErrInvalid) || errors.Is(err, domain.ErrNotFound) {
 		message = err.Error()
 	}
 	writeJSON(w, status, map[string]any{
 		"error": map[string]string{"code": code, "message": message},
 	})
+}
+
+func requirePageIndex(w http.ResponseWriter, pageIndex *int) (int, bool) {
+	if pageIndex == nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"error": map[string]string{"code": "invalid-input", "message": "page_index is required."},
+		})
+		return 0, false
+	}
+	return *pageIndex, true
 }
 
 func (h *Handler) listBookmarks(w http.ResponseWriter, r *http.Request) {
@@ -96,13 +107,15 @@ func (h *Handler) listBookmarks(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) createBookmark(w http.ResponseWriter, r *http.Request) {
 	input, ok := decodeJSON[struct {
-		PageIndex int `json:"page_index"`
+		PageIndex *int `json:"page_index"`
 		Label string `json:"label"`
 		Anchor *domain.TextAnchor `json:"anchor"`
 	}](w, r)
 	if !ok { return }
+	pageIndex, ok := requirePageIndex(w, input.PageIndex)
+	if !ok { return }
 	item, err := h.service.CreateBookmark(r.Context(), application.CreateBookmarkInput{
-		DocumentID: r.PathValue("documentID"), PageIndex: input.PageIndex,
+		DocumentID: r.PathValue("documentID"), PageIndex: pageIndex,
 		Label: input.Label, Anchor: input.Anchor,
 	})
 	if err != nil { writeError(w, err); return }
@@ -111,16 +124,15 @@ func (h *Handler) createBookmark(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) updateBookmark(w http.ResponseWriter, r *http.Request) {
 	input, ok := decodeJSON[struct {
-		DocumentID string `json:"document_id"`
-		PageIndex int `json:"page_index"`
+		PageIndex *int `json:"page_index"`
 		Label string `json:"label"`
 		Anchor *domain.TextAnchor `json:"anchor"`
-		CreatedAt time.Time `json:"created_at"`
 	}](w, r)
 	if !ok { return }
+	pageIndex, ok := requirePageIndex(w, input.PageIndex)
+	if !ok { return }
 	item, err := h.service.UpdateBookmark(r.Context(), domain.Bookmark{
-		ID: r.PathValue("id"), DocumentID: input.DocumentID, PageIndex: input.PageIndex,
-		Label: input.Label, Anchor: input.Anchor, CreatedAt: input.CreatedAt,
+		ID: r.PathValue("id"), PageIndex: pageIndex, Label: input.Label, Anchor: input.Anchor,
 	})
 	if err != nil { writeError(w, err); return }
 	writeJSON(w, http.StatusOK, item)
@@ -139,7 +151,7 @@ func (h *Handler) listAnnotations(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) createAnnotation(w http.ResponseWriter, r *http.Request) {
 	input, ok := decodeJSON[struct {
-		PageIndex int `json:"page_index"`
+		PageIndex *int `json:"page_index"`
 		Kind domain.AnnotationKind `json:"kind"`
 		Color string `json:"color"`
 		Content string `json:"content"`
@@ -147,8 +159,10 @@ func (h *Handler) createAnnotation(w http.ResponseWriter, r *http.Request) {
 		Rectangles []domain.PageRect `json:"rectangles"`
 	}](w, r)
 	if !ok { return }
+	pageIndex, ok := requirePageIndex(w, input.PageIndex)
+	if !ok { return }
 	item, err := h.service.CreateAnnotation(r.Context(), application.CreateAnnotationInput{
-		DocumentID: r.PathValue("documentID"), PageIndex: input.PageIndex, Kind: input.Kind,
+		DocumentID: r.PathValue("documentID"), PageIndex: pageIndex, Kind: input.Kind,
 		Color: input.Color, Content: input.Content, Anchor: input.Anchor, Rectangles: input.Rectangles,
 	})
 	if err != nil { writeError(w, err); return }
@@ -157,20 +171,19 @@ func (h *Handler) createAnnotation(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) updateAnnotation(w http.ResponseWriter, r *http.Request) {
 	input, ok := decodeJSON[struct {
-		DocumentID string `json:"document_id"`
-		PageIndex int `json:"page_index"`
+		PageIndex *int `json:"page_index"`
 		Kind domain.AnnotationKind `json:"kind"`
 		Color string `json:"color"`
 		Content string `json:"content"`
 		Anchor *domain.TextAnchor `json:"anchor"`
 		Rectangles []domain.PageRect `json:"rectangles"`
-		CreatedAt time.Time `json:"created_at"`
 	}](w, r)
 	if !ok { return }
+	pageIndex, ok := requirePageIndex(w, input.PageIndex)
+	if !ok { return }
 	item, err := h.service.UpdateAnnotation(r.Context(), domain.Annotation{
-		ID: r.PathValue("id"), DocumentID: input.DocumentID, PageIndex: input.PageIndex,
-		Kind: input.Kind, Color: input.Color, Content: input.Content, Anchor: input.Anchor,
-		Rectangles: input.Rectangles, CreatedAt: input.CreatedAt,
+		ID: r.PathValue("id"), PageIndex: pageIndex, Kind: input.Kind,
+		Color: input.Color, Content: input.Content, Anchor: input.Anchor, Rectangles: input.Rectangles,
 	})
 	if err != nil { writeError(w, err); return }
 	writeJSON(w, http.StatusOK, item)
@@ -189,7 +202,7 @@ func (h *Handler) listQuotes(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) createQuote(w http.ResponseWriter, r *http.Request) {
 	input, ok := decodeJSON[struct {
-		PageIndex int `json:"page_index"`
+		PageIndex *int `json:"page_index"`
 		Text string `json:"text"`
 		Attribution string `json:"attribution"`
 		AnnotationID string `json:"annotation_id"`
@@ -197,8 +210,10 @@ func (h *Handler) createQuote(w http.ResponseWriter, r *http.Request) {
 		Tags []string `json:"tags"`
 	}](w, r)
 	if !ok { return }
+	pageIndex, ok := requirePageIndex(w, input.PageIndex)
+	if !ok { return }
 	item, err := h.service.CreateQuote(r.Context(), application.CreateQuoteInput{
-		DocumentID: r.PathValue("documentID"), PageIndex: input.PageIndex,
+		DocumentID: r.PathValue("documentID"), PageIndex: pageIndex,
 		Text: input.Text, Attribution: input.Attribution, AnnotationID: input.AnnotationID,
 		Anchor: input.Anchor, Tags: input.Tags,
 	})
