@@ -38,8 +38,19 @@ func (f *fakeRepository) ListBookmarks(_ context.Context, documentID string) ([]
 	}
 	return items, nil
 }
+func (f *fakeRepository) GetBookmark(_ context.Context, id string) (domain.Bookmark, error) {
+	item, ok := f.bookmarks[id]
+	if !ok { return domain.Bookmark{}, domain.ErrNotFound }
+	return item, nil
+}
 func (f *fakeRepository) SaveBookmark(_ context.Context, item domain.Bookmark) error {
 	if f.failWrites { return errors.New("storage unavailable") }
+	f.bookmarks[item.ID] = item
+	return nil
+}
+func (f *fakeRepository) UpdateBookmark(_ context.Context, item domain.Bookmark) error {
+	if f.failWrites { return errors.New("storage unavailable") }
+	if _, ok := f.bookmarks[item.ID]; !ok { return domain.ErrNotFound }
 	f.bookmarks[item.ID] = item
 	return nil
 }
@@ -51,8 +62,19 @@ func (f *fakeRepository) ListAnnotations(_ context.Context, documentID string) (
 	}
 	return items, nil
 }
+func (f *fakeRepository) GetAnnotation(_ context.Context, id string) (domain.Annotation, error) {
+	item, ok := f.annotations[id]
+	if !ok { return domain.Annotation{}, domain.ErrNotFound }
+	return item, nil
+}
 func (f *fakeRepository) SaveAnnotation(_ context.Context, item domain.Annotation) error {
 	if f.failWrites { return errors.New("storage unavailable") }
+	f.annotations[item.ID] = item
+	return nil
+}
+func (f *fakeRepository) UpdateAnnotation(_ context.Context, item domain.Annotation) error {
+	if f.failWrites { return errors.New("storage unavailable") }
+	if _, ok := f.annotations[item.ID]; !ok { return domain.ErrNotFound }
 	f.annotations[item.ID] = item
 	return nil
 }
@@ -120,12 +142,49 @@ func TestCreateAndUpdateAnnotation(t *testing.T) {
 	})
 	if err != nil { t.Fatal(err) }
 	item.Color = "blue"
+	item.DocumentID = "another-document"
+	item.CreatedAt = time.Unix(1, 0).UTC()
 	updated, err := service.UpdateAnnotation(context.Background(), item)
 	if err != nil { t.Fatal(err) }
-	if updated.Color != "blue" || updated.UpdatedAt.Before(item.CreatedAt) {
-		t.Fatalf("annotation update did not preserve and advance timestamps: %#v", updated)
+	if updated.Color != "blue" || updated.DocumentID != "doc-1" ||
+		!updated.CreatedAt.Equal(time.Unix(1_800_000_000, 0)) ||
+		updated.UpdatedAt.Before(updated.CreatedAt) {
+		t.Fatalf("annotation update changed immutable fields or failed to advance time: %#v", updated)
 	}
 	if repository.annotations[updated.ID].Color != "blue" { t.Fatal("updated annotation was not saved") }
+}
+
+func TestCreateHighlightDefaultsColorToYellow(t *testing.T) {
+	service, repository := newService()
+	item, err := service.CreateAnnotation(context.Background(), CreateAnnotationInput{
+		DocumentID: "doc-1", PageIndex: 0, Kind: domain.AnnotationHighlight,
+	})
+	if err != nil { t.Fatal(err) }
+	if item.Color != "yellow" { t.Fatalf("expected default yellow highlight, got %q", item.Color) }
+	if len(repository.annotations) != 1 { t.Fatal("default highlight was not persisted") }
+}
+
+func TestUpdateBookmarkPreservesDocumentScopeAndCreationTime(t *testing.T) {
+	service, repository := newService()
+	created, err := service.CreateBookmark(context.Background(), CreateBookmarkInput{
+		DocumentID: "doc-1", PageIndex: 2, Label: "Original",
+	})
+	if err != nil { t.Fatal(err) }
+	mutated := created
+	mutated.DocumentID = "another-document"
+	mutated.CreatedAt = time.Unix(1, 0)
+	mutated.PageIndex = 5
+	mutated.Label = "Updated"
+	updated, err := service.UpdateBookmark(context.Background(), mutated)
+	if err != nil { t.Fatal(err) }
+	if updated.DocumentID != "doc-1" || updated.PageIndex != 5 ||
+		updated.Label != "Updated" || !updated.CreatedAt.Equal(created.CreatedAt) {
+		t.Fatalf("bookmark update changed immutable fields: %#v", updated)
+	}
+	if stored := repository.bookmarks[created.ID]; stored.DocumentID != "doc-1" ||
+		!stored.CreatedAt.Equal(created.CreatedAt) {
+		t.Fatalf("persisted bookmark changed immutable fields: %#v", stored)
+	}
 }
 
 func TestCreateQuoteKeepsItsSourceAnchor(t *testing.T) {
