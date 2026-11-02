@@ -130,7 +130,7 @@ export function reorderPdfTextLayer(layer: HTMLElement, pageWidth: number): void
 
   const ordered = groupPdfTextItemsByReadingOrder(items, pageWidth)
     .flatMap((line) => line.items.map((item) => item.element));
-  const orderedSet = new Set(ordered);
+  const orderedSet = new Set<Element>(ordered);
   const remaining = children.filter((child) => !orderedSet.has(child));
   layer.replaceChildren(...ordered, ...remaining);
 }
