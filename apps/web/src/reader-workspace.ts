@@ -645,7 +645,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       : null;
     const now = options.clock.now();
     const bookmark: Bookmark = {
-      id: options.idGenerator.next<"BookmarkId">("bookmark"),
+      id: options.idGenerator.next<"BookmarkId">("BookmarkId"),
       documentId: session.info.documentId,
       pageIndex: toPageIndex(currentPage),
       label: null,
@@ -667,7 +667,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     if (selection === null) return;
     const now = options.clock.now();
     const annotation: Annotation = {
-      id: options.idGenerator.next<"AnnotationId">("annotation"),
+      id: options.idGenerator.next<"AnnotationId">("AnnotationId"),
       documentId: session.info.documentId,
       pageIndex: selection.pageIndex,
       kind: "highlight",
@@ -699,7 +699,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     }
     const now = options.clock.now();
     const annotation: Annotation = {
-      id: options.idGenerator.next<"AnnotationId">("annotation"),
+      id: options.idGenerator.next<"AnnotationId">("AnnotationId"),
       documentId: session.info.documentId,
       pageIndex: selection.pageIndex,
       kind: "note",
@@ -725,7 +725,7 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     if (selection === null) return;
     const now = options.clock.now();
     const quote: Quote = {
-      id: options.idGenerator.next<"QuoteId">("quote"),
+      id: options.idGenerator.next<"QuoteId">("QuoteId"),
       documentId: session.info.documentId,
       pageIndex: selection.pageIndex,
       text: selection.selectedText,
