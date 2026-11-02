@@ -7,7 +7,7 @@
     <!-- PDF.js uses same-origin worker assets and shipped WebAssembly decoders; no blob worker is required. -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-giDkAhwadeUSoEcGFMODP7Fty/SkHUt9exI2eE83Ke0='; style-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'"
     >
     <title>Shelf</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -19,6 +19,7 @@
     <div id="app">
       <p class="boot-message">Starting Shelf…</p>
     </div>
+    <script type="importmap">{"imports":{"@shelf/reader-core":"/assets/packages/reader-core/index.js","@shelf/library":"/assets/packages/library/index.js","@shelf/pdf-engine":"/assets/packages/pdf-engine/index.js","@shelf/platform-adapters":"/assets/packages/platform-adapters/index.js","pdfjs-dist":"/assets/pdfjs/build/pdf.mjs"}}</script>
     <script type="module" src="/assets/main.js"></script>
   </body>
 </html>
