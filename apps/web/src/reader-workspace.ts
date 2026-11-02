@@ -1,14 +1,24 @@
 import {
   findTextMatches,
+  resolveTextAnchor,
   resolveTextSelectionOffsets,
   toPageIndex,
 } from "@shelf/reader-core";
 import type {
+  Annotation,
+  AnnotationRepositoryPort,
+  Bookmark,
+  BookmarkRepositoryPort,
+  ClockPort,
   ExtractedPageText,
+  IdGeneratorPort,
   PageRect,
+  Quote,
+  QuoteRepositoryPort,
   ReadingMode,
   ReadingProgress,
   ReadingProgressRepositoryPort,
+  TextAnchor,
   TextSearchMatch,
   TextSelection,
 } from "@shelf/reader-core";
@@ -26,6 +36,11 @@ interface ReaderWorkspaceOptions {
   readonly session: PdfDocumentSession;
   readonly renderer: PdfPageRenderer;
   readonly progressRepository: ReadingProgressRepositoryPort;
+  readonly bookmarkRepository: BookmarkRepositoryPort;
+  readonly annotationRepository: AnnotationRepositoryPort;
+  readonly quoteRepository: QuoteRepositoryPort;
+  readonly idGenerator: IdGeneratorPort;
+  readonly clock: ClockPort;
   readonly initialProgress: ReadingProgress | null;
   readonly onStatus: (message: string, isError?: boolean) => void;
   readonly onSelection?: (selection: TextSelection | null) => void;
@@ -106,6 +121,10 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   let searchMatches: readonly TextSearchMatch[] = [];
   let activeSearchMatchIndex = -1;
   let activeSelection: TextSelection | null = null;
+  let bookmarks: readonly Bookmark[] = [];
+  let annotations: readonly Annotation[] = [];
+  let quotes: readonly Quote[] = [];
+  const anchorStatuses = new Map<string, string>();
   let selectionTimer: number | null = null;
   let selectionGeneration = 0;
   let disposed = false;
@@ -159,11 +178,14 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   searchControls.append(searchInput, searchButton, cancelSearchButton);
 
   const trailingControls = element(owner, "div", "reader-control-group reader-trailing-controls");
+  const bookmarkPageButton = createButton(owner, "Bookmark page", "button button-small");
+  const savedToggleButton = createButton(owner, "Saved items", "button button-small");
+  savedToggleButton.setAttribute("aria-expanded", "false");
   const outlineButton = createButton(owner, "Contents", "button button-small reader-touch-button");
   outlineButton.setAttribute("aria-expanded", "false");
   outlineButton.setAttribute("aria-controls", "reader-outline");
   const closeButton = createButton(owner, "Close", "button button-small");
-  trailingControls.append(outlineButton, closeButton);
+  trailingControls.append(bookmarkPageButton, savedToggleButton, outlineButton, closeButton);
   toolbar.append(navigation, modeControls, zoomControls, searchControls, trailingControls);
 
   const documentHeading = element(owner, "div", "reader-document-heading");
@@ -201,8 +223,20 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   const selectionHeading = element(owner, "h3", "reader-selection-heading", "Selection");
   const selectionText = element(owner, "blockquote", "reader-selection-text");
   const selectionMeta = element(owner, "p", "reader-selection-meta");
-  selectionPanel.append(selectionHeading, selectionText, selectionMeta);
-  readerPanels.append(searchPanel, selectionPanel);
+  const selectionActions = element(owner, "div", "reader-selection-actions");
+  const saveHighlightButton = createButton(owner, "Save highlight");
+  const addNoteButton = createButton(owner, "Add note");
+  const saveQuoteButton = createButton(owner, "Save quote");
+  selectionActions.append(saveHighlightButton, addNoteButton, saveQuoteButton);
+  selectionPanel.append(selectionHeading, selectionText, selectionMeta, selectionActions);
+
+  const savedPanel = element(owner, "section", "reader-saved-panel");
+  savedPanel.hidden = true;
+  savedPanel.setAttribute("aria-label", "Saved bookmarks and annotations");
+  const savedHeading = element(owner, "h3", "reader-selection-heading", "Saved items");
+  const savedList = element(owner, "div", "reader-saved-list");
+  savedPanel.append(savedHeading, savedList);
+  readerPanels.append(searchPanel, selectionPanel, savedPanel);
 
   const body = element(owner, "div", "reader-body");
   const outline = element(owner, "aside", "reader-outline");
@@ -349,6 +383,367 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       pageTextCache.delete(oldest);
     }
     return result.value;
+  }
+
+  function toTextAnchor(selection: TextSelection): TextAnchor {
+    return {
+      selectedText: selection.selectedText,
+      normalizedText: selection.normalizedText,
+      startOffset: selection.startOffset,
+      endOffset: selection.endOffset,
+      documentFingerprint: selection.documentFingerprint,
+      anchorVersion: selection.anchorVersion,
+    };
+  }
+
+  function renderSavedRecords(): void {
+    if (disposed) return;
+    savedList.replaceChildren();
+    if (bookmarks.length === 0 && annotations.length === 0 && quotes.length === 0) {
+      savedList.append(element(owner, "p", "reader-outline-empty", "No saved reader items yet."));
+      return;
+    }
+
+    const appendItem = (
+      title: string,
+      detail: string,
+      pageIndex: number,
+      actions: readonly { readonly label: string; readonly run: () => void }[],
+      state?: string,
+    ): void => {
+      const card = element(owner, "article", "reader-saved-item");
+      const details = element(owner, "div", "reader-saved-item-details");
+      details.append(
+        element(owner, "p", "reader-saved-item-title", title),
+        element(
+          owner,
+          "p",
+          "reader-saved-item-meta",
+          "Page " + String(pageIndex + 1) + " · " + detail + (state ? " · " + state : ""),
+        ),
+      );
+      const buttons = element(owner, "div", "reader-saved-actions");
+      for (const action of actions) {
+        const button = createButton(owner, action.label);
+        button.addEventListener("click", action.run);
+        buttons.append(button);
+      }
+      card.append(details, buttons);
+      savedList.append(card);
+    };
+
+    for (const bookmark of bookmarks) {
+      const pageIndex = bookmark.pageIndex as number;
+      appendItem(bookmark.label?.trim() || "Bookmark", "Reading location", pageIndex, [
+        { label: "Go to page", run: () => jumpTo(pageIndex) },
+        { label: "Edit", run: () => void editBookmark(bookmark) },
+        { label: "Delete", run: () => void removeBookmark(bookmark) },
+      ]);
+    }
+
+    for (const annotation of annotations) {
+      const pageIndex = annotation.pageIndex as number;
+      const detail = annotation.kind === "highlight"
+        ? "Highlight · " + (annotation.anchor?.selectedText.slice(0, 90) || annotation.color)
+        : "Note · " + annotation.content.slice(0, 90);
+      appendItem(annotation.kind === "highlight" ? "Highlight" : "Passage note", detail, pageIndex, [
+        { label: "Go to page", run: () => jumpTo(pageIndex) },
+        { label: "Edit", run: () => void editAnnotation(annotation) },
+        { label: "Delete", run: () => void removeAnnotation(annotation) },
+      ], anchorStatuses.get(annotation.id));
+    }
+
+    for (const quote of quotes) {
+      const pageIndex = quote.pageIndex as number;
+      appendItem("Quote", quote.text.slice(0, 120), pageIndex, [
+        { label: "Go to page", run: () => jumpTo(pageIndex) },
+        { label: "Delete", run: () => void removeQuote(quote) },
+      ]);
+    }
+  }
+
+  async function loadSavedRecords(): Promise<void> {
+    const [savedBookmarks, savedAnnotations, savedQuotes] = await Promise.all([
+      options.bookmarkRepository.listByDocumentId(session.info.documentId),
+      options.annotationRepository.listByDocumentId(session.info.documentId),
+      options.quoteRepository.listByDocumentId(session.info.documentId),
+    ]);
+    if (disposed) return;
+    if (!savedBookmarks.ok || !savedAnnotations.ok || !savedQuotes.ok) {
+      onStatus("Shelf could not restore all saved reader items.", true);
+      return;
+    }
+    bookmarks = savedBookmarks.value;
+    annotations = savedAnnotations.value;
+    quotes = savedQuotes.value;
+    renderSavedRecords();
+  }
+
+  async function resolveSavedPageAnnotations(index: number): Promise<readonly Annotation[]> {
+    const pageIndex = toPageIndex(index);
+    const items = annotations.filter((item) => item.pageIndex === pageIndex);
+    if (items.length === 0) return [];
+    const pageText = items.some((item) => item.anchor !== null) ? await getPageText(index) : null;
+    const fingerprint = session.info.fingerprint as TextSelection["documentFingerprint"];
+    const visible: Annotation[] = [];
+
+    for (const annotation of items) {
+      const anchor = annotation.anchor;
+      if (anchor === null) {
+        anchorStatuses.delete(annotation.id);
+        visible.push(annotation);
+        continue;
+      }
+
+      if (pageText !== null && pageText.hasSelectableText) {
+        const resolution = resolveTextAnchor(pageText.text, anchor);
+        if (resolution.status === "unresolved" && resolution.reason === "ambiguous") {
+          anchorStatuses.set(annotation.id, "Unresolved: matching text is ambiguous");
+          continue;
+        }
+        if (resolution.status === "resolved") {
+          const rectangles = pageText.runs
+            .filter((run) => run.startOffset < resolution.endOffset && run.endOffset > resolution.startOffset)
+            .flatMap((run) => run.rectangles)
+            .slice(0, MAX_SELECTION_RECTANGLES);
+          if (rectangles.length > 0) {
+            visible.push({ ...annotation, rectangles });
+            anchorStatuses.set(
+              annotation.id,
+              resolution.confidence === "stored-offset"
+                ? "Text anchor restored"
+                : "Text anchor relocated",
+            );
+            continue;
+          }
+        }
+      }
+
+      if (
+        fingerprint !== null &&
+        anchor.documentFingerprint === fingerprint &&
+        annotation.rectangles.length > 0
+      ) {
+        visible.push(annotation);
+        anchorStatuses.set(annotation.id, "Position restored from saved geometry");
+      } else {
+        anchorStatuses.set(
+          annotation.id,
+          pageText === null || !pageText.hasSelectableText
+            ? "Unresolved: page text is unavailable"
+            : "Unresolved: text could not be found",
+        );
+      }
+    }
+
+    renderSavedRecords();
+    return visible;
+  }
+
+  async function refreshPageAnnotations(index: number): Promise<void> {
+    const page = pages.get(index);
+    if (page === undefined || page.handle === null) return;
+    const visible = await resolveSavedPageAnnotations(index);
+    if (!disposed && pages.get(index) === page) {
+      renderer.updateAnnotations(page.layers, toPageIndex(index), visible);
+    }
+  }
+
+  async function editBookmark(bookmark: Bookmark): Promise<void> {
+    const label = owner.defaultView?.prompt("Bookmark label", bookmark.label ?? "") ?? null;
+    if (label === null) return;
+    const updated: Bookmark = { ...bookmark, label: label.trim() || null };
+    const result = await options.bookmarkRepository.save(updated);
+    if (!result.ok) {
+      onStatus(result.error.message, true);
+      return;
+    }
+    bookmarks = bookmarks.map((item) => item.id === bookmark.id ? updated : item);
+    renderSavedRecords();
+    onStatus("Bookmark updated.");
+  }
+
+  async function removeBookmark(bookmark: Bookmark): Promise<void> {
+    if (!(owner.defaultView?.confirm("Delete this bookmark?") ?? false)) return;
+    const result = await options.bookmarkRepository.delete(bookmark.id);
+    if (!result.ok) {
+      onStatus(result.error.message, true);
+      return;
+    }
+    bookmarks = bookmarks.filter((item) => item.id !== bookmark.id);
+    renderSavedRecords();
+    onStatus("Bookmark deleted.");
+  }
+
+  async function editAnnotation(annotation: Annotation): Promise<void> {
+    let updated: Annotation;
+    if (annotation.kind === "highlight") {
+      const color = owner.defaultView?.prompt(
+        "Highlight color: yellow, green, blue, pink, or purple",
+        annotation.color,
+      ) ?? null;
+      if (color === null) return;
+      const colors = ["yellow", "green", "blue", "pink", "purple"];
+      if (!colors.includes(color)) {
+        onStatus("Choose a supported highlight color.", true);
+        return;
+      }
+      updated = {
+        ...annotation,
+        color: color as typeof annotation.color,
+        updatedAt: options.clock.now(),
+      };
+    } else {
+      const content = owner.defaultView?.prompt("Edit passage note", annotation.content) ?? null;
+      if (content === null) return;
+      if (content.trim().length === 0) {
+        onStatus("A passage note cannot be empty.", true);
+        return;
+      }
+      updated = { ...annotation, content: content.trim(), updatedAt: options.clock.now() };
+    }
+    const result = await options.annotationRepository.save(updated);
+    if (!result.ok) {
+      onStatus(result.error.message, true);
+      return;
+    }
+    annotations = annotations.map((item) => item.id === annotation.id ? updated : item);
+    renderSavedRecords();
+    await refreshPageAnnotations(annotation.pageIndex as number);
+    onStatus("Annotation updated.");
+  }
+
+  async function removeAnnotation(annotation: Annotation): Promise<void> {
+    if (!(owner.defaultView?.confirm("Delete this annotation?") ?? false)) return;
+    const result = await options.annotationRepository.delete(annotation.id);
+    if (!result.ok) {
+      onStatus(result.error.message, true);
+      return;
+    }
+    annotations = annotations.filter((item) => item.id !== annotation.id);
+    anchorStatuses.delete(annotation.id);
+    renderSavedRecords();
+    await refreshPageAnnotations(annotation.pageIndex as number);
+    onStatus("Annotation deleted.");
+  }
+
+  async function removeQuote(quote: Quote): Promise<void> {
+    if (!(owner.defaultView?.confirm("Delete this quote?") ?? false)) return;
+    const result = await options.quoteRepository.delete(quote.id);
+    if (!result.ok) {
+      onStatus(result.error.message, true);
+      return;
+    }
+    quotes = quotes.filter((item) => item.id !== quote.id);
+    renderSavedRecords();
+    onStatus("Quote deleted.");
+  }
+
+  async function saveCurrentBookmark(): Promise<void> {
+    const selection = activeSelection !== null && activeSelection.pageIndex === toPageIndex(currentPage)
+      ? activeSelection
+      : null;
+    const now = options.clock.now();
+    const bookmark: Bookmark = {
+      id: options.idGenerator.next<"BookmarkId">("bookmark"),
+      documentId: session.info.documentId,
+      pageIndex: toPageIndex(currentPage),
+      label: null,
+      anchor: selection === null ? null : toTextAnchor(selection),
+      createdAt: now,
+    };
+    const result = await options.bookmarkRepository.save(bookmark);
+    if (!result.ok) {
+      onStatus(result.error.message, true);
+      return;
+    }
+    bookmarks = [...bookmarks, bookmark];
+    renderSavedRecords();
+    onStatus("Bookmark saved for page " + String(currentPage + 1) + ".");
+  }
+
+  async function saveSelectionHighlight(): Promise<void> {
+    const selection = activeSelection;
+    if (selection === null) return;
+    const now = options.clock.now();
+    const annotation: Annotation = {
+      id: options.idGenerator.next<"AnnotationId">("annotation"),
+      documentId: session.info.documentId,
+      pageIndex: selection.pageIndex,
+      kind: "highlight",
+      color: "yellow",
+      anchor: toTextAnchor(selection),
+      rectangles: selection.rectangles,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const result = await options.annotationRepository.save(annotation);
+    if (!result.ok) {
+      onStatus(result.error.message, true);
+      return;
+    }
+    annotations = [...annotations, annotation];
+    renderSavedRecords();
+    await refreshPageAnnotations(selection.pageIndex as number);
+    onStatus("Highlight saved.");
+  }
+
+  async function saveSelectionNote(): Promise<void> {
+    const selection = activeSelection;
+    if (selection === null) return;
+    const content = owner.defaultView?.prompt("Write a note about this passage", "") ?? null;
+    if (content === null) return;
+    if (content.trim().length === 0) {
+      onStatus("A passage note cannot be empty.", true);
+      return;
+    }
+    const now = options.clock.now();
+    const annotation: Annotation = {
+      id: options.idGenerator.next<"AnnotationId">("annotation"),
+      documentId: session.info.documentId,
+      pageIndex: selection.pageIndex,
+      kind: "note",
+      content: content.trim(),
+      anchor: toTextAnchor(selection),
+      rectangles: selection.rectangles,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const result = await options.annotationRepository.save(annotation);
+    if (!result.ok) {
+      onStatus(result.error.message, true);
+      return;
+    }
+    annotations = [...annotations, annotation];
+    renderSavedRecords();
+    await refreshPageAnnotations(selection.pageIndex as number);
+    onStatus("Passage note saved.");
+  }
+
+  async function saveSelectionQuote(): Promise<void> {
+    const selection = activeSelection;
+    if (selection === null) return;
+    const now = options.clock.now();
+    const quote: Quote = {
+      id: options.idGenerator.next<"QuoteId">("quote"),
+      documentId: session.info.documentId,
+      pageIndex: selection.pageIndex,
+      text: selection.selectedText,
+      attribution: null,
+      annotationId: null,
+      anchor: toTextAnchor(selection),
+      tags: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    const result = await options.quoteRepository.save(quote);
+    if (!result.ok) {
+      onStatus(result.error.message, true);
+      return;
+    }
+    quotes = [...quotes, quote];
+    renderSavedRecords();
+    onStatus("Quote saved.");
   }
 
   function addOverlayRect(
@@ -711,7 +1106,9 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
         return;
       }
 
-      const result = await renderer.render(page.handle, page.layers, [], {
+      const pageAnnotations = await resolveSavedPageAnnotations(index);
+      if (disposed || pages.get(index) !== page) return;
+      const result = await renderer.render(page.handle, page.layers, pageAnnotations, {
         scale: renderScale,
         devicePixelRatio: Math.min(globalThis.devicePixelRatio || 1, 2),
       });
@@ -1057,6 +1454,15 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     }
   }
 
+  bookmarkPageButton.addEventListener("click", () => void saveCurrentBookmark());
+  savedToggleButton.addEventListener("click", () => {
+    savedPanel.hidden = !savedPanel.hidden;
+    savedToggleButton.setAttribute("aria-expanded", String(!savedPanel.hidden));
+    if (!savedPanel.hidden) renderSavedRecords();
+  });
+  saveHighlightButton.addEventListener("click", () => void saveSelectionHighlight());
+  addNoteButton.addEventListener("click", () => void saveSelectionNote());
+  saveQuoteButton.addEventListener("click", () => void saveSelectionQuote());
   searchButton.addEventListener("click", () => void runSearch());
   searchInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -1092,6 +1498,8 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   stage.addEventListener("keydown", onKeyDown);
 
   async function initialize(): Promise<void> {
+    await loadSavedRecords();
+    if (disposed) return;
     syncControls();
     setReaderBusy(true, "Loading page " + String(currentPage + 1) + "…");
     const first = await ensurePageGeometry(currentPage);

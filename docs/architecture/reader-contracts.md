@@ -88,3 +88,10 @@ The TypeScript type tests assert ID separation, locator separation, PageIndex br
 
 
 The `ExtractedPageText.truncated` flag is true when the adapter stops at the per-page item/character budget. The Reader reports those pages in search summaries rather than implying full coverage. Search queries are capped at 256 characters, result count at 100, and transient interaction markers at 500 per page. Browser selection geometry is capped at 512 rectangles. `ReaderWorkspaceController.getSelection()` and the optional `onSelection` callback expose the current transient `TextSelection` to annotation workflows without persisting it.
+
+
+## Saved Reader records and anchor resolution
+
+The browser adapter's IndexedDB version 3 adds separate ID-keyed bookmark, annotation, and quote stores with DocumentId indexes; existing version-2 stores are preserved during upgrade. Repository methods return Result values so the Reader only presents a new or edited saved state after a confirmed write.
+
+The Reader maps a transient TextSelection to a versioned TextAnchor. On reopen, exact stored offsets are preferred; otherwise a unique normalized text match may relocate the anchor. Multiple matches remain unresolved. Saved geometry is used only as a fallback when the content fingerprint is unchanged, and annotations render in the PDF engine's dedicated annotation layer.

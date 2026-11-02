@@ -76,3 +76,13 @@ Persist last document, page/scroll, zoom, reading mode, and timestamps; debounce
 - Extracted pages expose an explicit truncation flag when the 50,000-item or 500,000-character per-page budget is reached; search reports truncated and failed pages so partial results are not presented as complete.
 - Search queries are limited to 256 characters; the per-page transient interaction overlay is capped at 500 markers and selection geometry at 512 rectangles.
 - The ReaderWorkspace controller and optional selection callback expose transient TextSelection metadata to future annotation/context workflows without writing an Annotation or Quote.
+
+
+## Bookmarks, annotations, quotes, and anchor recovery
+
+- The Reader exposes distinct page bookmark, passage highlight, passage note, and quote actions. Notes remain user-authored; quotes preserve the selected source excerpt independently.
+- A saved state appears only after its repository write succeeds. Failed writes remain errors and never appear in the Saved items list.
+- Bookmark, annotation, and quote records use separate IndexedDB object stores keyed by stable record ID and indexed by DocumentId. The upgrade from database version 2 adds these stores without replacing documents, locators, source copies, file references, or reading progress.
+- Saved highlights and note markers use the Shelf annotation layer, separate from the PDF canvas, selectable text, and transient search/selection layer. Rendering remains bounded per page by the PDF renderer.
+- On reopen, saved anchors first validate their recorded page-local UTF-16 offsets. If those offsets no longer identify the selected text, only one normalized text match may relocate the anchor. Repeated candidates remain unresolved. Saved geometry is a fallback only when the document fingerprint still matches.
+- Users can revisit, edit, and delete saved bookmarks, highlights, and notes. Failed writes or deletes do not mutate the in-memory saved list.

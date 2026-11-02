@@ -118,3 +118,72 @@ test("selection offset resolution finds the nearest repeated passage beyond the 
     confidence: "exact",
   });
 });
+
+
+test("durable anchors prefer valid offsets in repeated passages", async () => {
+  const { resolveTextAnchor } = await import("../../packages/reader-core/dist/index.js");
+  const anchor = {
+    selectedText: "passage",
+    normalizedText: "passage",
+    startOffset: 10,
+    endOffset: 17,
+    documentFingerprint: null,
+    anchorVersion: 1,
+  };
+  assert.deepEqual(resolveTextAnchor("passage / passage", anchor), {
+    status: "resolved",
+    startOffset: 10,
+    endOffset: 17,
+    confidence: "stored-offset",
+  });
+});
+
+test("durable anchors relocate only when normalized text has a unique match", async () => {
+  const { resolveTextAnchor } = await import("../../packages/reader-core/dist/index.js");
+  const anchor = {
+    selectedText: "Selected ﬁrst passage",
+    normalizedText: "selected first passage",
+    startOffset: 0,
+    endOffset: 8,
+    documentFingerprint: null,
+    anchorVersion: 1,
+  };
+  assert.deepEqual(resolveTextAnchor("Prefix: selected first passage.", anchor), {
+    status: "resolved",
+    startOffset: 8,
+    endOffset: 30,
+    confidence: "unique-text-match",
+  });
+});
+
+test("durable anchors leave moved repeated passages unresolved", async () => {
+  const { resolveTextAnchor } = await import("../../packages/reader-core/dist/index.js");
+  const anchor = {
+    selectedText: "passage",
+    normalizedText: "passage",
+    startOffset: 1,
+    endOffset: 8,
+    documentFingerprint: null,
+    anchorVersion: 1,
+  };
+  assert.deepEqual(resolveTextAnchor("passage / passage", anchor), {
+    status: "unresolved",
+    reason: "ambiguous",
+  });
+});
+
+test("durable anchors report missing text rather than guessing", async () => {
+  const { resolveTextAnchor } = await import("../../packages/reader-core/dist/index.js");
+  const anchor = {
+    selectedText: "original passage",
+    normalizedText: "original passage",
+    startOffset: 0,
+    endOffset: 16,
+    documentFingerprint: null,
+    anchorVersion: 1,
+  };
+  assert.deepEqual(resolveTextAnchor("different page content", anchor), {
+    status: "unresolved",
+    reason: "not-found",
+  });
+});

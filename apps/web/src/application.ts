@@ -169,6 +169,23 @@ export function mountShelf(root: HTMLElement): void {
       session: opened.value,
       renderer,
       progressRepository: store,
+      bookmarkRepository: {
+        listByDocumentId: (documentId) => store.listBookmarks(documentId),
+        save: (bookmark) => store.saveBookmark(bookmark),
+        delete: (bookmarkId) => store.deleteBookmark(bookmarkId),
+      },
+      annotationRepository: {
+        listByDocumentId: (documentId) => store.listAnnotations(documentId),
+        save: (annotation) => store.saveAnnotation(annotation),
+        delete: (annotationId) => store.deleteAnnotation(annotationId),
+      },
+      quoteRepository: {
+        listByDocumentId: (documentId) => store.listQuotes(documentId),
+        save: (quote) => store.saveQuote(quote),
+        delete: (quoteId) => store.deleteQuote(quoteId),
+      },
+      idGenerator: ids,
+      clock: { now: () => Date.now() },
       initialProgress: savedProgress.value,
       onStatus: setStatus,
       onClose: () => {

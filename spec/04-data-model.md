@@ -43,3 +43,10 @@ Extracted page text is derived from PDF.js text-content streams and is not a dur
 
 - **ExtractedPageText (transient):** page index, normalized text, geometry-bearing runs, selectable-text status, and a truncation flag. It is session/cache data, not a durable record or export field.
 - **TextSelection (transient anchor draft):** exact selected text, normalized fallback, page-local offsets, document fingerprint, anchor version, normalized page rectangles, and offset confidence. It can be passed to annotation workflows but becomes durable only after an explicit annotation or quote write succeeds.
+
+
+## Annotation persistence and anchor recovery
+
+Bookmark, Annotation, and Quote records are stored independently from ReadingProgress and Document metadata. Browser IndexedDB schema version 3 adds an ID-keyed object store for each record type and a non-unique DocumentId index; the version-2 progress and opaque locator stores are retained.
+
+When a page is reopened, a TextAnchor is resolved by checking its stored offsets first. If those offsets no longer match, normalized selected text must have exactly one occurrence on the page to be relocated. Zero matches are unresolved unless the saved document fingerprint still matches and page-relative geometry can safely be used as a fallback. Multiple matches are always reported as ambiguous and are not silently attached to any occurrence.

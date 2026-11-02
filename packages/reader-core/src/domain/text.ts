@@ -179,3 +179,60 @@ export function resolveTextSelectionOffsets(
     confidence: exact ? "exact" : "nearest-text-match",
   };
 }
+
+
+export type TextAnchorResolution =
+  | {
+      readonly status: "resolved";
+      readonly startOffset: number;
+      readonly endOffset: number;
+      readonly confidence: "stored-offset" | "unique-text-match";
+    }
+  | {
+      readonly status: "unresolved";
+      readonly reason: "not-found" | "ambiguous";
+    };
+
+/** Resolve saved text anchors without guessing between repeated passages. */
+export function resolveTextAnchor(pageText: string, anchor: TextAnchor): TextAnchorResolution {
+  const needle = normalizedQuery(
+    anchor.normalizedText.length > 0 ? anchor.normalizedText : anchor.selectedText,
+  );
+  if (needle.length === 0) return { status: "unresolved", reason: "not-found" };
+
+  if (
+    Number.isSafeInteger(anchor.startOffset) &&
+    Number.isSafeInteger(anchor.endOffset) &&
+    anchor.startOffset >= 0 &&
+    anchor.endOffset > anchor.startOffset &&
+    anchor.endOffset <= pageText.length &&
+    normalizedQuery(pageText.slice(anchor.startOffset, anchor.endOffset)) === needle
+  ) {
+    return {
+      status: "resolved",
+      startOffset: anchor.startOffset,
+      endOffset: anchor.endOffset,
+      confidence: "stored-offset",
+    };
+  }
+
+  const normalized = normalizeWithOffsets(pageText);
+  let searchFrom = 0;
+  let onlyMatch: { readonly startOffset: number; readonly endOffset: number } | null = null;
+
+  while (searchFrom <= normalized.value.length - needle.length) {
+    const found = normalized.value.indexOf(needle, searchFrom);
+    if (found < 0) break;
+    const finalIndex = found + needle.length - 1;
+    const startOffset = normalized.sourceStarts[found];
+    const endOffset = normalized.sourceEnds[finalIndex];
+    if (startOffset !== undefined && endOffset !== undefined && endOffset > startOffset) {
+      if (onlyMatch !== null) return { status: "unresolved", reason: "ambiguous" };
+      onlyMatch = { startOffset, endOffset };
+    }
+    searchFrom = found + 1;
+  }
+
+  if (onlyMatch === null) return { status: "unresolved", reason: "not-found" };
+  return { status: "resolved", ...onlyMatch, confidence: "unique-text-match" };
+}

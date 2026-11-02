@@ -136,3 +136,33 @@ test("the repository declares explicit application boundaries", async () => {
     "backend/internal/application", "backend/internal/ports", "backend/internal/adapters",
   ]) await access(path.join(root, relative));
 });
+
+
+test("Reader annotations use local repositories and ambiguity-aware text anchors", async () => {
+  const shell = await readFile(path.join(root, "apps/web/src/application.ts"), "utf8");
+  const workspace = await readFile(path.join(root, "apps/web/src/reader-workspace.ts"), "utf8");
+  const store = await readFile(path.join(root, "packages/platform-adapters/src/browser/indexeddb-store.ts"), "utf8");
+  const renderer = await readFile(path.join(root, "packages/pdf-engine/src/renderer/pdf-page-renderer.ts"), "utf8");
+  const anchor = await readFile(path.join(root, "packages/reader-core/src/domain/text.ts"), "utf8");
+
+  assert.equal(store.includes("factory.open(this.#databaseName, 3)"), true);
+  assert.equal(store.includes('"bookmarks"'), true);
+  assert.equal(store.includes('"annotations"'), true);
+  assert.equal(store.includes('"quotes"'), true);
+  assert.equal(store.includes('store.createIndex("documentId", "documentId"'), true);
+  assert.equal(store.includes("async listBookmarks"), true);
+  assert.equal(store.includes("async saveAnnotation"), true);
+  assert.equal(store.includes("async saveQuote"), true);
+  assert.equal(workspace.includes("saveCurrentBookmark"), true);
+  assert.equal(workspace.includes("saveSelectionHighlight"), true);
+  assert.equal(workspace.includes("saveSelectionNote"), true);
+  assert.equal(workspace.includes("saveSelectionQuote"), true);
+  assert.equal(workspace.includes("Unresolved: matching text is ambiguous"), true);
+  assert.equal(workspace.includes("Position restored from saved geometry"), true);
+  assert.equal(workspace.includes("renderer.updateAnnotations"), true);
+  assert.equal(renderer.includes("updateAnnotations("), true);
+  assert.equal(anchor.includes("export function resolveTextAnchor"), true);
+  assert.equal(shell.includes("bookmarkRepository:"), true);
+  assert.equal(shell.includes("annotationRepository:"), true);
+  assert.equal(shell.includes("quoteRepository:"), true);
+});

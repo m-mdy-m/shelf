@@ -1,4 +1,6 @@
 import type {
+  Annotation,
+  Bookmark,
   Document,
   DocumentId,
   DocumentLocator,
@@ -7,6 +9,7 @@ import type {
   ReadingProgress,
   ReadingProgressRepositoryPort,
   ReaderError,
+  Quote,
   Result,
 } from "@shelf/reader-core";
 import type {
@@ -29,7 +32,7 @@ interface StoredReference {
   readonly handle: BrowserFileHandleLike;
 }
 
-type StoreName = "documents" | "locators" | "copies" | "references" | "readingProgress";
+type StoreName = "documents" | "locators" | "copies" | "references" | "readingProgress" | "bookmarks" | "annotations" | "quotes";
 
 function storageError(
   code: ReaderError["code"],
@@ -66,7 +69,7 @@ implements DocumentRepositoryPort, ReadingProgressRepositoryPort, DocumentLocato
       throw new Error("IndexedDB is not available in this browser.");
     }
     this.#databasePromise ??= new Promise<IDBDatabase>((resolve, reject) => {
-      const request = factory.open(this.#databaseName, 2);
+      const request = factory.open(this.#databaseName, 3);
       let settled = false;
       const fail = (error: unknown): void => {
         if (settled) return;
@@ -75,12 +78,26 @@ implements DocumentRepositoryPort, ReadingProgressRepositoryPort, DocumentLocato
       };
       request.onupgradeneeded = () => {
         const database = request.result;
-        for (const name of ["documents", "locators", "copies", "references", "readingProgress"] as const) {
-          if (!database.objectStoreNames.contains(name)) {
-            database.createObjectStore(name, {
-              keyPath: name === "documents" ? "id" :
-                name === "locators" || name === "readingProgress" ? "documentId" : "key",
+        const transaction = request.transaction;
+        const names = [
+          "documents", "locators", "copies", "references", "readingProgress",
+          "bookmarks", "annotations", "quotes",
+        ] as const;
+        for (const name of names) {
+          const store = database.objectStoreNames.contains(name)
+            ? transaction?.objectStore(name)
+            : database.createObjectStore(name, {
+              keyPath: name === "documents" || name === "bookmarks" ||
+                name === "annotations" || name === "quotes"
+                ? "id"
+                : name === "locators" || name === "readingProgress" ? "documentId" : "key",
             });
+          if (
+            (name === "bookmarks" || name === "annotations" || name === "quotes") &&
+            store !== undefined &&
+            !store.indexNames.contains("documentId")
+          ) {
+            store.createIndex("documentId", "documentId", { unique: false });
           }
         }
       };
@@ -175,6 +192,94 @@ implements DocumentRepositoryPort, ReadingProgressRepositoryPort, DocumentLocato
       return { ok: true, value: undefined };
     } catch {
       return { ok: false, error: storageError("write-failed", "Shelf could not remove the reading position.") };
+    }
+  }
+
+
+  async listBookmarks(id: DocumentId): Promise<Result<readonly Bookmark[], ReaderError>> {
+    try {
+      const value = await this.#run<Bookmark[]>(
+        "bookmarks", "readonly", (store) => store.index("documentId").getAll(String(id)),
+      );
+      return { ok: true, value };
+    } catch {
+      return { ok: false, error: storageError("read-failed", "Shelf could not restore bookmarks.") };
+    }
+  }
+
+  async saveBookmark(bookmark: Bookmark): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("bookmarks", "readwrite", (store) => store.put(bookmark));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not save this bookmark.") };
+    }
+  }
+
+  async deleteBookmark(id: Bookmark["id"]): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("bookmarks", "readwrite", (store) => store.delete(String(id)));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not delete this bookmark.") };
+    }
+  }
+
+  async listAnnotations(id: DocumentId): Promise<Result<readonly Annotation[], ReaderError>> {
+    try {
+      const value = await this.#run<Annotation[]>(
+        "annotations", "readonly", (store) => store.index("documentId").getAll(String(id)),
+      );
+      return { ok: true, value };
+    } catch {
+      return { ok: false, error: storageError("read-failed", "Shelf could not restore annotations.") };
+    }
+  }
+
+  async saveAnnotation(annotation: Annotation): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("annotations", "readwrite", (store) => store.put(annotation));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not save this annotation.") };
+    }
+  }
+
+  async deleteAnnotation(id: Annotation["id"]): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("annotations", "readwrite", (store) => store.delete(String(id)));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not delete this annotation.") };
+    }
+  }
+
+  async listQuotes(id: DocumentId): Promise<Result<readonly Quote[], ReaderError>> {
+    try {
+      const value = await this.#run<Quote[]>(
+        "quotes", "readonly", (store) => store.index("documentId").getAll(String(id)),
+      );
+      return { ok: true, value };
+    } catch {
+      return { ok: false, error: storageError("read-failed", "Shelf could not restore quotes.") };
+    }
+  }
+
+  async saveQuote(quote: Quote): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("quotes", "readwrite", (store) => store.put(quote));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not save this quote.") };
+    }
+  }
+
+  async deleteQuote(id: Quote["id"]): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("quotes", "readwrite", (store) => store.delete(String(id)));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not delete this quote.") };
     }
   }
 
