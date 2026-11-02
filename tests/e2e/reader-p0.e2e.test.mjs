@@ -110,9 +110,13 @@ test("Chromium keeps native PDF text selection column-bounded and preserves it f
       const pathname = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname);
       const file = path.resolve(webRoot, "." + pathname);
       if (!file.startsWith(webRoot + path.sep)) { response.writeHead(403).end(); return; }
+      const content = await readFile(file);
       response.writeHead(200, { "content-type": file.endsWith(".js") ? "text/javascript" : "text/html" });
-      response.end(await readFile(file));
-    } catch { response.writeHead(404).end(); }
+      response.end(content);
+    } catch {
+      if (!response.headersSent) response.writeHead(404).end();
+      else response.destroy();
+    }
   });
   await new Promise((resolve, reject) => {
     server.once("error", reject);
