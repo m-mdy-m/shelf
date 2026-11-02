@@ -17,6 +17,7 @@
   line-height: 1;
   text-align: initial;
   transform-origin: 0 0;
+  unicode-bidi: plaintext;
   z-index: 1;
 }
 
@@ -26,6 +27,7 @@
   white-space: pre;
   cursor: text;
   transform-origin: 0 0;
+  unicode-bidi: isolate;
 }
 
 .shelf-pdf-text-layer span.markedContent {
