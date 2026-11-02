@@ -101,7 +101,15 @@ export function mountShelf(root: HTMLElement): void {
   const referenceButton = createElement("button", "button button-secondary", "Link original file") as HTMLButtonElement;
   referenceButton.type = "button";
   referenceButton.hidden = !picker.canPickReference;
-  actions.append(importButton, referenceButton);
+  const exportButton = createElement("button", "button button-secondary", "Export Reader data") as HTMLButtonElement;
+  exportButton.type = "button";
+  const restoreButton = createElement("button", "button button-secondary", "Restore backup") as HTMLButtonElement;
+  restoreButton.type = "button";
+  const restoreInput = createElement("input", "visually-hidden") as HTMLInputElement;
+  restoreInput.type = "file";
+  restoreInput.accept = "application/json,.json";
+  restoreInput.setAttribute("aria-label", "Choose a Shelf Reader backup");
+  actions.append(importButton, referenceButton, exportButton, restoreButton, restoreInput);
   header.append(brand, actions);
 
   const status = createElement("p", "shelf-status", "Your library is stored on this device.");
@@ -279,6 +287,59 @@ export function mountShelf(root: HTMLElement): void {
   });
   referenceButton.addEventListener("click", () => {
     void importPickedFile("external-reference");
+  });
+  exportButton.addEventListener("click", () => {
+    void (async () => {
+      if (activeWorkspace !== null) await activeWorkspace.persist();
+      const exported = await store.exportReaderData();
+      if (!exported.ok) {
+        setStatus(exported.error.message, true);
+        return;
+      }
+      const blob = new Blob([JSON.stringify(exported.value, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const download = createElement("a", "visually-hidden") as HTMLAnchorElement;
+      download.href = url;
+      download.download = "shelf-reader-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+      root.append(download);
+      download.click();
+      download.remove();
+      URL.revokeObjectURL(url);
+      setStatus("Reader data exported. PDF bytes, original file handles, and access locators are not included.");
+    })();
+  });
+  restoreButton.addEventListener("click", () => restoreInput.click());
+  restoreInput.addEventListener("change", () => {
+    void (async () => {
+      const file = restoreInput.files?.[0];
+      restoreInput.value = "";
+      if (file === undefined) return;
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(await file.text()) as unknown;
+      } catch {
+        setStatus("The selected backup is not valid JSON.", true);
+        return;
+      }
+      if (!window.confirm(
+        "Restore this Shelf backup? It replaces the current Reader library and saved Reader data. PDF bytes and file permissions are not restored.",
+      )) return;
+      await closeActiveDocument();
+      const restored = await store.restoreReaderData(parsed);
+      if (!restored.ok) {
+        setStatus(restored.error.message, true);
+        return;
+      }
+      await refreshLibrary();
+      setStatus(
+        "Backup restored: " + String(restored.value.documents) + " documents, " +
+        String(restored.value.bookmarks.length) + " bookmarks, " +
+        String(restored.value.annotations) + " annotations, and " +
+        String(restored.value.quotes) + " quotes. Re-link local PDFs whose source is unavailable.",
+      );
+    })();
   });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "hidden" || activeWorkspace === null) return;
