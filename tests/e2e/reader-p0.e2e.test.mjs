@@ -317,24 +317,28 @@ test("Chromium Reader selection remains column-bounded and highlight/note action
         "Boolean(window.__shelfE2E && document.querySelector('.shelf-pdf-text-layer > span'))",
       ), "Reader page rendering");
     } catch (cause) {
-      const pageState = await cdp.evaluate(`JSON.stringify({
-        href: location.href,
-        readyState: document.readyState,
-        title: document.title,
-        bodyText: document.body.innerText,
-        harnessLoaded: Boolean(window.__shelfE2E),
-        readerChildren: document.querySelector("#reader")?.innerHTML.slice(0, 3000) ?? null,
-        resources: performance.getEntriesByType("resource").map((entry) => entry.name).slice(-40),
-      })`);
-      const browserEvents = cdp.events().filter((event) =>
-        event.method === "Runtime.exceptionThrown" ||
-        event.method === "Runtime.consoleAPICalled" ||
-        event.method === "Log.entryAdded" ||
-        event.method === "Network.loadingFailed" ||
-        event.method === "Network.requestWillBeSent" ||
-        event.method === "Network.responseReceived",
-      ).slice(-60);
+      const pageState = await cdp.evaluate("document.body.innerText + ' | reader=' + document.querySelector('#reader')?.innerHTML.slice(0, 1200)");
+      const browserEvents = cdp.events().map((event) => {
+        const params = event.params ?? {};
+        if (event.method === "Network.responseReceived") {
+          return { method: event.method, url: params.response?.url, status: params.response?.status, type: params.type };
+        }
+        if (event.method === "Network.requestWillBeSent") {
+          return { method: event.method, url: params.request?.url, type: params.type };
+        }
+        if (event.method === "Runtime.exceptionThrown") {
+          return { method: event.method, description: params.exceptionDetails?.exception?.description ?? params.exceptionDetails?.text };
+        }
+        if (event.method === "Log.entryAdded") {
+          return { method: event.method, level: params.entry?.level, text: params.entry?.text, url: params.entry?.url };
+        }
+        if (event.method === "Network.loadingFailed") {
+          return { method: event.method, url: params.requestId, errorText: params.errorText };
+        }
+        return null;
+      }).filter((event) => event !== null).slice(-60);
       throw new Error(String(cause) + " Browser diagnostics: " + JSON.stringify({ pageState, browserEvents }));
+
     }
 
     const selected = await cdp.evaluate(`(() => {
