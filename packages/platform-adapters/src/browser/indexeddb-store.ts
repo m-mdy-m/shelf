@@ -188,19 +188,19 @@ implements
           annotations?: Annotation[];
           quotes?: Quote[];
         } = {};
-        const requests = [
-          transaction.objectStore("documents").getAll(),
-          transaction.objectStore("readingProgress").getAll(),
-          transaction.objectStore("bookmarks").getAll(),
-          transaction.objectStore("annotations").getAll(),
-          transaction.objectStore("quotes").getAll(),
-        ];
-        requests[0].onsuccess = () => { values.documents = requests[0].result as Document[]; };
-        requests[1].onsuccess = () => { values.readingProgress = requests[1].result as ReadingProgress[]; };
-        requests[2].onsuccess = () => { values.bookmarks = requests[2].result as Bookmark[]; };
-        requests[3].onsuccess = () => { values.annotations = requests[3].result as Annotation[]; };
-        requests[4].onsuccess = () => { values.quotes = requests[4].result as Quote[]; };
-        for (const request of requests) request.onerror = () => transaction.abort();
+        const documentsRequest = transaction.objectStore("documents").getAll();
+        const progressRequest = transaction.objectStore("readingProgress").getAll();
+        const bookmarksRequest = transaction.objectStore("bookmarks").getAll();
+        const annotationsRequest = transaction.objectStore("annotations").getAll();
+        const quotesRequest = transaction.objectStore("quotes").getAll();
+        documentsRequest.onsuccess = () => { values.documents = documentsRequest.result as Document[]; };
+        progressRequest.onsuccess = () => { values.readingProgress = progressRequest.result as ReadingProgress[]; };
+        bookmarksRequest.onsuccess = () => { values.bookmarks = bookmarksRequest.result as Bookmark[]; };
+        annotationsRequest.onsuccess = () => { values.annotations = annotationsRequest.result as Annotation[]; };
+        quotesRequest.onsuccess = () => { values.quotes = quotesRequest.result as Quote[]; };
+        for (const request of [
+          documentsRequest, progressRequest, bookmarksRequest, annotationsRequest, quotesRequest,
+        ]) request.onerror = () => transaction.abort();
         transaction.oncomplete = () => resolve({
           documents: values.documents ?? [],
           readingProgress: values.readingProgress ?? [],
