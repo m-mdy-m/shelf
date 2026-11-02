@@ -12,6 +12,8 @@ import type {
   Quote,
   Result,
 } from "@shelf/reader-core";
+import type { ReaderDataBundle, ReaderDataSnapshot } from "./reader-data-bundle.js";
+import { createReaderDataBundle, parseReaderDataBundle } from "./reader-data-bundle.js";
 import type {
   BrowserDocumentStoragePort,
   BrowserFileHandleLike,
@@ -30,6 +32,16 @@ interface StoredCopy extends BrowserStoredCopy {
 interface StoredReference {
   readonly key: string;
   readonly handle: BrowserFileHandleLike;
+}
+
+const DATABASE_VERSION = 4;
+
+export interface ReaderDataRestoreSummary {
+  readonly documents: number;
+  readonly readingProgress: number;
+  readonly bookmarks: number;
+  readonly annotations: number;
+  readonly quotes: number;
 }
 
 type StoreName =
@@ -81,7 +93,7 @@ implements
       throw new Error("IndexedDB is not available in this browser.");
     }
     this.#databasePromise ??= new Promise<IDBDatabase>((resolve, reject) => {
-      const request = factory.open(this.#databaseName, 3);
+      const request = factory.open(this.#databaseName, DATABASE_VERSION);
       let settled = false;
       const fail = (error: unknown): void => {
         if (settled) return;
@@ -116,6 +128,13 @@ implements
             !store.indexNames.contains("documentId")
           ) {
             store.createIndex("documentId", "documentId", { unique: false });
+          }
+          if (
+            (name === "documents" || name === "readingProgress") &&
+            store !== undefined &&
+            !store.indexNames.contains("updatedAt")
+          ) {
+            store.createIndex("updatedAt", "updatedAt", { unique: false });
           }
         }
       };
@@ -153,6 +172,114 @@ implements
       transaction.onerror = () => reject(transaction.error ?? new Error("IndexedDB transaction failed."));
       transaction.onabort = () => reject(transaction.error ?? new Error("IndexedDB transaction was aborted."));
     });
+  }
+
+  /** Export only portable Reader records. Locators, PDF bytes, file handles, and secrets are excluded. */
+  async exportReaderData(): Promise<Result<ReaderDataBundle, ReaderError>> {
+    try {
+      const database = await this.#database();
+      const snapshot = await new Promise<ReaderDataSnapshot>((resolve, reject) => {
+        const names = ["documents", "readingProgress", "bookmarks", "annotations", "quotes"] as const;
+        const transaction = database.transaction(names, "readonly");
+        const values: {
+          documents?: Document[];
+          readingProgress?: ReadingProgress[];
+          bookmarks?: Bookmark[];
+          annotations?: Annotation[];
+          quotes?: Quote[];
+        } = {};
+        const documentsRequest = transaction.objectStore("documents").getAll();
+        const progressRequest = transaction.objectStore("readingProgress").getAll();
+        const bookmarksRequest = transaction.objectStore("bookmarks").getAll();
+        const annotationsRequest = transaction.objectStore("annotations").getAll();
+        const quotesRequest = transaction.objectStore("quotes").getAll();
+        documentsRequest.onsuccess = () => { values.documents = documentsRequest.result as Document[]; };
+        progressRequest.onsuccess = () => { values.readingProgress = progressRequest.result as ReadingProgress[]; };
+        bookmarksRequest.onsuccess = () => { values.bookmarks = bookmarksRequest.result as Bookmark[]; };
+        annotationsRequest.onsuccess = () => { values.annotations = annotationsRequest.result as Annotation[]; };
+        quotesRequest.onsuccess = () => { values.quotes = quotesRequest.result as Quote[]; };
+        for (const request of [
+          documentsRequest, progressRequest, bookmarksRequest, annotationsRequest, quotesRequest,
+        ]) request.onerror = () => transaction.abort();
+        transaction.oncomplete = () => resolve({
+          documents: values.documents ?? [],
+          readingProgress: values.readingProgress ?? [],
+          bookmarks: values.bookmarks ?? [],
+          annotations: values.annotations ?? [],
+          quotes: values.quotes ?? [],
+        });
+        transaction.onerror = () => reject(transaction.error ?? new Error("Shelf could not read the Reader backup."));
+        transaction.onabort = () => reject(transaction.error ?? new Error("Shelf Reader backup was aborted."));
+      });
+      return createReaderDataBundle(snapshot, DATABASE_VERSION);
+    } catch {
+      return { ok: false, error: storageError("read-failed", "Shelf could not export the local Reader data.") };
+    }
+  }
+
+  /**
+   * Atomically replace portable Reader data. Existing local file locators and
+   * source bytes are retained only for document IDs that remain in the bundle.
+   */
+  async restoreReaderData(input: unknown): Promise<Result<ReaderDataRestoreSummary, ReaderError>> {
+    const parsed = parseReaderDataBundle(input);
+    if (!parsed.ok) return parsed;
+
+    try {
+      const database = await this.#database();
+      const bundle = parsed.value;
+      await new Promise<void>((resolve, reject) => {
+        const documentIds = new Set(bundle.documents.map((document) => String(document.id)));
+        const names: StoreName[] = [
+          "documents", "locators", "copies", "references", "readingProgress",
+          "bookmarks", "annotations", "quotes",
+        ];
+        const transaction = database.transaction(names, "readwrite");
+        for (const name of ["documents", "readingProgress", "bookmarks", "annotations", "quotes"] as const) {
+          transaction.objectStore(name).clear();
+        }
+        for (const document of bundle.documents) transaction.objectStore("documents").put(document);
+        for (const progress of bundle.readingProgress) transaction.objectStore("readingProgress").put(progress);
+        for (const bookmark of bundle.bookmarks) transaction.objectStore("bookmarks").put(bookmark);
+        for (const annotation of bundle.annotations) transaction.objectStore("annotations").put(annotation);
+        for (const quote of bundle.quotes) transaction.objectStore("quotes").put(quote);
+
+        // Keep same-device source access for restored documents; purge source data
+        // only when its owning document was removed by the replacement bundle.
+        const locatorStore = transaction.objectStore("locators");
+        const cursorRequest = locatorStore.openCursor();
+        cursorRequest.onsuccess = () => {
+          const cursor = cursorRequest.result;
+          if (cursor === null) return;
+          const stored = cursor.value as StoredLocator;
+          if (!documentIds.has(String(cursor.key))) {
+            cursor.delete();
+            if (stored.locator.providerId === "shelf-browser-copy") {
+              transaction.objectStore("copies").delete(stored.locator.value);
+            } else if (stored.locator.providerId === "shelf-browser-reference") {
+              transaction.objectStore("references").delete(stored.locator.value);
+            }
+          }
+          cursor.continue();
+        };
+        cursorRequest.onerror = () => transaction.abort();
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error ?? new Error("Shelf could not restore the Reader backup."));
+        transaction.onabort = () => reject(transaction.error ?? new Error("Shelf Reader restore was aborted."));
+      });
+      return {
+        ok: true,
+        value: {
+          documents: bundle.documents.length,
+          readingProgress: bundle.readingProgress.length,
+          bookmarks: bundle.bookmarks.length,
+          annotations: bundle.annotations.length,
+          quotes: bundle.quotes.length,
+        },
+      };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not restore the backup. No partial restore was committed.") };
+    }
   }
 
   async getById(id: DocumentId): Promise<Result<Document | null, ReaderError>> {

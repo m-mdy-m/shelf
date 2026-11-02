@@ -182,7 +182,7 @@ test("Reader annotation use cases are composed outside the Web feature", async (
   assert.equal(feature.includes("ReaderAnnotationUseCases"), true);
   assert.equal(feature.includes("IndexedDbShelfStore"), false);
   assert.equal(feature.includes("PdfPageRenderer"), false);
-  assert.equal(store.includes("factory.open(this.#databaseName, 3)"), true);
+  assert.equal(store.includes("factory.open(this.#databaseName, DATABASE_VERSION)"), true);
   assert.equal(store.includes('"bookmarks"'), true);
   assert.equal(store.includes('"annotations"'), true);
   assert.equal(store.includes('"quotes"'), true);
@@ -190,6 +190,13 @@ test("Reader annotation use cases are composed outside the Web feature", async (
   assert.equal(store.includes("async listBookmarks"), true);
   assert.equal(store.includes("async listAnnotations"), true);
   assert.equal(store.includes("async listQuotes"), true);
+  assert.equal(store.includes("const DATABASE_VERSION = 4;"), true);
+  assert.equal(store.includes("async exportReaderData"), true);
+  assert.equal(store.includes("async restoreReaderData"), true);
+  assert.equal(store.includes('database.transaction(names, "readwrite")'), true);
+  assert.equal(store.includes('store.createIndex("updatedAt", "updatedAt"'), true);
+  assert.equal(store.includes("copies").valueOf(), true);
+  assert.equal(store.includes("references").valueOf(), true);
   assert.equal(store.includes("BookmarkRepositoryPort"), false);
   assert.equal(repositories.includes("createIndexedDbReaderRepositories"), true);
   assert.equal(repositories.includes("BookmarkRepositoryPort"), true);
