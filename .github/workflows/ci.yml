@@ -31,10 +31,19 @@ jobs:
         with:
           version: 12.17.0
           runtime: node@22.16.0
+      - name: Check whether the lockfile needs bootstrapping
+        id: pnpm_lockfile
+        shell: bash
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "missing=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "missing=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install workspace dependencies and resolve the pnpm lockfile
         run: pnpm install --no-frozen-lockfile
       - name: Commit the generated lockfile for this one-time migration
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feature/pnpm-migration' && !hashFiles('pnpm-lock.yaml') }}
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feature/pnpm-migration' && steps.pnpm_lockfile.outputs.missing == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEAD_BRANCH: ${{ github.head_ref }}
