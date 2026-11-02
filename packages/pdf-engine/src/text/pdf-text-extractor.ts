@@ -22,7 +22,6 @@ type TextLine = PdfReadingLine<PositionedTextItem>;
 
 const MAX_TEXT_ITEMS_PER_PAGE = 50_000;
 const MAX_TEXT_CHARACTERS_PER_PAGE = 500_000;
-const COLUMN_GUTTER_RATIO = 0.14;
 const PUNCTUATION_PREFIX = /^[,.;:!?…،؛؟٪%)\]}»]/u;
 const PUNCTUATION_SUFFIX = /[(\[{«]$/u;
 
@@ -130,6 +129,13 @@ function positionedItemFromRecord(
     rectangle: positioned.rect,
     hasEOL: candidate["hasEOL"] === true,
   }];
+}
+
+function predominantDirection(items: readonly PositionedTextItem[]): TextDirection {
+  const rtl = items.filter((item) => item.direction === "rtl").length;
+  const vertical = items.filter((item) => item.direction === "ttb").length;
+  if (vertical > items.length / 2) return "ttb";
+  return rtl > items.length / 2 ? "rtl" : "ltr";
 }
 
 function joinLine(line: TextLine): readonly { readonly text: string; readonly item: PositionedTextItem }[] {
