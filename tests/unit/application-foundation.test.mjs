@@ -162,6 +162,7 @@ test("Reader annotation use cases are composed outside the Web feature", async (
   const workspace = await readFile(path.join(root, "apps/web/src/reader-workspace.ts"), "utf8");
   const feature = await readFile(path.join(root, "apps/web/src/features/annotations/annotation-controller.ts"), "utf8");
   const store = await readFile(path.join(root, "packages/platform-adapters/src/browser/indexeddb-store.ts"), "utf8");
+  const repositories = await readFile(path.join(root, "packages/platform-adapters/src/browser/indexeddb-reader-repositories.ts"), "utf8");
 
   assert.equal(contract.includes("ReaderAnnotationUseCases"), true);
   assert.equal(contract.includes("updateAnnotation(annotation"), true);
