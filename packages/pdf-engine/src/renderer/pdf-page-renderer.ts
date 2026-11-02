@@ -110,6 +110,14 @@ export class PdfPageRenderer {
     this.#maxCanvasPixels = maxCanvasPixels;
   }
 
+  updateAnnotations(
+    layers: PdfPageLayers,
+    pageIndex: PageIndex,
+    annotations: readonly Annotation[],
+  ): void {
+    renderShelfAnnotations(layers.annotations, pageIndex, annotations);
+  }
+
   async render(
     page: PdfPageHandle,
     layers: PdfPageLayers,
@@ -177,7 +185,7 @@ export class PdfPageRenderer {
         return failure("cancelled", "PDF text rendering was superseded.");
       }
 
-      renderShelfAnnotations(layers.annotations, page.geometry.index, annotations);
+      this.updateAnnotations(layers, page.geometry.index, annotations);
       return { ok: true, value: { width: viewport.width, height: viewport.height } };
     } catch (error) {
       if (renderStates.get(layers.root) === state) {

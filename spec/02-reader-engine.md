@@ -76,3 +76,10 @@ Persist last document, page/scroll, zoom, reading mode, and timestamps; debounce
 - Extracted pages expose an explicit truncation flag when the 50,000-item or 500,000-character per-page budget is reached; search reports truncated and failed pages so partial results are not presented as complete.
 - Search queries are limited to 256 characters; the per-page transient interaction overlay is capped at 500 markers and selection geometry at 512 rectangles.
 - The ReaderWorkspace controller and optional selection callback expose transient TextSelection metadata to future annotation/context workflows without writing an Annotation or Quote.
+
+
+## Reader annotations application boundary
+
+Bookmark, highlight, note, and quote CRUD is exposed as `ReaderAnnotationUseCases` from Reader Core. `ReaderAnnotationService` validates inputs, generates stable IDs/timestamps through ports, and only returns a saved entity after the repository confirms the write. Browser, desktop, and native shells share this service and contract while retaining platform-specific persistence.
+
+The Web annotation feature is a presentation/composition module under `apps/web/src/features/annotations`. It accepts use cases and Reader callbacks; it does not access IndexedDB, PDF.js, backend types, or the PDF renderer. The Reader orchestrator supplies current selection/page state and maps restored anchors to the existing annotation layer.

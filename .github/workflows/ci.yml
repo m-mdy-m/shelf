@@ -73,3 +73,6 @@ jobs:
           go build -trimpath -o "$RUNNER_TEMP/gix" ./cmd/gix
           cd "$GITHUB_WORKSPACE"
           "$RUNNER_TEMP/gix" config list
+      - name: Test modular Reader backend
+        working-directory: backend
+        run: go test ./...
