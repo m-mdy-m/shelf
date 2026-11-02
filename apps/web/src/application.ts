@@ -107,6 +107,7 @@ export function mountShelf(root: HTMLElement): void {
   restoreButton.type = "button";
   const restoreInput = createElement("input", "visually-hidden") as HTMLInputElement;
   restoreInput.type = "file";
+  restoreInput.hidden = true;
   restoreInput.accept = "application/json,.json";
   restoreInput.setAttribute("aria-label", "Choose a Shelf Reader backup");
   actions.append(importButton, referenceButton, exportButton, restoreButton, restoreInput);
@@ -300,7 +301,8 @@ export function mountShelf(root: HTMLElement): void {
         type: "application/json",
       });
       const url = URL.createObjectURL(blob);
-      const download = createElement("a", "visually-hidden") as HTMLAnchorElement;
+      const download = createElement("a", "") as HTMLAnchorElement;
+      download.hidden = true;
       download.href = url;
       download.download = "shelf-reader-backup-" + new Date().toISOString().slice(0, 10) + ".json";
       root.append(download);
@@ -335,7 +337,7 @@ export function mountShelf(root: HTMLElement): void {
       await refreshLibrary();
       setStatus(
         "Backup restored: " + String(restored.value.documents) + " documents, " +
-        String(restored.value.bookmarks.length) + " bookmarks, " +
+        String(restored.value.bookmarks) + " bookmarks, " +
         String(restored.value.annotations) + " annotations, and " +
         String(restored.value.quotes) + " quotes. Re-link local PDFs whose source is unavailable.",
       );
