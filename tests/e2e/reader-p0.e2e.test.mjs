@@ -28,7 +28,7 @@ const harnessHtml = `<!doctype html>
     .reader-selection-panel, .reader-saved-items { padding: 8px; }
     button { min-height: 32px; }
   </style>
-  <script type="importmap">{"imports":{"@shelf/reader-core":"/assets/packages/reader-core/index.js","@shelf/pdf-engine":"/assets/packages/pdf-engine/index.js"}}</script>
+  <script type="importmap">{"imports":{"@shelf/reader-core":"/assets/packages/reader-core/index.js","@shelf/pdf-engine":"/assets/packages/pdf-engine/index.js","pdfjs-dist":"/assets/pdfjs/build/pdf.mjs"}}</script>
 </head>
 <body>
   <main id="reader"></main>
