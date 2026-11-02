@@ -43,3 +43,10 @@ Extracted page text is derived from PDF.js text-content streams and is not a dur
 
 - **ExtractedPageText (transient):** page index, normalized text, geometry-bearing runs, selectable-text status, and a truncation flag. It is session/cache data, not a durable record or export field.
 - **TextSelection (transient anchor draft):** exact selected text, normalized fallback, page-local offsets, document fingerprint, anchor version, normalized page rectangles, and offset confidence. It can be passed to annotation workflows but becomes durable only after an explicit annotation or quote write succeeds.
+
+
+## Reader annotation persistence
+
+Browser IndexedDB schema v3 adds separate ID-keyed stores for bookmarks, annotations, and quotes, each indexed by DocumentId. The v2 document, locator, source-copy/reference, and reading-progress stores are retained during upgrade. Forgetting a document removes its document-scoped progress and saved Reader records in one transaction; source-handle/copy lifecycle remains owned by the document-source adapter.
+
+Reader application services depend only on repository, clock, and ID-generation ports. The Go backend mirrors these contracts under `backend/internal`: domain records, validated application use cases, narrow repository/runtime ports, a host-injected SQLite adapter, and an optional HTTP adapter.

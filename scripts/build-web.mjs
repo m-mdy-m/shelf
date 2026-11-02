@@ -1,5 +1,6 @@
 import { access, cp, mkdir } from "node:fs/promises";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -16,7 +17,23 @@ try {
 
 await mkdir(path.join(output, "assets"), { recursive: true });
 await cp(path.join(source, "index.html"), path.join(output, "index.html"));
-await cp(path.join(source, "src", "styles.css"), path.join(output, "styles.css"));
+const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+const tailwind = spawnSync(npm, [
+  "exec",
+  "--yes",
+  "--package=@tailwindcss/cli@4.3.3",
+  "--package=tailwindcss@4.3.3",
+  "--",
+  "tailwindcss",
+  "-i",
+  path.join(source, "src", "tailwind.css"),
+  "-o",
+  path.join(output, "styles.css"),
+], { cwd: root, stdio: "inherit" });
+if (tailwind.error) throw tailwind.error;
+if (tailwind.status !== 0) {
+  throw new Error("Tailwind CSS compilation failed with exit code " + String(tailwind.status) + ".");
+}
 await cp(path.join(source, "public"), output, { recursive: true });
 
 const pdfAssets = [
