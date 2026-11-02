@@ -2,11 +2,11 @@
 
 ## Reproduction
 
-Run the repository test suite with the pinned Node/npm versions:
+Run the repository test suite with the pinned Node.js and pnpm versions:
 
 ```sh
-npm ci
-npm test
+pnpm install --frozen-lockfile
+pnpm test
 ```
 
 The PDF corpus is generated deterministically from

@@ -20,7 +20,7 @@ timeout_seconds = 60
 
 [tasks.application-check]
 description = "Run format, lint, typecheck, unit tests, and production build"
-command = ["npm", "run", "ci"]
+command = ["pnpm", "run", "ci"]
 timeout_seconds = 300
 
 [tasks.check]

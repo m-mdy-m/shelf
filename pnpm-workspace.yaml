@@ -1,0 +1,9 @@
+packages:
+  - apps/web
+  - packages/reader-core
+  - packages/pdf-engine
+  - packages/library
+  - packages/platform-adapters
+
+allowBuilds:
+  '@parcel/watcher': true

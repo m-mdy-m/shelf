@@ -71,9 +71,9 @@ ReaderUseCases defines the application-facing operations for import/list/get/ope
 
 ## Build and verification
 
-    npm run typecheck
-    npm run build
-    npm test
+    pnpm run typecheck
+    pnpm run build
+    pnpm test
 
 The TypeScript type tests assert ID separation, locator separation, PageIndex branding, discriminated annotation drafts, and structural compatibility of fake source/permission/locator-store ports. Runtime tests validate page-index parsing, bounded byte ranges, and opaque-ID parsing.
 

@@ -31,7 +31,7 @@ REQUIRED_FILES = (
     "apps/web/src/application.ts", "apps/web/src/styles.css",
     "apps/web/public/favicon.svg", "apps/web/public/site.webmanifest",
     "apps/web/public/robots.txt", "apps/web/public/brand/shelf-mark.svg",
-    "apps/web/public/icons/shelf.svg", ".nvmrc", "package.json", "package-lock.json",
+    "apps/web/public/icons/shelf.svg", ".nvmrc", "package.json", "pnpm-workspace.yaml", "pnpm-lock.yaml",
     "tsconfig.base.json", "packages/reader-core/README.md",
     "packages/reader-core/package.json", "packages/reader-core/tsconfig.json",
     "packages/reader-core/tsconfig.build.json", "packages/reader-core/src/index.ts",
@@ -150,15 +150,30 @@ def check_application_workspace() -> None:
     pdf_manifest = load_json("packages/pdf-engine/package.json")
     library_manifest = load_json("packages/library/package.json")
     platform_manifest = load_json("packages/platform-adapters/package.json")
-    lock = load_json("package-lock.json")
     compiler_config = load_json("tsconfig.base.json")
 
     expected_workspaces = [
         "apps/web", "packages/reader-core", "packages/pdf-engine",
         "packages/library", "packages/platform-adapters",
     ]
-    if manifest.get("workspaces") != expected_workspaces:
-        fail(f"root npm workspace must explicitly include {expected_workspaces}")
+    workspace_text = (ROOT / "pnpm-workspace.yaml").read_text(encoding="utf-8")
+    workspace_packages = re.findall(r"(?m)^\s+-\s+([^\s#]+)\s*$", workspace_text)
+    if workspace_packages != expected_workspaces:
+        fail(f"pnpm workspace must explicitly include {expected_workspaces}")
+    if manifest.get("workspaces") is not None:
+        fail("workspace membership must be declared only in pnpm-workspace.yaml")
+    if manifest.get("packageManager") != "pnpm@12.17.0":
+        fail("packageManager must pin pnpm@12.17.0")
+    if manifest.get("engines", {}).get("pnpm") != ">=12.17.0 <13":
+        fail("pnpm engine range must match the pinned pnpm 12 release")
+    if manifest.get("devDependencies", {}).get("typescript") != "5.8.3":
+        fail("TypeScript must remain pinned to the reviewed 5.8.3 version")
+    if manifest.get("devDependencies", {}).get("pdfjs-dist") != "6.4.299":
+        fail("PDF.js must be a direct root development dependency for the fixture tests")
+    for dependency in ("tailwindcss", "@tailwindcss/cli"):
+        if manifest.get("devDependencies", {}).get(dependency) != "4.3.3":
+            fail(f"{dependency} must be pinned to 4.3.3 at the workspace root")
+
     if web_manifest.get("name") != "@shelf/web" or web_manifest.get("private") is not True:
         fail("web application must be a private @shelf/web workspace")
     if reader_manifest.get("name") != "@shelf/reader-core" or reader_manifest.get("private") is not True:
@@ -169,54 +184,38 @@ def check_application_workspace() -> None:
         fail("PDF engine must be a private @shelf/pdf-engine workspace")
     if pdf_manifest.get("types") != "./dist/index.d.ts":
         fail("PDF engine must publish its generated TypeScript declaration entry")
-    if pdf_manifest.get("dependencies", {}).get("@shelf/reader-core") != "0.1.0":
-        fail("PDF engine must depend on Reader Core contracts")
+    if pdf_manifest.get("dependencies", {}).get("@shelf/reader-core") != "workspace:0.1.0":
+        fail("PDF engine must use the explicit Reader Core workspace dependency")
     if pdf_manifest.get("dependencies", {}).get("pdfjs-dist") != "6.4.299":
         fail("PDF.js must remain pinned to 6.4.299")
     if library_manifest.get("name") != "@shelf/library" or library_manifest.get("private") is not True:
         fail("Library must be a private @shelf/library workspace")
     if library_manifest.get("types") != "./dist/index.d.ts":
         fail("Library must publish its generated TypeScript declaration entry")
-    if library_manifest.get("dependencies", {}).get("@shelf/reader-core") != "0.1.0":
-        fail("Library must depend on Reader Core contracts")
+    if library_manifest.get("dependencies", {}).get("@shelf/reader-core") != "workspace:0.1.0":
+        fail("Library must use the explicit Reader Core workspace dependency")
     if platform_manifest.get("name") != "@shelf/platform-adapters" or platform_manifest.get("private") is not True:
         fail("Platform adapters must be a private @shelf/platform-adapters workspace")
     if platform_manifest.get("types") != "./dist/index.d.ts":
         fail("Platform adapters must publish their generated TypeScript declaration entry")
-    if platform_manifest.get("dependencies", {}).get("@shelf/reader-core") != "0.1.0":
-        fail("Platform adapters must depend on Reader Core contracts")
+    if platform_manifest.get("dependencies", {}).get("@shelf/reader-core") != "workspace:0.1.0":
+        fail("Platform adapters must use the explicit Reader Core workspace dependency")
+
     web_dependencies = web_manifest.get("dependencies", {})
     for dependency in ("@shelf/reader-core", "@shelf/pdf-engine", "@shelf/library", "@shelf/platform-adapters"):
-        if web_dependencies.get(dependency) != "0.1.0":
+        if web_dependencies.get(dependency) != "workspace:0.1.0":
             fail(f"web application is missing local workspace dependency {dependency!r}")
-    if manifest.get("devDependencies", {}).get("typescript") != "5.8.3":
-        fail("TypeScript must be pinned to the reviewed 5.8.3 version")
-    if lock.get("lockfileVersion") != 3:
-        fail("package-lock.json must use npm lockfile version 3")
 
-    lock_packages = lock.get("packages", {})
-    locked_typescript = lock_packages.get("node_modules/typescript", {})
-    if locked_typescript.get("version") != manifest["devDependencies"]["typescript"]:
-        fail("package-lock.json TypeScript version does not match package.json")
-    if lock_packages.get("packages/reader-core", {}).get("name") != "@shelf/reader-core":
-        fail("package-lock.json is missing the Reader core workspace entry")
-    if lock_packages.get("node_modules/@shelf/reader-core", {}).get("resolved") != "packages/reader-core":
-        fail("package-lock.json is missing the Reader core workspace link")
-    if lock_packages.get("packages/pdf-engine", {}).get("name") != "@shelf/pdf-engine":
-        fail("package-lock.json is missing the PDF engine workspace entry")
-    if lock_packages.get("node_modules/@shelf/pdf-engine", {}).get("resolved") != "packages/pdf-engine":
-        fail("package-lock.json is missing the PDF engine workspace link")
-    for package_path, package_name in (
-        ("packages/library", "@shelf/library"),
-        ("packages/platform-adapters", "@shelf/platform-adapters"),
-    ):
-        if lock_packages.get(package_path, {}).get("name") != package_name:
-            fail(f"package-lock.json is missing the {package_name} workspace entry")
-        if lock_packages.get("node_modules/" + package_name, {}).get("resolved") != package_path:
-            fail(f"package-lock.json is missing the {package_name} workspace link")
-    pdfjs = lock_packages.get("node_modules/pdfjs-dist", {})
-    if pdfjs.get("version") != "6.4.299" or not pdfjs.get("integrity"):
-        fail("package-lock.json must lock the reviewed PDF.js release and integrity")
+    lock_text = (ROOT / "pnpm-lock.yaml").read_text(encoding="utf-8")
+    if re.search(r"""(?m)^lockfileVersion:\s*['"]?9\.0""", lock_text) is None:
+        fail("pnpm-lock.yaml must use lockfile format 9.0")
+    for importer in (".", "apps/web", "packages/reader-core", "packages/pdf-engine", "packages/library", "packages/platform-adapters"):
+        if re.search(r"(?m)^  " + re.escape(importer) + r":", lock_text) is None:
+            fail(f"pnpm-lock.yaml is missing workspace importer {importer!r}")
+    for dependency in ("typescript@5.8.3", "pdfjs-dist@6.4.299", "tailwindcss@4.3.3", "@tailwindcss/cli@4.3.3"):
+        if dependency not in lock_text:
+            fail(f"pnpm-lock.yaml is missing the pinned dependency {dependency!r}")
+
     if compiler_config.get("compilerOptions", {}).get("strict") is not True:
         fail("TypeScript strict mode must remain enabled")
 
@@ -227,7 +226,6 @@ def check_application_workspace() -> None:
     minimum = re.search(r">=(\d+\.\d+\.\d+)", engine_range)
     if minimum is None or minimum.group(1) != node_version:
         fail(".nvmrc must match the exact Node.js minimum in package.json engines")
-
 
 def check_github_manifests() -> None:
     labels = load_json(".github/labels.json")
