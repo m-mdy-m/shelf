@@ -8,3 +8,5 @@ export type {
   BrowserPermissionState,
   BrowserStoredCopy,
 } from "./browser/storage-port.js";
+export { createIndexedDbReaderRepositories } from "./browser/indexeddb-reader-repositories.js";
+export type { IndexedDbReaderRepositories } from "./browser/indexeddb-reader-repositories.js";
