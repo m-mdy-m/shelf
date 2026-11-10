@@ -116,6 +116,8 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   let selectionTimer: number | null = null;
   let selectionGeneration = 0;
   let disposed = false;
+  let readyAnnounced = false;
+  let currentPageError = false;
   let renderFrame: number | null = null;
   let saveTimer: number | null = null;
   let currentPage = 0;
@@ -330,8 +332,11 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     });
     error.append(description, retry);
     page.root.append(error);
-    if (index === currentPage) setReaderBusy(false);
-    onStatus(message, true);
+    if (index === currentPage) {
+      currentPageError = true;
+      setReaderBusy(false);
+      onStatus(message, true);
+    }
   }
 
   function schedulePageRender(index: number, page: MountedPage): void {
@@ -820,7 +825,14 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
         }
         if (index === currentPage && renderScale === zoom) {
           setReaderBusy(false);
-          onStatus("Ready · " + session.info.pageCount + " pages.", false);
+          if (!readyAnnounced) {
+            readyAnnounced = true;
+            currentPageError = false;
+            onStatus("Ready · " + session.info.pageCount + " pages.", false);
+          } else if (currentPageError) {
+            currentPageError = false;
+            onStatus("Page " + String(index + 1) + " loaded.", false);
+          }
         }
         if (renderScale !== zoom) scheduleRender();
       } else if (result.error.code !== "cancelled") {
