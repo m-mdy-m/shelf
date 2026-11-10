@@ -19,6 +19,7 @@ function safeLink(raw: string): string | null {
   if (!/^https?:\/\//iu.test(raw)) return null;
   try {
     const url = new URL(raw);
+    if (url.username !== "" || url.password !== "") return null;
     return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
   } catch {
     return null;

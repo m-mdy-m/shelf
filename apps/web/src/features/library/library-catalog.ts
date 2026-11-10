@@ -592,6 +592,7 @@ export function mountLibraryCatalog(
         }
         const index = items.findIndex((value) => value.document.id === item.document.id);
         if (index >= 0) items[index] = { ...items[index]!, entry: next };
+        updateTagOptions();
         render();
         onStatus("Saved metadata for “" + (next.titleOverride ?? item.document.metadata.title) + "”.");
       })();
