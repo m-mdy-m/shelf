@@ -2,6 +2,7 @@ import type { Annotation, PageIndex, ReaderError, Result } from "@shelf/reader-c
 import type { PdfJsPageProxy, PdfJsRuntime, PdfJsTextLayer } from "../adapter/pdfjs-runtime.js";
 import type { PdfPageHandle } from "../adapter/pdf-document-adapter.js";
 import { getPdfJsPageProxy } from "../adapter/pdf-document-adapter.js";
+import { reorderPdfTextLayer } from "./pdf-text-layer-order.js";
 
 export interface PdfPageLayers {
   readonly root: HTMLElement;
@@ -98,6 +99,7 @@ function renderShelfAnnotations(
   }
 }
 
+
 export class PdfPageRenderer {
   readonly #runtime: PdfJsRuntime;
   readonly #maxCanvasPixels: number;
@@ -185,6 +187,7 @@ export class PdfPageRenderer {
         return failure("cancelled", "PDF text rendering was superseded.");
       }
 
+      reorderPdfTextLayer(layers.text, viewport.width);
       this.updateAnnotations(layers, page.geometry.index, annotations);
       return { ok: true, value: { width: viewport.width, height: viewport.height } };
     } catch (error) {

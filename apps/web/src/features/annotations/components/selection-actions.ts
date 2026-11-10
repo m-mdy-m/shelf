@@ -29,6 +29,10 @@ export function createSelectionActions(
       "focus-visible:outline-offset-2 focus-visible:outline-emerald-700",
       "disabled:cursor-not-allowed disabled:opacity-45",
     ].join(" ");
+    // Preserve the browser Selection when mouse users activate an action.
+    // Without this, focus changes can collapse the text range before the
+    // asynchronous save handler reads the cached selection.
+    element.addEventListener("mousedown", (event) => event.preventDefault());
     element.addEventListener("click", action);
     root.append(element);
     return element;

@@ -5,6 +5,10 @@ export type {
   DocumentSourcePort,
 } from "./document-source.js";
 export type {
+  LibraryEntryRepositoryPort,
+  SavedLibraryViewRepositoryPort,
+} from "./library.js";
+export type {
   AnnotationRepositoryPort,
   BookmarkRepositoryPort,
   DocumentRepositoryPort,

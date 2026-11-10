@@ -6,6 +6,10 @@ import type {
   DocumentLocator,
   DocumentLocatorStorePort,
   DocumentRepositoryPort,
+  LibraryEntry,
+  LibraryEntryRepositoryPort,
+  SavedLibraryView,
+  SavedLibraryViewRepositoryPort,
   ReadingProgress,
   ReadingProgressRepositoryPort,
   ReaderError,
@@ -34,7 +38,7 @@ interface StoredReference {
   readonly handle: BrowserFileHandleLike;
 }
 
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 5;
 
 export interface ReaderDataRestoreSummary {
   readonly documents: number;
@@ -42,6 +46,8 @@ export interface ReaderDataRestoreSummary {
   readonly bookmarks: number;
   readonly annotations: number;
   readonly quotes: number;
+  readonly libraryEntries: number;
+  readonly savedLibraryViews: number;
 }
 
 type StoreName =
@@ -52,7 +58,9 @@ type StoreName =
   | "readingProgress"
   | "bookmarks"
   | "annotations"
-  | "quotes";
+  | "quotes"
+  | "libraryEntries"
+  | "libraryViews";
 
 function storageError(
   code: ReaderError["code"],
@@ -74,7 +82,9 @@ implements
   DocumentRepositoryPort,
   ReadingProgressRepositoryPort,
   DocumentLocatorStorePort,
-  BrowserDocumentStoragePort {
+  BrowserDocumentStoragePort,
+  LibraryEntryRepositoryPort,
+  SavedLibraryViewRepositoryPort {
   readonly #factory: IDBFactory | null;
   readonly #databaseName: string;
   #databasePromise: Promise<IDBDatabase> | null = null;
@@ -112,15 +122,19 @@ implements
           "bookmarks",
           "annotations",
           "quotes",
+          "libraryEntries",
+          "libraryViews",
         ] as const;
         for (const name of names) {
           const store = database.objectStoreNames.contains(name)
             ? transaction?.objectStore(name)
             : database.createObjectStore(name, {
               keyPath: name === "documents" || name === "bookmarks" ||
-                name === "annotations" || name === "quotes"
+                name === "annotations" || name === "quotes" || name === "libraryViews"
                 ? "id"
-                : name === "locators" || name === "readingProgress" ? "documentId" : "key",
+                : name === "locators" || name === "readingProgress" || name === "libraryEntries"
+                  ? "documentId"
+                  : "key",
             });
           if (
             (name === "bookmarks" || name === "annotations" || name === "quotes") &&
@@ -130,11 +144,19 @@ implements
             store.createIndex("documentId", "documentId", { unique: false });
           }
           if (
-            (name === "documents" || name === "readingProgress") &&
+            (name === "documents" || name === "readingProgress" ||
+              name === "libraryEntries" || name === "libraryViews") &&
             store !== undefined &&
             !store.indexNames.contains("updatedAt")
           ) {
             store.createIndex("updatedAt", "updatedAt", { unique: false });
+          }
+          if (
+            name === "libraryEntries" &&
+            store !== undefined &&
+            !store.indexNames.contains("readingStatus")
+          ) {
+            store.createIndex("readingStatus", "readingStatus", { unique: false });
           }
         }
       };
@@ -179,7 +201,10 @@ implements
     try {
       const database = await this.#database();
       const snapshot = await new Promise<ReaderDataSnapshot>((resolve, reject) => {
-        const names = ["documents", "readingProgress", "bookmarks", "annotations", "quotes"] as const;
+        const names = [
+          "documents", "readingProgress", "bookmarks", "annotations", "quotes",
+          "libraryEntries", "libraryViews",
+        ] as const;
         const transaction = database.transaction(names, "readonly");
         const values: {
           documents?: Document[];
@@ -187,19 +212,26 @@ implements
           bookmarks?: Bookmark[];
           annotations?: Annotation[];
           quotes?: Quote[];
+          libraryEntries?: LibraryEntry[];
+          savedLibraryViews?: SavedLibraryView[];
         } = {};
         const documentsRequest = transaction.objectStore("documents").getAll();
         const progressRequest = transaction.objectStore("readingProgress").getAll();
         const bookmarksRequest = transaction.objectStore("bookmarks").getAll();
         const annotationsRequest = transaction.objectStore("annotations").getAll();
         const quotesRequest = transaction.objectStore("quotes").getAll();
+        const libraryEntriesRequest = transaction.objectStore("libraryEntries").getAll();
+        const savedLibraryViewsRequest = transaction.objectStore("libraryViews").getAll();
         documentsRequest.onsuccess = () => { values.documents = documentsRequest.result as Document[]; };
         progressRequest.onsuccess = () => { values.readingProgress = progressRequest.result as ReadingProgress[]; };
         bookmarksRequest.onsuccess = () => { values.bookmarks = bookmarksRequest.result as Bookmark[]; };
         annotationsRequest.onsuccess = () => { values.annotations = annotationsRequest.result as Annotation[]; };
         quotesRequest.onsuccess = () => { values.quotes = quotesRequest.result as Quote[]; };
+        libraryEntriesRequest.onsuccess = () => { values.libraryEntries = libraryEntriesRequest.result as LibraryEntry[]; };
+        savedLibraryViewsRequest.onsuccess = () => { values.savedLibraryViews = savedLibraryViewsRequest.result as SavedLibraryView[]; };
         for (const request of [
           documentsRequest, progressRequest, bookmarksRequest, annotationsRequest, quotesRequest,
+          libraryEntriesRequest, savedLibraryViewsRequest,
         ]) request.onerror = () => transaction.abort();
         transaction.oncomplete = () => resolve({
           documents: values.documents ?? [],
@@ -207,6 +239,8 @@ implements
           bookmarks: values.bookmarks ?? [],
           annotations: values.annotations ?? [],
           quotes: values.quotes ?? [],
+          libraryEntries: values.libraryEntries ?? [],
+          savedLibraryViews: values.savedLibraryViews ?? [],
         });
         transaction.onerror = () => reject(transaction.error ?? new Error("Shelf could not read the Reader backup."));
         transaction.onabort = () => reject(transaction.error ?? new Error("Shelf Reader backup was aborted."));
@@ -232,10 +266,12 @@ implements
         const documentIds = new Set(bundle.documents.map((document) => String(document.id)));
         const names: StoreName[] = [
           "documents", "locators", "copies", "references", "readingProgress",
-          "bookmarks", "annotations", "quotes",
+          "bookmarks", "annotations", "quotes", "libraryEntries", "libraryViews",
         ];
         const transaction = database.transaction(names, "readwrite");
-        for (const name of ["documents", "readingProgress", "bookmarks", "annotations", "quotes"] as const) {
+        for (const name of [
+          "documents", "readingProgress", "bookmarks", "annotations", "quotes", "libraryEntries", "libraryViews",
+        ] as const) {
           transaction.objectStore(name).clear();
         }
         for (const document of bundle.documents) transaction.objectStore("documents").put(document);
@@ -243,6 +279,8 @@ implements
         for (const bookmark of bundle.bookmarks) transaction.objectStore("bookmarks").put(bookmark);
         for (const annotation of bundle.annotations) transaction.objectStore("annotations").put(annotation);
         for (const quote of bundle.quotes) transaction.objectStore("quotes").put(quote);
+        for (const entry of bundle.libraryEntries) transaction.objectStore("libraryEntries").put(entry);
+        for (const view of bundle.savedLibraryViews) transaction.objectStore("libraryViews").put(view);
 
         // Keep same-device source access for restored documents; purge source data
         // only when its owning document was removed by the replacement bundle.
@@ -275,6 +313,8 @@ implements
           bookmarks: bundle.bookmarks.length,
           annotations: bundle.annotations.length,
           quotes: bundle.quotes.length,
+          libraryEntries: bundle.libraryEntries.length,
+          savedLibraryViews: bundle.savedLibraryViews.length,
         },
       };
     } catch {
@@ -320,6 +360,86 @@ implements
     }
   }
 
+  async listReadingProgress(): Promise<Result<readonly ReadingProgress[], ReaderError>> {
+    try {
+      const value = await this.#run<ReadingProgress[]>(
+        "readingProgress", "readonly", (store) => store.getAll(),
+      );
+      return { ok: true, value };
+    } catch {
+      return { ok: false, error: storageError("read-failed", "Shelf could not read saved reading progress.") };
+    }
+  }
+
+  async getLibraryEntry(id: DocumentId): Promise<Result<LibraryEntry | null, ReaderError>> {
+    try {
+      const value = await this.#run<LibraryEntry | undefined>(
+        "libraryEntries", "readonly", (store) => store.get(String(id)),
+      );
+      return { ok: true, value: value ?? null };
+    } catch {
+      return { ok: false, error: storageError("read-failed", "Shelf could not read this book's library metadata.") };
+    }
+  }
+
+  async listLibraryEntries(): Promise<Result<readonly LibraryEntry[], ReaderError>> {
+    try {
+      const value = await this.#run<LibraryEntry[]>(
+        "libraryEntries", "readonly", (store) => store.getAll(),
+      );
+      return { ok: true, value };
+    } catch {
+      return { ok: false, error: storageError("read-failed", "Shelf could not list book metadata.") };
+    }
+  }
+
+  async saveLibraryEntry(entry: LibraryEntry): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("libraryEntries", "readwrite", (store) => store.put(entry));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not save this book's library metadata.") };
+    }
+  }
+
+  async deleteLibraryEntry(id: DocumentId): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("libraryEntries", "readwrite", (store) => store.delete(String(id)));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not remove this book's library metadata.") };
+    }
+  }
+
+  async listSavedLibraryViews(): Promise<Result<readonly SavedLibraryView[], ReaderError>> {
+    try {
+      const value = await this.#run<SavedLibraryView[]>(
+        "libraryViews", "readonly", (store) => store.getAll(),
+      );
+      return { ok: true, value: [...value].sort((left, right) => right.updatedAt - left.updatedAt) };
+    } catch {
+      return { ok: false, error: storageError("read-failed", "Shelf could not read saved library views.") };
+    }
+  }
+
+  async saveSavedLibraryView(view: SavedLibraryView): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("libraryViews", "readwrite", (store) => store.put(view));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not save this library view.") };
+    }
+  }
+
+  async deleteSavedLibraryView(id: string): Promise<Result<void, ReaderError>> {
+    try {
+      await this.#run("libraryViews", "readwrite", (store) => store.delete(id));
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, error: storageError("write-failed", "Shelf could not delete this library view.") };
+    }
+  }
+
   async getByDocumentId(id: DocumentId): Promise<Result<ReadingProgress | null, ReaderError>> {
     try {
       const value = await this.#run<ReadingProgress | undefined>(
@@ -353,7 +473,7 @@ implements
     const database = await this.#database();
     await new Promise<void>((resolve, reject) => {
       const names: StoreName[] = [
-        "documents", "locators", "readingProgress", "bookmarks", "annotations", "quotes",
+        "documents", "locators", "readingProgress", "bookmarks", "annotations", "quotes", "libraryEntries",
       ];
       const transaction = database.transaction(names, "readwrite");
       transaction.objectStore("documents").delete(id);
