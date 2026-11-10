@@ -98,7 +98,14 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(shell.includes("registerCopy"), true);
   assert.equal(shell.includes("registerReference"), true);
   assert.equal(shell.includes("mountReaderWorkspace"), true);
+  assert.equal(shell.includes("let documentLoadAttempt = 0"), true);
+  assert.equal(shell.includes("if (isCurrentAttempt() && activeSession === opened.value)"), true);
+  assert.equal(shell.includes("The linked original PDF is unavailable"), true);
+  assert.equal(shell.includes("Re-import it if the source is damaged"), true);
   assert.equal(workspace.includes("createPdfPageLayers"), true);
+  assert.equal(workspace.includes("if (index === currentPage && renderScale === zoom)"), true);
+  assert.equal(workspace.includes('onStatus("Ready · " + session.info.pageCount + " pages.", false)'), true);
+  assert.equal(workspace.includes('if (!disposed) onStatus("Ready · " + session.info.pageCount + " pages.")'), false);
   assert.equal(workspace.includes("Loading PDF page"), true);
   assert.equal(workspace.includes("Retry page"), true);
   assert.equal(workspace.includes("Retry contents"), true);
