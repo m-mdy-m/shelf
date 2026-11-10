@@ -23,6 +23,25 @@ const themeHtml = `<!doctype html><meta charset="utf-8"><link rel="stylesheet" h
 <button class="button reader-secondary-button" id="secondary-control">Contents</button>
 </div><div class="reader-stage"><div class="reader-page-mount" id="pdf-surface"></div></div></section>
 </main></div></body>`;
+const libraryThemeHtml = `<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/styles.css">
+<body><div id="app"><main class="shelf-shell"><section class="library-section">
+<div class="library-catalog">
+  <div class="library-toolbar">
+    <label class="library-search"><span class="visually-hidden">Search</span><input class="library-search-input" placeholder="Search books"></label>
+    <select class="library-filter-select" aria-label="Sort library"><option>Recently added</option></select>
+    <button class="button button-secondary library-clear-filters" hidden>Clear filters</button>
+    <div class="library-layout-toggle"><button class="button library-layout-button is-active">Grid</button></div>
+    <details class="library-advanced-filters">
+      <summary class="library-advanced-filters-toggle">More filters</summary>
+      <div class="library-advanced-filters-content"><select class="library-filter-select" aria-label="Filter by author"><option>Author</option></select></div>
+    </details>
+  </div>
+  <div class="library-quick-filters"><button class="library-status-chip is-active">All books 1</button></div>
+  <div class="library-grid"><article class="library-card" id="library-card">
+    <div class="library-book-cover"><strong class="library-book-cover-title">Example book</strong></div>
+    <div class="library-card-body"><h3 class="library-card-title">Example book</h3><div class="library-progress-track"><span class="library-progress-fill" style="width:42%"></span></div></div>
+  </article></div>
+</div></section></main></div></body>`;
 const harness = `import { reorderPdfTextLayer } from "/assets/packages/pdf-engine/renderer/pdf-text-layer-order.js";
 import { createSelectionActions } from "/assets/features/annotations/components/selection-actions.js";
 const root = document.querySelector("#root");
@@ -114,6 +133,7 @@ test("Chromium keeps native PDF text selection column-bounded and preserves it f
   await writeFile(path.join(webRoot, "p0-harness.html"), html);
   await writeFile(path.join(webRoot, "p0-harness.js"), harness);
   await writeFile(path.join(webRoot, "reader-theme-harness.html"), themeHtml);
+  await writeFile(path.join(webRoot, "library-theme-harness.html"), libraryThemeHtml);
   const server = createServer(async (request, response) => {
     try {
       const pathname = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname);
@@ -244,6 +264,44 @@ test("Chromium keeps native PDF text selection column-bounded and preserves it f
       return getComputedStyle(document.body).backgroundColor;
     })()`);
     assert.notEqual(returnedToLibrary, "rgb(9, 14, 20)");
+
+    await cdp.send("Page.navigate", {
+      url: "http://127.0.0.1:" + String(address.port) + "/library-theme-harness.html",
+    });
+    const libraryStarted = Date.now();
+    while (Date.now() - libraryStarted < 12000) {
+      const loaded = await cdp.evaluate("Boolean(document.querySelector('#library-card') && getComputedStyle(document.querySelector('#library-card')).backgroundColor === 'rgb(18, 24, 33)')");
+      if (loaded) break;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    const libraryTheme = await cdp.evaluate(`(() => ({
+      body: getComputedStyle(document.body).backgroundColor,
+      card: getComputedStyle(document.querySelector("#library-card")).backgroundColor,
+      toolbar: getComputedStyle(document.querySelector(".library-toolbar")).display,
+      disclosure: getComputedStyle(document.querySelector(".library-advanced-filters-content")).display,
+    }))()`);
+    assert.equal(libraryTheme.body, "rgb(9, 12, 17)");
+    assert.equal(libraryTheme.card, "rgb(18, 24, 33)");
+    assert.equal(libraryTheme.toolbar, "grid");
+    assert.equal(libraryTheme.disclosure, "none", "secondary filters should stay collapsed by default");
+
+    const expandedFilters = await cdp.evaluate(`(() => {
+      const disclosure = document.querySelector(".library-advanced-filters");
+      disclosure.open = true;
+      return getComputedStyle(document.querySelector(".library-advanced-filters-content")).display;
+    })()`);
+    assert.equal(expandedFilters, "grid", "advanced filters should appear when the disclosure is opened");
+
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width: 390, height: 844, deviceScaleFactor: 1, mobile: true,
+    });
+    const mobileLayout = await cdp.evaluate(`(() => ({
+      viewport: window.innerWidth,
+      document: document.documentElement.scrollWidth,
+      card: document.querySelector("#library-card").getBoundingClientRect().width,
+    }))()`);
+    assert.ok(mobileLayout.card > 0, "the book card should remain visible at a mobile width");
+    assert.ok(mobileLayout.document <= mobileLayout.viewport, "the dark library must not overflow horizontally on mobile");
   } finally {
     cdp?.socket.close();
     const browserClosed = browser.exitCode !== null || browser.signalCode !== null
@@ -256,5 +314,6 @@ test("Chromium keeps native PDF text selection column-bounded and preserves it f
     await rm(path.join(webRoot, "p0-harness.html"), { force: true });
     await rm(path.join(webRoot, "p0-harness.js"), { force: true });
     await rm(path.join(webRoot, "reader-theme-harness.html"), { force: true });
+    await rm(path.join(webRoot, "library-theme-harness.html"), { force: true });
   }
 });
