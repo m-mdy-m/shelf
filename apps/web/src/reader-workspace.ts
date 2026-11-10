@@ -122,7 +122,11 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   let saveTimer: number | null = null;
   let currentPage = 0;
   let zoom = validZoom(options.initialProgress?.zoom ?? 1) ? options.initialProgress?.zoom ?? 1 : 1;
-  let mode: ReadingMode = options.initialProgress?.readingMode === "single-page" ? "single-page" : "continuous";
+  const persistedMode = options.initialProgress?.readingMode;
+  let mode: ReadingMode =
+    persistedMode === "single-page" || persistedMode === "continuous"
+      ? persistedMode
+      : "single-page";
   let lastScrollPosition = 0;
 
   const toolbar = element(owner, "div", "reader-toolbar");
@@ -173,6 +177,10 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   outlineButton.setAttribute("aria-controls", "reader-outline");
   const closeButton = createButton(owner, "Close", "button button-small");
   trailingControls.append(outlineButton, closeButton);
+  for (const button of [
+    zoomOutButton, zoomInButton, fitWidthButton, fitPageButton,
+    cancelSearchButton, outlineButton, closeButton,
+  ]) button.classList.add("reader-secondary-button");
   toolbar.append(navigation, modeControls, zoomControls, searchControls, trailingControls);
 
   const documentHeading = element(owner, "div", "reader-document-heading");

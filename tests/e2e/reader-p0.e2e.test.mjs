@@ -15,6 +15,14 @@ const html = `<!doctype html><meta charset="utf-8"><style>
   #layer { position:absolute;inset:0;width:612px;height:792px }
   #layer span { position:absolute;display:block;white-space:pre;font:14px Arial;user-select:text }
 </style><main id="root"></main><script type="module" src="/p0-harness.js"></script>`;
+const themeHtml = `<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/styles.css">
+<body class="reader-active"><div id="app"><main class="shelf-shell reader-active">
+<header class="shelf-header">Shelf</header><p class="shelf-status">Ready</p><section class="library-section">Library</section>
+<section class="reader-viewer"><div class="reader-toolbar">
+<button class="button" id="primary-control">Next</button>
+<button class="button reader-secondary-button" id="secondary-control">Contents</button>
+</div><div class="reader-stage"><div class="reader-page-mount" id="pdf-surface"></div></div></section>
+</main></div></body>`;
 const harness = `import { reorderPdfTextLayer } from "/assets/packages/pdf-engine/renderer/pdf-text-layer-order.js";
 import { createSelectionActions } from "/assets/features/annotations/components/selection-actions.js";
 const root = document.querySelector("#root");
@@ -105,13 +113,15 @@ test("Chromium keeps native PDF text selection column-bounded and preserves it f
 
   await writeFile(path.join(webRoot, "p0-harness.html"), html);
   await writeFile(path.join(webRoot, "p0-harness.js"), harness);
+  await writeFile(path.join(webRoot, "reader-theme-harness.html"), themeHtml);
   const server = createServer(async (request, response) => {
     try {
       const pathname = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname);
       const file = path.resolve(webRoot, "." + pathname);
       if (!file.startsWith(webRoot + path.sep)) { response.writeHead(403).end(); return; }
       const content = await readFile(file);
-      response.writeHead(200, { "content-type": file.endsWith(".js") ? "text/javascript" : "text/html" });
+      const contentType = file.endsWith(".js") ? "text/javascript" : file.endsWith(".css") ? "text/css" : "text/html";
+      response.writeHead(200, { "content-type": contentType });
       response.end(content);
     } catch {
       if (!response.headersSent) response.writeHead(404).end();
@@ -205,6 +215,35 @@ test("Chromium keeps native PDF text selection column-bounded and preserves it f
     })()`);
     assert.match(right, /RIGHT COLUMN A Right passage/u);
     assert.doesNotMatch(right, /LEFT COLUMN/u);
+
+    await cdp.send("Page.navigate", {
+      url: "http://127.0.0.1:" + String(address.port) + "/reader-theme-harness.html",
+    });
+    const themeStarted = Date.now();
+    while (Date.now() - themeStarted < 12000) {
+      const loaded = await cdp.evaluate("Boolean(document.querySelector('#pdf-surface') && getComputedStyle(document.body).backgroundColor === 'rgb(9, 14, 20)')");
+      if (loaded) break;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    const theme = await cdp.evaluate(`(() => ({
+      body: getComputedStyle(document.body).backgroundColor,
+      shell: getComputedStyle(document.querySelector(".reader-viewer")).backgroundColor,
+      pdf: getComputedStyle(document.querySelector("#pdf-surface")).backgroundColor,
+      header: getComputedStyle(document.querySelector(".shelf-header")).display,
+      primary: getComputedStyle(document.querySelector("#primary-control")).backgroundColor,
+      secondary: getComputedStyle(document.querySelector("#secondary-control")).backgroundColor,
+    }))()`);
+    assert.equal(theme.body, "rgb(9, 14, 20)");
+    assert.equal(theme.shell, "rgb(16, 23, 34)");
+    assert.equal(theme.pdf, "rgb(255, 255, 255)");
+    assert.equal(theme.header, "none");
+    assert.notEqual(theme.primary, theme.secondary, "secondary actions should be visually quieter than primary controls");
+    const returnedToLibrary = await cdp.evaluate(`(() => {
+      document.body.classList.remove("reader-active");
+      document.querySelector(".shelf-shell").classList.remove("reader-active");
+      return getComputedStyle(document.body).backgroundColor;
+    })()`);
+    assert.notEqual(returnedToLibrary, "rgb(9, 14, 20)");
   } finally {
     cdp?.socket.close();
     const browserClosed = browser.exitCode !== null || browser.signalCode !== null
@@ -216,5 +255,6 @@ test("Chromium keeps native PDF text selection column-bounded and preserves it f
     await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
     await rm(path.join(webRoot, "p0-harness.html"), { force: true });
     await rm(path.join(webRoot, "p0-harness.js"), { force: true });
+    await rm(path.join(webRoot, "reader-theme-harness.html"), { force: true });
   }
 });

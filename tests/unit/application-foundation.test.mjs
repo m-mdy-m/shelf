@@ -89,6 +89,7 @@ test("the web entry point contains local import and reader wiring", async () => 
   const repositories = await readFile(path.join(root, "packages/platform-adapters/src/browser/indexeddb-reader-repositories.ts"), "utf8");
   const pdfRenderer = await readFile(path.join(root, "packages/pdf-engine/src/renderer/pdf-page-renderer.ts"), "utf8");
   const buildScript = await readFile(path.join(root, "scripts/build-web.mjs"), "utf8");
+  const styles = await readFile(path.join(root, "apps/web/src/styles.css"), "utf8");
 
   assert.equal(html.includes('src="/assets/main.js"'), true);
   assert.equal(html.includes('role="application"'), false);
@@ -102,6 +103,19 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(shell.includes("if (isCurrentAttempt() && activeSession === opened.value)"), true);
   assert.equal(shell.includes("The linked original PDF is unavailable"), true);
   assert.equal(shell.includes("Re-import it if the source is damaged"), true);
+  assert.equal(workspace.includes('persistedMode === "single-page" || persistedMode === "continuous"'), true);
+  assert.equal(workspace.includes(': "single-page";'), true);
+  assert.equal(shell.includes('main.classList.add("reader-active")'), true);
+  assert.equal(shell.includes('main.classList.remove("reader-active")'), true);
+  assert.equal(shell.includes('document.body.classList.add("reader-active")'), true);
+  assert.equal(shell.includes('document.body.classList.remove("reader-active")'), true);
+  assert.equal(styles.includes("body.reader-active"), true);
+  assert.equal(styles.includes("body:has(.reader-viewer:not([hidden]))"), false);
+  assert.equal(styles.includes(".reader-toolbar {"), true);
+  assert.equal(styles.includes(".reader-secondary-button"), true);
+  assert.equal(workspace.includes('button.classList.add("reader-secondary-button")'), true);
+  assert.equal(styles.includes(".reader-stage {"), true);
+  assert.ok(/\.reader-page-mount\s*\{[^}]*background:\s*#fff;/u.test(styles));
   assert.equal(workspace.includes("createPdfPageLayers"), true);
   assert.equal(workspace.includes("if (index === currentPage && renderScale === zoom)"), true);
   assert.equal(workspace.includes('onStatus("Ready · " + session.info.pageCount + " pages.", false)'), true);
