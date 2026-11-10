@@ -825,6 +825,30 @@ body.reader-active #app {
   background: #27384b;
 }
 
+.reader-toolbar .button:not(.reader-secondary-button):not(.reader-mode-button) {
+  font-weight: 600;
+}
+
+.reader-toolbar .reader-secondary-button {
+  border-color: transparent;
+  background: transparent;
+  color: #a7b6c7;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.reader-toolbar .reader-secondary-button:hover:not(:disabled) {
+  border-color: #2c3b4c;
+  background: #222f3f;
+  color: #e5edf5;
+}
+
+.reader-toolbar .reader-mode-button:not([aria-pressed="true"]) {
+  border-color: transparent;
+  background: transparent;
+  color: #a7b6c7;
+}
+
 .reader-toolbar .button:disabled {
   color: #8493a3;
 }

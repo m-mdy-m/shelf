@@ -110,6 +110,8 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(styles.includes("body.reader-active"), true);
   assert.equal(styles.includes("body:has(.reader-viewer:not([hidden]))"), false);
   assert.equal(styles.includes(".reader-toolbar {"), true);
+  assert.equal(styles.includes(".reader-secondary-button"), true);
+  assert.equal(workspace.includes('button.classList.add("reader-secondary-button")'), true);
   assert.equal(styles.includes(".reader-stage {"), true);
   assert.ok(/\.reader-page-mount\s*\{[^}]*background:\s*#fff;/u.test(styles));
   assert.equal(workspace.includes("createPdfPageLayers"), true);

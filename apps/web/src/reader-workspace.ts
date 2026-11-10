@@ -177,6 +177,10 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   outlineButton.setAttribute("aria-controls", "reader-outline");
   const closeButton = createButton(owner, "Close", "button button-small");
   trailingControls.append(outlineButton, closeButton);
+  for (const button of [
+    zoomOutButton, zoomInButton, fitWidthButton, fitPageButton,
+    cancelSearchButton, outlineButton, closeButton,
+  ]) button.classList.add("reader-secondary-button");
   toolbar.append(navigation, modeControls, zoomControls, searchControls, trailingControls);
 
   const documentHeading = element(owner, "div", "reader-document-heading");
