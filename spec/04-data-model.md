@@ -50,3 +50,14 @@ Extracted page text is derived from PDF.js text-content streams and is not a dur
 Browser IndexedDB schema v3 adds separate ID-keyed stores for bookmarks, annotations, and quotes, each indexed by DocumentId. The v2 document, locator, source-copy/reference, and reading-progress stores are retained during upgrade. Forgetting a document removes its document-scoped progress and saved Reader records in one transaction; source-handle/copy lifecycle remains owned by the document-source adapter.
 
 Reader application services depend only on repository, clock, and ID-generation ports. The Go backend mirrors these contracts under `backend/internal`: domain records, validated application use cases, narrow repository/runtime ports, a host-injected SQLite adapter, and an optional HTTP adapter.
+
+
+## Book library metadata and saved views
+
+A **LibraryEntry** is a local, document-scoped book record. It keeps optional title/author/summary overrides, tags, an explicit reading status (`not-started`, `reading`, `on-hold`, `completed`, or `reference`), an optional per-book Markdown README, and last-opened timestamps. It is keyed by the stable Document ID; it does not duplicate or own PDF bytes.
+
+A **SavedLibraryView** is a named filter snapshot containing search text, status, author/tag, progress, available-file filters, and sort order. The view is a reusable query, not a copied collection of books.
+
+Browser IndexedDB schema v5 adds separate `libraryEntries` and `libraryViews` stores while retaining all v4 Reader and source stores. Book metadata and saved views are included in Reader backup bundle v2. Bundle v1 remains importable and upgrades to v2 with empty library metadata. File handles, access locators, source bytes, and credentials remain excluded.
+
+Reading completion is an estimate derived from the saved page position and actual PDF page count; it does not claim that every preceding page was read or that reading time has elapsed. Unknown page counts remain unknown until the opened PDF session provides the actual count.

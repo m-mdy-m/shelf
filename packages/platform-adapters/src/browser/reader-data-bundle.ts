@@ -38,8 +38,8 @@ export interface ReaderDataSnapshot {
   readonly bookmarks: readonly Bookmark[];
   readonly annotations: readonly Annotation[];
   readonly quotes: readonly Quote[];
-  readonly libraryEntries: readonly LibraryEntry[];
-  readonly savedLibraryViews: readonly SavedLibraryView[];
+  readonly libraryEntries?: readonly LibraryEntry[];
+  readonly savedLibraryViews?: readonly SavedLibraryView[];
 }
 
 function invalid(message: string): Result<never, ReaderError> {

@@ -411,16 +411,16 @@ export function mountLibraryCatalog(
     const progressSection = element(owner, "div", "library-progress");
     const progressHeader = element(owner, "div", "library-progress-header");
     const percent = progress.completionPercent;
-    const progressLabel = progress.totalPages === null
-      ? "Page count unavailable"
-      : entry.readingStatus === "completed"
-        ? "Completed"
-        : progress.pagesRead === 0
-          ? String(progress.totalPages) + " pages to read"
-          : String(progress.pagesRead) + " of " + String(progress.totalPages) + " pages";
+    const progressLabel = entry.readingStatus === "completed"
+      ? "Completed"
+      : progress.currentPageNumber === null
+        ? (progress.totalPages === null ? "No saved position" : String(progress.totalPages) + " pages")
+        : progress.totalPages === null
+          ? "Position · page " + String(progress.currentPageNumber)
+          : "Position · page " + String(progress.currentPageNumber) + " of " + String(progress.totalPages);
     progressHeader.append(
       element(owner, "span", "library-progress-position", progressLabel),
-      element(owner, "strong", "library-progress-percent", percent === null ? "—" : String(percent) + "%"),
+      element(owner, "strong", "library-progress-percent", percent === null ? "—" : "≈ " + String(percent) + "%"),
     );
     const progressTrack = element(owner, "div", "library-progress-track");
     progressTrack.setAttribute("role", "progressbar");
@@ -433,7 +433,7 @@ export function mountLibraryCatalog(
     progressTrack.append(progressFill);
     const remainingText = progress.pagesRemaining === null
       ? "Remaining pages unavailable"
-      : String(progress.pagesRemaining) + " pages remaining";
+      : String(progress.pagesRemaining) + " pages after position";
     const currentText = progress.currentPageNumber === null
       ? "Not opened"
       : "Last position: page " + String(progress.currentPageNumber);

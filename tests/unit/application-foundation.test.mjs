@@ -215,7 +215,11 @@ test("Reader annotation use cases are composed outside the Web feature", async (
   assert.equal(store.includes("async listBookmarks"), true);
   assert.equal(store.includes("async listAnnotations"), true);
   assert.equal(store.includes("async listQuotes"), true);
-  assert.equal(store.includes("const DATABASE_VERSION = 4;"), true);
+  assert.equal(store.includes("const DATABASE_VERSION = 5;"), true);
+  assert.equal(store.includes('"libraryEntries"'), true);
+  assert.equal(store.includes('"libraryViews"'), true);
+  assert.equal(store.includes("LibraryEntryRepositoryPort"), true);
+  assert.equal(store.includes("SavedLibraryViewRepositoryPort"), true);
   assert.equal(store.includes("async exportReaderData"), true);
   assert.equal(store.includes("async restoreReaderData"), true);
   assert.equal(store.includes('database.transaction(names, "readwrite")'), true);

@@ -93,7 +93,7 @@ export function createDefaultLibraryEntry(documentId: DocumentId, now = Date.now
   };
 }
 
-/** Derive a transparent page-based estimate from the actual PDF page count and saved position. */
+/** Derive an estimated completion position, not verified time-on-page or unique pages read. */
 export function deriveLibraryProgress(
   document: Document,
   entry: LibraryEntry,
@@ -103,12 +103,15 @@ export function deriveLibraryProgress(
   const totalPages = pageCount !== null && Number.isSafeInteger(pageCount) && pageCount > 0
     ? pageCount
     : null;
-  const currentPageNumber = progress === null || totalPages === null
+  const positionPage = progress === null
     ? null
-    : Math.min(totalPages, Math.max(1, progress.pageIndex + 1));
+    : totalPages === null
+      ? Math.max(1, progress.pageIndex + 1)
+      : Math.min(totalPages, Math.max(1, progress.pageIndex + 1));
+  const currentPageNumber = positionPage;
   const pagesRead = entry.readingStatus === "completed" && totalPages !== null
     ? totalPages
-    : currentPageNumber ?? 0;
+    : positionPage ?? 0;
   const pagesRemaining = totalPages === null ? null : Math.max(0, totalPages - pagesRead);
   const completionPercent = totalPages === null
     ? null

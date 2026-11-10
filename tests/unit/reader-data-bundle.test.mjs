@@ -73,7 +73,34 @@ function records() {
     createdAt: 304,
     updatedAt: 305,
   }];
-  return { document, readingProgress, bookmarks, annotations, quotes };
+  const libraryEntries = [{
+    documentId: document.id,
+    titleOverride: "Local title",
+    authorsOverride: ["Ada Reader"],
+    summaryOverride: "A short private summary.",
+    tags: ["systems", "research"],
+    readingStatus: "reading",
+    readmeMarkdown: "# Reading notes\\n\\nDo not upload this book.",
+    lastOpenedAt: 306,
+    createdAt: 307,
+    updatedAt: 308,
+  }];
+  const savedLibraryViews = [{
+    id: "view-reading",
+    name: "Currently reading",
+    filters: {
+      query: "",
+      status: "reading",
+      author: "",
+      tag: "all",
+      progress: "in-progress",
+      format: "all",
+      sort: "last-opened",
+    },
+    createdAt: 309,
+    updatedAt: 310,
+  }];
+  return { document, readingProgress, bookmarks, annotations, quotes, libraryEntries, savedLibraryViews };
 }
 
 test("Reader data bundle round-trips the portable document and saved Reader records", () => {
@@ -84,21 +111,27 @@ test("Reader data bundle round-trips the portable document and saved Reader reco
     bookmarks: sample.bookmarks,
     annotations: sample.annotations,
     quotes: sample.quotes,
-  }, 4, 400);
+    libraryEntries: sample.libraryEntries,
+    savedLibraryViews: sample.savedLibraryViews,
+  }, 5, 400);
   assert.equal(created.ok, true);
   if (!created.ok) return;
 
   const restored = parseReaderDataBundle(JSON.parse(JSON.stringify(created.value)));
   assert.equal(restored.ok, true);
   if (!restored.ok) return;
-  assert.equal(restored.value.version, 1);
-  assert.equal(restored.value.sourceSchemaVersion, 4);
+  assert.equal(restored.value.version, 2);
+  assert.equal(restored.value.sourceSchemaVersion, 5);
   assert.equal(restored.value.exportedAt, 400);
   assert.equal(restored.value.documents.length, 1);
   assert.equal(restored.value.readingProgress[0].pageIndex, 2);
   assert.equal(restored.value.bookmarks[0].label, "Important");
   assert.equal(restored.value.annotations[0].kind, "highlight");
   assert.equal(restored.value.quotes[0].text, "A quoted passage");
+  assert.equal(restored.value.libraryEntries[0].titleOverride, "Local title");
+  assert.equal(restored.value.libraryEntries[0].readmeMarkdown.includes("Reading notes"), true);
+  assert.equal(restored.value.savedLibraryViews[0].name, "Currently reading");
+  assert.equal(restored.value.savedLibraryViews[0].filters.sort, "last-opened");
 });
 
 test("Reader bundle serialization strips opaque access data and unknown secret fields", () => {
@@ -120,6 +153,8 @@ test("Reader bundle serialization strips opaque access data and unknown secret f
   assert.equal(serialized.includes("/private/user/path.pdf"), false);
   assert.equal(Object.hasOwn(created.value, "locators"), false);
   assert.equal(Object.hasOwn(created.value.documents[0], "accessLocator"), false);
+  assert.equal(created.value.libraryEntries.length, 0);
+  assert.equal(created.value.savedLibraryViews.length, 0);
 });
 
 test("Reader bundle parser rejects unsupported versions, duplicate IDs, and orphan records", () => {
@@ -172,17 +207,72 @@ test("Reader bundle parser rejects invalid progress and page geometry before res
   }).ok, false);
 });
 
-test("IndexedDB version 4 adds indexes without dropping the version 3 Reader stores", async () => {
+test("legacy v1 backups migrate to v2 with empty library metadata", () => {
+  const sample = records();
+  const legacy = {
+    format: "shelf-reader-data",
+    version: 1,
+    sourceSchemaVersion: 4,
+    exportedAt: 600,
+    documents: [sample.document],
+    readingProgress: sample.readingProgress,
+    bookmarks: sample.bookmarks,
+    annotations: sample.annotations,
+    quotes: sample.quotes,
+  };
+  const migrated = parseReaderDataBundle(legacy);
+  assert.equal(migrated.ok, true);
+  if (!migrated.ok) return;
+  assert.equal(migrated.value.version, 2);
+  assert.deepEqual(migrated.value.libraryEntries, []);
+  assert.deepEqual(migrated.value.savedLibraryViews, []);
+});
+
+test("Reader backup parser rejects duplicate/orphan library records and unsafe metadata", () => {
+  const sample = records();
+  const base = {
+    format: "shelf-reader-data",
+    version: 2,
+    sourceSchemaVersion: 5,
+    exportedAt: 601,
+    documents: [sample.document],
+    readingProgress: sample.readingProgress,
+    bookmarks: sample.bookmarks,
+    annotations: sample.annotations,
+    quotes: sample.quotes,
+    libraryEntries: sample.libraryEntries,
+    savedLibraryViews: sample.savedLibraryViews,
+  };
+  assert.equal(parseReaderDataBundle({
+    ...base,
+    libraryEntries: [sample.libraryEntries[0], sample.libraryEntries[0]],
+  }).ok, false);
+  assert.equal(parseReaderDataBundle({
+    ...base,
+    libraryEntries: [{ ...sample.libraryEntries[0], documentId: "missing-document" }],
+  }).ok, false);
+  assert.equal(parseReaderDataBundle({
+    ...base,
+    libraryEntries: [{ ...sample.libraryEntries[0], readmeMarkdown: "x".repeat(262_145) }],
+  }).ok, false);
+  assert.equal(parseReaderDataBundle({
+    ...base,
+    savedLibraryViews: [{ ...sample.savedLibraryViews[0], filters: { ...sample.savedLibraryViews[0].filters, sort: "arbitrary" } }],
+  }).ok, false);
+});
+
+test("IndexedDB version 5 adds library stores without dropping Reader or source stores", async () => {
   const source = await readFile(
     path.join(root, "packages/platform-adapters/src/browser/indexeddb-store.ts"),
     "utf8",
   );
-  assert.equal(source.includes("const DATABASE_VERSION = 4;"), true);
+  assert.equal(source.includes("const DATABASE_VERSION = 5;"), true);
   assert.equal(source.includes('factory.open(this.#databaseName, DATABASE_VERSION)'), true);
   for (const store of [
     "documents", "locators", "copies", "references", "readingProgress",
-    "bookmarks", "annotations", "quotes",
+    "bookmarks", "annotations", "quotes", "libraryEntries", "libraryViews",
   ]) assert.equal(source.includes('"'+store+'"'), true, "missing retained store: "+store);
+  assert.equal(source.includes('store.createIndex("readingStatus", "readingStatus"'), true);
   assert.equal(source.includes('store.createIndex("updatedAt", "updatedAt"'), true);
   assert.equal(source.includes("async restoreReaderData(input: unknown)"), true);
   assert.equal(source.includes('database.transaction(names, "readwrite")'), true);
