@@ -16,6 +16,7 @@ import {
 } from "@shelf/pdf-engine";
 import type { PdfDocumentSession } from "@shelf/pdf-engine";
 import { mountReaderWorkspace } from "./reader-workspace.js";
+import { mountLibraryCatalog } from "./features/library/library-catalog.js";
 import { DocumentLibraryService } from "@shelf/library";
 import {
   BrowserDocumentSource,
@@ -24,17 +25,6 @@ import {
   createIndexedDbReaderRepositories,
   WebCryptoSha256Digest,
 } from "@shelf/platform-adapters";
-
-function formatSize(bytes: number | null): string {
-  if (bytes === null) return "Unknown size";
-  if (bytes < 1024) return String(bytes) + " B";
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-}
-
-function sourceLabel(document: Document): string {
-  return document.source.kind === "imported-copy" ? "Imported copy" : "External reference";
-}
 
 function createElement<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -80,6 +70,7 @@ export function mountShelf(root: HTMLElement): void {
 
   let activeSession: PdfDocumentSession | null = null;
   let activeWorkspace: ReturnType<typeof mountReaderWorkspace> | null = null;
+  let documentLoadAttempt = 0;
 
   const main = createElement("main", "shelf-shell");
   const header = createElement("header", "shelf-header");
@@ -118,12 +109,6 @@ export function mountShelf(root: HTMLElement): void {
   status.setAttribute("aria-live", "polite");
 
   const librarySection = createElement("section", "library-section");
-  const libraryHeading = createElement("div", "section-heading");
-  const libraryTitle = createElement("h2", "section-title", "Your library");
-  const libraryHint = createElement("p", "section-hint", "PDF files remain on this device. No account or upload is required.");
-  libraryHeading.append(libraryTitle, libraryHint);
-  const list = createElement("div", "document-list");
-  librarySection.append(libraryHeading, list);
 
   const viewer = createElement("section", "reader-viewer");
   viewer.hidden = true;
@@ -137,7 +122,8 @@ export function mountShelf(root: HTMLElement): void {
     status.classList.toggle("shelf-status-error", isError);
   }
 
-  async function closeActiveDocument(): Promise<void> {
+  async function closeActiveDocument(invalidatePendingOpen = true): Promise<void> {
+    if (invalidatePendingOpen) documentLoadAttempt += 1;
     const workspace = activeWorkspace;
     const session = activeSession;
     activeWorkspace = null;
@@ -148,21 +134,42 @@ export function mountShelf(root: HTMLElement): void {
       await workspace.persist();
     }
     if (session !== null) await session.close();
+    main.classList.remove("reader-active");
+    document.body.classList.remove("reader-active");
     viewer.replaceChildren();
     viewer.hidden = true;
   }
 
   async function openDocument(id: DocumentId): Promise<void> {
-    await closeActiveDocument();
+    const attempt = ++documentLoadAttempt;
+    const isCurrentAttempt = (): boolean => attempt === documentLoadAttempt;
+    await closeActiveDocument(false);
+    if (!isCurrentAttempt()) return;
     setStatus("Opening the local PDF…");
 
     const access = await library.openDocument(id);
+    if (!isCurrentAttempt()) {
+      if (access.ok) await library.closeDocument(access.value.source);
+      return;
+    }
     if (!access.ok) {
-      setStatus(access.error.message, true);
+      const record = await library.getDocument(id);
+      if (!isCurrentAttempt()) return;
+      const sourceKind = record.ok ? record.value?.source.kind : undefined;
+      const explanation = sourceKind === "external-reference"
+        ? "The linked original PDF is unavailable or its permission has expired. Relink the original file or import a local copy. "
+        : sourceKind === "imported-copy"
+          ? "Shelf could not read the imported local PDF copy. Re-import it if the source is damaged. "
+          : "";
+      setStatus(explanation + access.error.message, true);
       return;
     }
 
     const savedProgress = await store.getByDocumentId(id);
+    if (!isCurrentAttempt()) {
+      await library.closeDocument(access.value.source);
+      return;
+    }
     if (!savedProgress.ok) {
       await library.closeDocument(access.value.source);
       setStatus(savedProgress.error.message, true);
@@ -173,12 +180,18 @@ export function mountShelf(root: HTMLElement): void {
     // adapter. It releases the handle on every failed open and the session
     // releases it on close; do not close it a second time here.
     const opened = await pdf.open(id, access.value.source);
+    if (!isCurrentAttempt()) {
+      if (opened.ok) await opened.value.close();
+      return;
+    }
     if (!opened.ok) {
       setStatus(opened.error.message, true);
       return;
     }
 
     activeSession = opened.value;
+    main.classList.add("reader-active");
+    document.body.classList.add("reader-active");
     viewer.hidden = false;
     activeWorkspace = mountReaderWorkspace({
       root: viewer,
@@ -187,12 +200,44 @@ export function mountShelf(root: HTMLElement): void {
       progressRepository: store,
       annotationUseCases,
       initialProgress: savedProgress.value,
-      onStatus: setStatus,
+      onStatus: (message, isError = false) => {
+        if (isCurrentAttempt() && activeSession === opened.value) setStatus(message, isError);
+      },
       onClose: () => {
+        if (!isCurrentAttempt() || activeSession !== opened.value) return;
         void closeActiveDocument();
         setStatus("The PDF was closed. Your library remains available offline.");
       },
     });
+    await libraryCatalog.markOpened(id);
+    void syncDocumentPageCount(id, opened.value.info.pageCount);
+  }
+
+  const libraryCatalog = mountLibraryCatalog(librarySection, {
+    store,
+    onOpenDocument: (id) => { void openDocument(id); },
+    onStatus: setStatus,
+  });
+
+  async function syncDocumentPageCount(documentId: DocumentId, pageCount: number): Promise<void> {
+    if (!Number.isSafeInteger(pageCount) || pageCount <= 0) return;
+    const current = await store.getById(documentId);
+    if (!current.ok) {
+      setStatus(current.error.message, true);
+      return;
+    }
+    if (current.value === null || current.value.metadata.pageCount === pageCount) return;
+    const updated: Document = {
+      ...current.value,
+      metadata: { ...current.value.metadata, pageCount },
+      updatedAt: Date.now(),
+    };
+    const saved = await store.save(updated);
+    if (!saved.ok) {
+      setStatus(saved.error.message, true);
+      return;
+    }
+    await libraryCatalog.refresh();
   }
 
   async function importPickedFile(mode: "imported-copy" | "external-reference"): Promise<void> {
@@ -248,39 +293,7 @@ export function mountShelf(root: HTMLElement): void {
   }
 
   async function refreshLibrary(): Promise<void> {
-    const result = await library.listDocuments();
-    if (!result.ok) {
-      setStatus(result.error.message, true);
-      return;
-    }
-    list.replaceChildren();
-    if (result.value.length === 0) {
-      const empty = createElement(
-        "div",
-        "library-empty",
-        "No PDFs yet. Import a copy or link an original file to get started.",
-      );
-      list.append(empty);
-      return;
-    }
-    for (const item of result.value) {
-      const card = createElement("article", "document-card");
-      const details = createElement("div", "document-details");
-      const name = createElement("h3", "document-name", item.metadata.title);
-      const metadata = createElement(
-        "p",
-        "document-metadata",
-        sourceLabel(item) + " · " + formatSize(item.source.sizeBytes),
-      );
-      details.append(name, metadata);
-      const open = createElement("button", "button button-small", "Open") as HTMLButtonElement;
-      open.type = "button";
-      open.addEventListener("click", () => {
-        void openDocument(item.id);
-      });
-      card.append(details, open);
-      list.append(card);
-    }
+    await libraryCatalog.refresh();
   }
 
   importButton.addEventListener("click", () => {
@@ -338,8 +351,10 @@ export function mountShelf(root: HTMLElement): void {
       setStatus(
         "Backup restored: " + String(restored.value.documents) + " documents, " +
         String(restored.value.bookmarks) + " bookmarks, " +
-        String(restored.value.annotations) + " annotations, and " +
-        String(restored.value.quotes) + " quotes. Re-link local PDFs whose source is unavailable.",
+        String(restored.value.annotations) + " annotations, " +
+        String(restored.value.quotes) + " quotes, " +
+        String(restored.value.libraryEntries) + " book records, and " +
+        String(restored.value.savedLibraryViews) + " saved views. Re-link local PDFs whose source is unavailable.",
       );
     })();
   });
@@ -353,6 +368,8 @@ export function mountShelf(root: HTMLElement): void {
     const session = activeSession;
     activeWorkspace = null;
     activeSession = null;
+    main.classList.remove("reader-active");
+    document.body.classList.remove("reader-active");
 
     // pagehide is a last-chance signal: release UI/render resources
     // synchronously, then make a best-effort final IndexedDB write.

@@ -13,6 +13,9 @@ export type {
 export { createPdfJsRuntime, resolvePdfJsAssetUrls } from "./adapter/pdfjs-runtime.js";
 export type { PdfJsAssetUrls, PdfJsRuntime } from "./adapter/pdfjs-runtime.js";
 export { createPdfPageLayers, PdfPageRenderer } from "./renderer/pdf-page-renderer.js";
+export { reorderPdfTextLayer } from "./renderer/pdf-text-layer-order.js";
+export { groupPdfTextItemsByReadingOrder } from "./text/pdf-text-reading-order.js";
+export type { PdfReadingLine, PdfTextItemGeometry } from "./text/pdf-text-reading-order.js";
 export type { PdfPageLayers, PdfPageRenderOptions } from "./renderer/pdf-page-renderer.js";
 export { PageVirtualizer } from "./virtualization/page-virtualizer.js";
 export type {

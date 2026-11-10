@@ -116,11 +116,17 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   let selectionTimer: number | null = null;
   let selectionGeneration = 0;
   let disposed = false;
+  let readyAnnounced = false;
+  let currentPageError = false;
   let renderFrame: number | null = null;
   let saveTimer: number | null = null;
   let currentPage = 0;
   let zoom = validZoom(options.initialProgress?.zoom ?? 1) ? options.initialProgress?.zoom ?? 1 : 1;
-  let mode: ReadingMode = options.initialProgress?.readingMode === "single-page" ? "single-page" : "continuous";
+  const persistedMode = options.initialProgress?.readingMode;
+  let mode: ReadingMode =
+    persistedMode === "single-page" || persistedMode === "continuous"
+      ? persistedMode
+      : "single-page";
   let lastScrollPosition = 0;
 
   const toolbar = element(owner, "div", "reader-toolbar");
@@ -171,6 +177,10 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   outlineButton.setAttribute("aria-controls", "reader-outline");
   const closeButton = createButton(owner, "Close", "button button-small");
   trailingControls.append(outlineButton, closeButton);
+  for (const button of [
+    zoomOutButton, zoomInButton, fitWidthButton, fitPageButton,
+    cancelSearchButton, outlineButton, closeButton,
+  ]) button.classList.add("reader-secondary-button");
   toolbar.append(navigation, modeControls, zoomControls, searchControls, trailingControls);
 
   const documentHeading = element(owner, "div", "reader-document-heading");
@@ -330,8 +340,11 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     });
     error.append(description, retry);
     page.root.append(error);
-    if (index === currentPage) setReaderBusy(false);
-    onStatus(message, true);
+    if (index === currentPage) {
+      currentPageError = true;
+      setReaderBusy(false);
+      onStatus(message, true);
+    }
   }
 
   function schedulePageRender(index: number, page: MountedPage): void {
@@ -588,6 +601,11 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
     const generation = ++selectionGeneration;
     const selected = owner.getSelection();
     if (selected === null || selected.rangeCount === 0) {
+      // Keep the saved selection while a user activates an annotation action.
+      // Mouse mousedown is also cancelled on those controls; this guard covers
+      // keyboard focus and browser-specific selectionchange timing.
+      if (activeSelection !== null && owner.activeElement !== null &&
+          selectionPanel.contains(owner.activeElement)) return;
       activeSelection = null;
       selectionPanel.hidden = true;
       annotationsFeature?.setSelection(null);
@@ -813,7 +831,17 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
             if (!disposed && pages.get(index) === page) updateInteractionOverlay(index, page);
           });
         }
-        if (index === currentPage && renderScale === zoom) setReaderBusy(false);
+        if (index === currentPage && renderScale === zoom) {
+          setReaderBusy(false);
+          if (!readyAnnounced) {
+            readyAnnounced = true;
+            currentPageError = false;
+            onStatus("Ready · " + session.info.pageCount + " pages.", false);
+          } else if (currentPageError) {
+            currentPageError = false;
+            onStatus("Page " + String(index + 1) + " loaded.", false);
+          }
+        }
         if (renderScale !== zoom) scheduleRender();
       } else if (result.error.code !== "cancelled") {
         page.renderedScale = null;
@@ -1203,7 +1231,6 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       lastScrollPosition = stage.scrollTop;
     }
     draw();
-    if (!disposed) onStatus("Ready · " + session.info.pageCount + " pages.");
   }
 
   void initialize();

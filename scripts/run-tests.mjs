@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const testRoot = path.join(root, "tests", "unit");
+const testRoots = ["tests/unit", "tests/integration"];
 
 async function collect(directory) {
   let entries;
@@ -26,9 +26,9 @@ async function collect(directory) {
   return files;
 }
 
-const testFiles = (await collect(testRoot)).sort();
+const testFiles = (await Promise.all(testRoots.map((testRoot) => collect(path.join(root, testRoot)))).then((groups) => groups.flat())).sort();
 if (testFiles.length === 0) {
-  console.error("No unit test files were found under tests/unit.");
+  console.error("No unit or integration test files were found.");
   process.exit(1);
 }
 
