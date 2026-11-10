@@ -238,11 +238,11 @@ test("Chromium keeps native PDF text selection column-bounded and preserves it f
     assert.equal(theme.pdf, "rgb(255, 255, 255)");
     assert.equal(theme.header, "none");
     assert.notEqual(theme.primary, theme.secondary, "secondary actions should be visually quieter than primary controls");
-    const returnedToLibrary = await cdp.evaluate(`() => {
+    const returnedToLibrary = await cdp.evaluate(`(() => {
       document.body.classList.remove("reader-active");
       document.querySelector(".shelf-shell").classList.remove("reader-active");
       return getComputedStyle(document.body).backgroundColor;
-    }`);
+    })()`);
     assert.notEqual(returnedToLibrary, "rgb(9, 14, 20)");
   } finally {
     cdp?.socket.close();
