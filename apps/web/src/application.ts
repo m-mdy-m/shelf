@@ -1,6 +1,5 @@
 import { ReaderAnnotationService, toOpaqueId } from "@shelf/reader-core";
 import type {
-  Document,
   DocumentId,
   DocumentLocator,
   IdGeneratorPort,
@@ -16,6 +15,7 @@ import {
 } from "@shelf/pdf-engine";
 import type { PdfDocumentSession } from "@shelf/pdf-engine";
 import { mountReaderWorkspace } from "./reader-workspace.js";
+import { mountLibraryCatalog } from "./features/library/library-catalog.js";
 import { DocumentLibraryService } from "@shelf/library";
 import {
   BrowserDocumentSource,
@@ -24,17 +24,6 @@ import {
   createIndexedDbReaderRepositories,
   WebCryptoSha256Digest,
 } from "@shelf/platform-adapters";
-
-function formatSize(bytes: number | null): string {
-  if (bytes === null) return "Unknown size";
-  if (bytes < 1024) return String(bytes) + " B";
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-}
-
-function sourceLabel(document: Document): string {
-  return document.source.kind === "imported-copy" ? "Imported copy" : "External reference";
-}
 
 function createElement<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -119,12 +108,6 @@ export function mountShelf(root: HTMLElement): void {
   status.setAttribute("aria-live", "polite");
 
   const librarySection = createElement("section", "library-section");
-  const libraryHeading = createElement("div", "section-heading");
-  const libraryTitle = createElement("h2", "section-title", "Your library");
-  const libraryHint = createElement("p", "section-hint", "PDF files remain on this device. No account or upload is required.");
-  libraryHeading.append(libraryTitle, libraryHint);
-  const list = createElement("div", "document-list");
-  librarySection.append(libraryHeading, list);
 
   const viewer = createElement("section", "reader-viewer");
   viewer.hidden = true;
@@ -225,7 +208,14 @@ export function mountShelf(root: HTMLElement): void {
         setStatus("The PDF was closed. Your library remains available offline.");
       },
     });
+    await libraryCatalog.markOpened(id);
   }
+
+  const libraryCatalog = mountLibraryCatalog(librarySection, {
+    store,
+    onOpenDocument: (id) => { void openDocument(id); },
+    onStatus: setStatus,
+  });
 
   async function importPickedFile(mode: "imported-copy" | "external-reference"): Promise<void> {
     importButton.disabled = true;
@@ -280,39 +270,7 @@ export function mountShelf(root: HTMLElement): void {
   }
 
   async function refreshLibrary(): Promise<void> {
-    const result = await library.listDocuments();
-    if (!result.ok) {
-      setStatus(result.error.message, true);
-      return;
-    }
-    list.replaceChildren();
-    if (result.value.length === 0) {
-      const empty = createElement(
-        "div",
-        "library-empty",
-        "No PDFs yet. Import a copy or link an original file to get started.",
-      );
-      list.append(empty);
-      return;
-    }
-    for (const item of result.value) {
-      const card = createElement("article", "document-card");
-      const details = createElement("div", "document-details");
-      const name = createElement("h3", "document-name", item.metadata.title);
-      const metadata = createElement(
-        "p",
-        "document-metadata",
-        sourceLabel(item) + " · " + formatSize(item.source.sizeBytes),
-      );
-      details.append(name, metadata);
-      const open = createElement("button", "button button-small", "Open") as HTMLButtonElement;
-      open.type = "button";
-      open.addEventListener("click", () => {
-        void openDocument(item.id);
-      });
-      card.append(details, open);
-      list.append(card);
-    }
+    await libraryCatalog.refresh();
   }
 
   importButton.addEventListener("click", () => {
@@ -370,8 +328,10 @@ export function mountShelf(root: HTMLElement): void {
       setStatus(
         "Backup restored: " + String(restored.value.documents) + " documents, " +
         String(restored.value.bookmarks) + " bookmarks, " +
-        String(restored.value.annotations) + " annotations, and " +
-        String(restored.value.quotes) + " quotes. Re-link local PDFs whose source is unavailable.",
+        String(restored.value.annotations) + " annotations, " +
+        String(restored.value.quotes) + " quotes, " +
+        String(restored.value.libraryEntries) + " book records, and " +
+        String(restored.value.savedLibraryViews) + " saved views. Re-link local PDFs whose source is unavailable.",
       );
     })();
   });

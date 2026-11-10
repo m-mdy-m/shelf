@@ -299,20 +299,6 @@ export function mountLibraryCatalog(
     sortFilter.value = filters.sort;
   }
 
-  function updateTagOptions(): void {
-    const current = tagFilter.value || filters.tag;
-    const tags = [...new Set(items.flatMap((item) => item.entry.tags))]
-      .sort((left, right) => left.localeCompare(right, undefined, { sensitivity: "base" }));
-    addOptions(tagFilter, [
-      { value: "all", label: "All tags" },
-      ...tags.map((tag) => ({ value: tag, label: tag })),
-    ]);
-    tagFilter.value = tags.some((tag) => tag.toLocaleLowerCase() === current.toLocaleLowerCase())
-      ? current
-      : "all";
-    filters = { ...filters, tag: tagFilter.value };
-  }
-
   function renderSummary(): void {
     const counts = new Map<LibraryReadingStatus, number>(STATUS_ORDER.map((status) => [status, 0]));
     for (const item of items) counts.set(item.entry.readingStatus, (counts.get(item.entry.readingStatus) ?? 0) + 1);
@@ -365,6 +351,7 @@ export function mountLibraryCatalog(
       const apply = button(owner, view.name, "library-saved-view-apply");
       apply.addEventListener("click", () => {
         filters = { ...view.filters };
+        updateTagOptions();
         syncFilters();
         renderCards();
         renderQuickFilters();
@@ -679,7 +666,7 @@ export function mountLibraryCatalog(
     void (async () => {
       const now = Date.now();
       const view: SavedLibraryView = {
-        id: "view-" + owner.defaultView?.crypto.randomUUID(),
+        id: "view-" + (owner.defaultView?.crypto.randomUUID() ?? String(now)),
         name,
         filters: { ...filters },
         createdAt: now,

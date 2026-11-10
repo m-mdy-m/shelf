@@ -115,11 +115,12 @@ export function deriveLibraryProgress(
     : pagesRead >= totalPages
       ? 100
       : Math.round((pagesRead / totalPages) * 100);
-  const state: LibraryProgressSummary["state"] = pagesRead === 0
-    ? "not-started"
-    : totalPages !== null && pagesRead >= totalPages
+  const state: LibraryProgressSummary["state"] = entry.readingStatus === "completed" ||
+    (totalPages !== null && pagesRead >= totalPages)
       ? "completed"
-      : "in-progress";
+      : pagesRead === 0
+        ? "not-started"
+        : "in-progress";
 
   return {
     totalPages,
