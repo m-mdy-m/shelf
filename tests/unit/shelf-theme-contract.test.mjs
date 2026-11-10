@@ -61,3 +61,15 @@ test("browser and installed PWA theme colors match the dark application canvas",
   assert.equal(manifest.theme_color, "#090c11");
   assert.equal(manifest.background_color, "#090c11");
 });
+
+
+test("the library toolbar keeps secondary filters behind an accessible disclosure", async () => {
+  const catalog = await source("apps/web/src/features/library/library-catalog.ts");
+  const styles = await source("apps/web/src/styles.css");
+
+  assert.match(catalog, /element\(owner, "details", "library-advanced-filters"\)/u);
+  assert.match(catalog, /toolbar\.append\(searchLabel, sortFilter, clearFiltersButton, layoutToggle, advancedFilters\)/u);
+  assert.match(catalog, /syncAdvancedFilterLabel\(\)/u);
+  assert.match(styles, /\.library-advanced-filters-toggle:focus-visible/u);
+  assert.match(styles, /\.library-advanced-filters-content\s*\{/u);
+});
