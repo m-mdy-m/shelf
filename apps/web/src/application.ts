@@ -1,5 +1,6 @@
 import { ReaderAnnotationService, toOpaqueId } from "@shelf/reader-core";
 import type {
+  Document,
   DocumentId,
   DocumentLocator,
   IdGeneratorPort,
@@ -209,6 +210,7 @@ export function mountShelf(root: HTMLElement): void {
       },
     });
     await libraryCatalog.markOpened(id);
+    void syncDocumentPageCount(id, opened.value.info.pageCount);
   }
 
   const libraryCatalog = mountLibraryCatalog(librarySection, {
@@ -216,6 +218,27 @@ export function mountShelf(root: HTMLElement): void {
     onOpenDocument: (id) => { void openDocument(id); },
     onStatus: setStatus,
   });
+
+  async function syncDocumentPageCount(documentId: DocumentId, pageCount: number): Promise<void> {
+    if (!Number.isSafeInteger(pageCount) || pageCount <= 0) return;
+    const current = await store.getById(documentId);
+    if (!current.ok) {
+      setStatus(current.error.message, true);
+      return;
+    }
+    if (current.value === null || current.value.metadata.pageCount === pageCount) return;
+    const updated: Document = {
+      ...current.value,
+      metadata: { ...current.value.metadata, pageCount },
+      updatedAt: Date.now(),
+    };
+    const saved = await store.save(updated);
+    if (!saved.ok) {
+      setStatus(saved.error.message, true);
+      return;
+    }
+    await libraryCatalog.refresh();
+  }
 
   async function importPickedFile(mode: "imported-copy" | "external-reference"): Promise<void> {
     importButton.disabled = true;

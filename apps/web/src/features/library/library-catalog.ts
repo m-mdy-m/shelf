@@ -751,7 +751,12 @@ export function mountLibraryCatalog(
     const current = items.find((item) => item.document.id === documentId);
     if (current === undefined) return;
     const now = Date.now();
-    const next: LibraryEntry = { ...current.entry, lastOpenedAt: now, updatedAt: now };
+    const next: LibraryEntry = {
+      ...current.entry,
+      readingStatus: current.entry.readingStatus === "not-started" ? "reading" : current.entry.readingStatus,
+      lastOpenedAt: now,
+      updatedAt: now,
+    };
     const result = await store.saveLibraryEntry(next);
     if (!result.ok) {
       onStatus(result.error.message, true);
@@ -760,6 +765,7 @@ export function mountLibraryCatalog(
     const index = items.findIndex((item) => item.document.id === documentId);
     if (index >= 0) items[index] = { ...items[index]!, entry: next };
     renderSummary();
+    renderQuickFilters();
     renderCards();
   }
 
