@@ -1,4 +1,5 @@
-import type { Document, DocumentId } from "./document.js";
+import type { Document } from "./document.js";
+import type { DocumentId } from "./ids.js";
 import type { ReadingProgress } from "./reading-progress.js";
 
 export const LIBRARY_READING_STATUSES = [
