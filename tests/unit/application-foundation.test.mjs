@@ -107,7 +107,7 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(styles.includes("body:has(.reader-viewer:not([hidden]))"), true);
   assert.equal(styles.includes(".reader-toolbar {"), true);
   assert.equal(styles.includes(".reader-stage {"), true);
-  assert.equal(styles.includes(".reader-page-mount {\\n  background: #fff;"), true);
+  assert.match(styles, /\\.reader-page-mount\\s*\\{[^}]*background:\\s*#fff;/u);
   assert.equal(workspace.includes("createPdfPageLayers"), true);
   assert.equal(workspace.includes("if (index === currentPage && renderScale === zoom)"), true);
   assert.equal(workspace.includes('onStatus("Ready · " + session.info.pageCount + " pages.", false)'), true);
