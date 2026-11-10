@@ -122,7 +122,11 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
   let saveTimer: number | null = null;
   let currentPage = 0;
   let zoom = validZoom(options.initialProgress?.zoom ?? 1) ? options.initialProgress?.zoom ?? 1 : 1;
-  let mode: ReadingMode = options.initialProgress?.readingMode ?? "single-page";
+  const persistedMode = options.initialProgress?.readingMode;
+  let mode: ReadingMode =
+    persistedMode === "single-page" || persistedMode === "continuous"
+      ? persistedMode
+      : "single-page";
   let lastScrollPosition = 0;
 
   const toolbar = element(owner, "div", "reader-toolbar");

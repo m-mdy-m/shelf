@@ -103,8 +103,12 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(shell.includes("if (isCurrentAttempt() && activeSession === opened.value)"), true);
   assert.equal(shell.includes("The linked original PDF is unavailable"), true);
   assert.equal(shell.includes("Re-import it if the source is damaged"), true);
-  assert.equal(workspace.includes('let mode: ReadingMode = options.initialProgress?.readingMode ?? "single-page";'), true);
-  assert.equal(styles.includes("body:has(.reader-viewer:not([hidden]))"), true);
+  assert.equal(workspace.includes('persistedMode === "single-page" || persistedMode === "continuous"'), true);
+  assert.equal(workspace.includes(': "single-page";'), true);
+  assert.equal(shell.includes('main.classList.add("reader-active")'), true);
+  assert.equal(shell.includes('main.classList.remove("reader-active")'), true);
+  assert.equal(styles.includes("body.reader-active"), true);
+  assert.equal(styles.includes("body:has(.reader-viewer:not([hidden]))"), false);
   assert.equal(styles.includes(".reader-toolbar {"), true);
   assert.equal(styles.includes(".reader-stage {"), true);
   assert.ok(/\.reader-page-mount\s*\{[^}]*background:\s*#fff;/u.test(styles));
