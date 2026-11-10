@@ -2108,7 +2108,11 @@ body {
   outline-offset: 3px;
 }
 
-.library-advanced-filters-content {
+.library-advanced-filters:not([open]) > .library-advanced-filters-content {
+  display: none;
+}
+
+.library-advanced-filters[open] > .library-advanced-filters-content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
   gap: 0.5rem;
