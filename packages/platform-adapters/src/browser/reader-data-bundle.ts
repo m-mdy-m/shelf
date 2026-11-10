@@ -9,10 +9,14 @@ import type {
   ReaderError,
   Result,
   TextAnchor,
+  LibraryEntry,
+  LibraryFilters,
+  LibraryReadingStatus,
+  SavedLibraryView,
 } from "@shelf/reader-core";
 
 export const READER_DATA_BUNDLE_FORMAT = "shelf-reader-data" as const;
-export const READER_DATA_BUNDLE_VERSION = 1 as const;
+export const READER_DATA_BUNDLE_VERSION = 2 as const;
 
 export interface ReaderDataBundle {
   readonly format: typeof READER_DATA_BUNDLE_FORMAT;
@@ -24,6 +28,8 @@ export interface ReaderDataBundle {
   readonly bookmarks: readonly Bookmark[];
   readonly annotations: readonly Annotation[];
   readonly quotes: readonly Quote[];
+  readonly libraryEntries: readonly LibraryEntry[];
+  readonly savedLibraryViews: readonly SavedLibraryView[];
 }
 
 export interface ReaderDataSnapshot {
@@ -32,6 +38,8 @@ export interface ReaderDataSnapshot {
   readonly bookmarks: readonly Bookmark[];
   readonly annotations: readonly Annotation[];
   readonly quotes: readonly Quote[];
+  readonly libraryEntries?: readonly LibraryEntry[];
+  readonly savedLibraryViews?: readonly SavedLibraryView[];
 }
 
 function invalid(message: string): Result<never, ReaderError> {
@@ -63,6 +71,71 @@ function isSafeNonNegativeInteger(value: unknown): value is number {
 
 function strings(value: unknown): value is string[] {
   return Array.isArray(value) && value["every"](isString);
+}
+
+function sanitizeLibraryEntry(value: unknown): LibraryEntry | null {
+  if (!isRecord(value) || !isString(value["documentId"]) || value["documentId"].trim() === "" ||
+      !(value["titleOverride"] === null || (isString(value["titleOverride"]) && value["titleOverride"].length <= 500)) ||
+      !(value["authorsOverride"] === null || strings(value["authorsOverride"])) ||
+      !(value["summaryOverride"] === null || (isString(value["summaryOverride"]) && value["summaryOverride"].length <= 20_000)) ||
+      !strings(value["tags"]) || value["tags"].length > 50 ||
+      value["tags"].some((tag) => tag.trim() === "" || tag.length > 80) ||
+      !["not-started", "reading", "on-hold", "completed", "reference"].includes(String(value["readingStatus"])) ||
+      !isString(value["readmeMarkdown"]) || value["readmeMarkdown"].length > 262_144 ||
+      !(value["lastOpenedAt"] === null || isFiniteNumber(value["lastOpenedAt"])) ||
+      !isFiniteNumber(value["createdAt"]) || !isFiniteNumber(value["updatedAt"])) return null;
+  if (Array.isArray(value["authorsOverride"]) && value["authorsOverride"].length > 100) return null;
+  return {
+    documentId: value["documentId"] as LibraryEntry["documentId"],
+    titleOverride: value["titleOverride"],
+    authorsOverride: value["authorsOverride"] === null ? null : [...value["authorsOverride"] as string[]],
+    summaryOverride: value["summaryOverride"],
+    tags: [...value["tags"]],
+    readingStatus: value["readingStatus"] as LibraryReadingStatus,
+    readmeMarkdown: value["readmeMarkdown"],
+    lastOpenedAt: value["lastOpenedAt"],
+    createdAt: value["createdAt"],
+    updatedAt: value["updatedAt"],
+  };
+}
+
+function sanitizeLibraryFilters(value: unknown): LibraryFilters | null {
+  const statuses = ["all", "not-started", "reading", "on-hold", "completed", "reference"];
+  const progress = ["all", "not-started", "in-progress", "completed"];
+  const formats = ["all", "pdf", "readme", "complete"];
+  const sorts = ["recent", "title", "author", "progress", "last-opened"];
+  if (!isRecord(value) ||
+      !isString(value["query"]) || value["query"].length > 256 ||
+      !isString(value["author"]) || value["author"].length > 200 ||
+      !isString(value["tag"]) || value["tag"].length > 80 ||
+      !statuses.includes(String(value["status"])) ||
+      !progress.includes(String(value["progress"])) ||
+      !formats.includes(String(value["format"])) ||
+      !sorts.includes(String(value["sort"]))) return null;
+  return {
+    query: value["query"],
+    status: value["status"] as LibraryFilters["status"],
+    author: value["author"],
+    tag: value["tag"],
+    progress: value["progress"] as LibraryFilters["progress"],
+    format: value["format"] as LibraryFilters["format"],
+    sort: value["sort"] as LibraryFilters["sort"],
+  };
+}
+
+function sanitizeSavedLibraryView(value: unknown): SavedLibraryView | null {
+  if (!isRecord(value) || !isString(value["id"]) || value["id"].trim() === "" ||
+      !isString(value["name"]) || value["name"].trim() === "" || value["name"].length > 100 ||
+      !isFiniteNumber(value["createdAt"]) || !isFiniteNumber(value["updatedAt"])) return null;
+  const filters = sanitizeLibraryFilters(value["filters"]);
+  if (filters === null) return null;
+  return {
+    id: value["id"],
+    name: value["name"].trim(),
+    filters,
+    createdAt: value["createdAt"],
+    updatedAt: value["updatedAt"],
+  };
 }
 
 function sanitizeDocument(value: unknown): Document | null {
@@ -243,12 +316,16 @@ function uniqueIds(items: readonly { readonly id: string }[]): boolean {
 /** Validate untrusted import JSON and copy only export-safe fields into the result. */
 export function parseReaderDataBundle(input: unknown): Result<ReaderDataBundle, ReaderError> {
   if (!isRecord(input) || input["format"] !== READER_DATA_BUNDLE_FORMAT ||
-      input["version"] !== READER_DATA_BUNDLE_VERSION ||
+      (input["version"] !== 1 && input["version"] !== READER_DATA_BUNDLE_VERSION) ||
       !isSafeNonNegativeInteger(input["sourceSchemaVersion"]) ||
       !isFiniteNumber(input["exportedAt"]) ||
       !Array.isArray(input["documents"]) || !Array.isArray(input["readingProgress"]) ||
       !Array.isArray(input["bookmarks"]) || !Array.isArray(input["annotations"]) ||
-      !Array.isArray(input["quotes"])) {
+      !Array.isArray(input["quotes"]) ||
+      (input["version"] === READER_DATA_BUNDLE_VERSION &&
+        (!Array.isArray(input["libraryEntries"]) || !Array.isArray(input["savedLibraryViews"]))) ||
+      (input["libraryEntries"] !== undefined && !Array.isArray(input["libraryEntries"])) ||
+      (input["savedLibraryViews"] !== undefined && !Array.isArray(input["savedLibraryViews"]))) {
     return invalid("This file is not a supported Shelf Reader data bundle.");
   }
 
@@ -257,7 +334,10 @@ export function parseReaderDataBundle(input: unknown): Result<ReaderDataBundle, 
   const bookmarks = input["bookmarks"].map(sanitizeBookmark);
   const annotations = input["annotations"].map(sanitizeAnnotation);
   const quotes = input["quotes"].map(sanitizeQuote);
-  if ([...documents, ...readingProgress, ...bookmarks, ...annotations, ...quotes].some((item) => item === null)) {
+  const libraryEntries = ((input["libraryEntries"] as unknown[] | undefined) ?? []).map(sanitizeLibraryEntry);
+  const savedLibraryViews = ((input["savedLibraryViews"] as unknown[] | undefined) ?? []).map(sanitizeSavedLibraryView);
+  if ([...documents, ...readingProgress, ...bookmarks, ...annotations, ...quotes,
+    ...libraryEntries, ...savedLibraryViews].some((item) => item === null)) {
     return invalid("The Shelf backup contains an invalid or unsupported Reader record.");
   }
   const safeDocuments = documents as Document[];
@@ -265,16 +345,19 @@ export function parseReaderDataBundle(input: unknown): Result<ReaderDataBundle, 
   const safeBookmarks = bookmarks as Bookmark[];
   const safeAnnotations = annotations as Annotation[];
   const safeQuotes = quotes as Quote[];
+  const safeLibraryEntries = libraryEntries as LibraryEntry[];
+  const safeSavedLibraryViews = savedLibraryViews as SavedLibraryView[];
 
   if (!uniqueIds(safeDocuments) || !uniqueIds(safeBookmarks) ||
-      !uniqueIds(safeAnnotations) || !uniqueIds(safeQuotes) ||
-      new Set(safeProgress.map((item) => item["documentId"])).size !== safeProgress.length) {
+      !uniqueIds(safeAnnotations) || !uniqueIds(safeQuotes) || !uniqueIds(safeSavedLibraryViews) ||
+      new Set(safeProgress.map((item) => item["documentId"])).size !== safeProgress.length ||
+      new Set(safeLibraryEntries.map((item) => String(item["documentId"]))).size !== safeLibraryEntries.length) {
     return invalid("The Shelf backup contains duplicate record identifiers.");
   }
 
   const documentIds = new Set(safeDocuments.map((item) => String(item["id"])));
   const allScopedRecords = [
-    ...safeProgress, ...safeBookmarks, ...safeAnnotations, ...safeQuotes,
+    ...safeProgress, ...safeBookmarks, ...safeAnnotations, ...safeQuotes, ...safeLibraryEntries,
   ];
   if (allScopedRecords.some((item) => !documentIds.has(String(item["documentId"])))) {
     return invalid("The Shelf backup contains saved Reader data without its document record.");
@@ -292,6 +375,8 @@ export function parseReaderDataBundle(input: unknown): Result<ReaderDataBundle, 
       bookmarks: safeBookmarks,
       annotations: safeAnnotations,
       quotes: safeQuotes,
+      libraryEntries: safeLibraryEntries,
+      savedLibraryViews: safeSavedLibraryViews,
     },
   };
 }
@@ -311,5 +396,7 @@ export function createReaderDataBundle(
     bookmarks: snapshot.bookmarks,
     annotations: snapshot.annotations,
     quotes: snapshot.quotes,
+    libraryEntries: snapshot.libraryEntries ?? [],
+    savedLibraryViews: snapshot.savedLibraryViews ?? [],
   });
 }
