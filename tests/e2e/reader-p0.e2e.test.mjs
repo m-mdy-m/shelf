@@ -207,10 +207,13 @@ test("Chromium keeps native PDF text selection column-bounded and preserves it f
     assert.doesNotMatch(right, /LEFT COLUMN/u);
   } finally {
     cdp?.socket.close();
+    const browserClosed = browser.exitCode !== null || browser.signalCode !== null
+      ? Promise.resolve()
+      : new Promise((resolve) => browser.once("close", resolve));
     browser.kill("SIGTERM");
-    await new Promise((resolve) => browser.exitCode !== null ? resolve() : browser.once("exit", resolve));
+    await browserClosed;
     server.close();
-    await rm(profile, { recursive: true, force: true });
+    await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
     await rm(path.join(webRoot, "p0-harness.html"), { force: true });
     await rm(path.join(webRoot, "p0-harness.js"), { force: true });
   }
