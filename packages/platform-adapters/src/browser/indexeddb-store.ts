@@ -7,7 +7,9 @@ import type {
   DocumentLocatorStorePort,
   DocumentRepositoryPort,
   LibraryEntry,
+  LibraryEntryRepositoryPort,
   SavedLibraryView,
+  SavedLibraryViewRepositoryPort,
   ReadingProgress,
   ReadingProgressRepositoryPort,
   ReaderError,
@@ -80,7 +82,9 @@ implements
   DocumentRepositoryPort,
   ReadingProgressRepositoryPort,
   DocumentLocatorStorePort,
-  BrowserDocumentStoragePort {
+  BrowserDocumentStoragePort,
+  LibraryEntryRepositoryPort,
+  SavedLibraryViewRepositoryPort {
   readonly #factory: IDBFactory | null;
   readonly #databaseName: string;
   #databasePromise: Promise<IDBDatabase> | null = null;

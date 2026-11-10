@@ -9,6 +9,7 @@ export type * from "./domain/document.js";
 export type * from "./domain/document-locator.js";
 export type * from "./domain/errors.js";
 export type * from "./domain/ids.js";
+export type * from "./domain/library.js";
 export type * from "./domain/page-index.js";
 export type * from "./domain/quote.js";
 export type * from "./domain/reading-progress.js";
