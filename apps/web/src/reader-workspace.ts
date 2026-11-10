@@ -818,7 +818,10 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
             if (!disposed && pages.get(index) === page) updateInteractionOverlay(index, page);
           });
         }
-        if (index === currentPage && renderScale === zoom) setReaderBusy(false);
+        if (index === currentPage && renderScale === zoom) {
+          setReaderBusy(false);
+          onStatus("Ready · " + session.info.pageCount + " pages.", false);
+        }
         if (renderScale !== zoom) scheduleRender();
       } else if (result.error.code !== "cancelled") {
         page.renderedScale = null;
@@ -1208,7 +1211,6 @@ export function mountReaderWorkspace(options: ReaderWorkspaceOptions): ReaderWor
       lastScrollPosition = stage.scrollTop;
     }
     draw();
-    if (!disposed) onStatus("Ready · " + session.info.pageCount + " pages.");
   }
 
   void initialize();

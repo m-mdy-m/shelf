@@ -80,6 +80,7 @@ export function mountShelf(root: HTMLElement): void {
 
   let activeSession: PdfDocumentSession | null = null;
   let activeWorkspace: ReturnType<typeof mountReaderWorkspace> | null = null;
+  let documentLoadAttempt = 0;
 
   const main = createElement("main", "shelf-shell");
   const header = createElement("header", "shelf-header");
@@ -137,7 +138,8 @@ export function mountShelf(root: HTMLElement): void {
     status.classList.toggle("shelf-status-error", isError);
   }
 
-  async function closeActiveDocument(): Promise<void> {
+  async function closeActiveDocument(invalidatePendingOpen = true): Promise<void> {
+    if (invalidatePendingOpen) documentLoadAttempt += 1;
     const workspace = activeWorkspace;
     const session = activeSession;
     activeWorkspace = null;
@@ -153,16 +155,35 @@ export function mountShelf(root: HTMLElement): void {
   }
 
   async function openDocument(id: DocumentId): Promise<void> {
-    await closeActiveDocument();
+    const attempt = ++documentLoadAttempt;
+    const isCurrentAttempt = (): boolean => attempt === documentLoadAttempt;
+    await closeActiveDocument(false);
+    if (!isCurrentAttempt()) return;
     setStatus("Opening the local PDF…");
 
     const access = await library.openDocument(id);
+    if (!isCurrentAttempt()) {
+      if (access.ok) await library.closeDocument(access.value.source);
+      return;
+    }
     if (!access.ok) {
-      setStatus(access.error.message, true);
+      const record = await library.getDocument(id);
+      if (!isCurrentAttempt()) return;
+      const sourceKind = record.ok ? record.value?.source.kind : undefined;
+      const explanation = sourceKind === "external-reference"
+        ? "The linked original PDF is unavailable or its permission has expired. Relink the original file or import a local copy. "
+        : sourceKind === "imported-copy"
+          ? "Shelf could not read the imported local PDF copy. Re-import it if the source is damaged. "
+          : "";
+      setStatus(explanation + access.error.message, true);
       return;
     }
 
     const savedProgress = await store.getByDocumentId(id);
+    if (!isCurrentAttempt()) {
+      await library.closeDocument(access.value.source);
+      return;
+    }
     if (!savedProgress.ok) {
       await library.closeDocument(access.value.source);
       setStatus(savedProgress.error.message, true);
@@ -173,6 +194,10 @@ export function mountShelf(root: HTMLElement): void {
     // adapter. It releases the handle on every failed open and the session
     // releases it on close; do not close it a second time here.
     const opened = await pdf.open(id, access.value.source);
+    if (!isCurrentAttempt()) {
+      if (opened.ok) await opened.value.close();
+      return;
+    }
     if (!opened.ok) {
       setStatus(opened.error.message, true);
       return;
@@ -187,8 +212,11 @@ export function mountShelf(root: HTMLElement): void {
       progressRepository: store,
       annotationUseCases,
       initialProgress: savedProgress.value,
-      onStatus: setStatus,
+      onStatus: (message, isError = false) => {
+        if (isCurrentAttempt() && activeSession === opened.value) setStatus(message, isError);
+      },
       onClose: () => {
+        if (!isCurrentAttempt() || activeSession !== opened.value) return;
         void closeActiveDocument();
         setStatus("The PDF was closed. Your library remains available offline.");
       },
