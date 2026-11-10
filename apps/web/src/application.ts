@@ -151,6 +151,7 @@ export function mountShelf(root: HTMLElement): void {
     }
     if (session !== null) await session.close();
     main.classList.remove("reader-active");
+    document.body.classList.remove("reader-active");
     viewer.replaceChildren();
     viewer.hidden = true;
   }
@@ -206,6 +207,7 @@ export function mountShelf(root: HTMLElement): void {
 
     activeSession = opened.value;
     main.classList.add("reader-active");
+    document.body.classList.add("reader-active");
     viewer.hidden = false;
     activeWorkspace = mountReaderWorkspace({
       root: viewer,
@@ -384,6 +386,7 @@ export function mountShelf(root: HTMLElement): void {
     activeWorkspace = null;
     activeSession = null;
     main.classList.remove("reader-active");
+    document.body.classList.remove("reader-active");
 
     // pagehide is a last-chance signal: release UI/render resources
     // synchronously, then make a best-effort final IndexedDB write.

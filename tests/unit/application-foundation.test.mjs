@@ -107,6 +107,8 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(workspace.includes(': "single-page";'), true);
   assert.equal(shell.includes('main.classList.add("reader-active")'), true);
   assert.equal(shell.includes('main.classList.remove("reader-active")'), true);
+  assert.equal(shell.includes('document.body.classList.add("reader-active")'), true);
+  assert.equal(shell.includes('document.body.classList.remove("reader-active")'), true);
   assert.equal(styles.includes("body.reader-active"), true);
   assert.equal(styles.includes("body:has(.reader-viewer:not([hidden]))"), false);
   assert.equal(styles.includes(".reader-toolbar {"), true);
