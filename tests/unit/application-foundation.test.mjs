@@ -105,6 +105,9 @@ test("the web entry point contains local import and reader wiring", async () => 
   assert.equal(workspace.includes("createPdfPageLayers"), true);
   assert.equal(workspace.includes("if (index === currentPage && renderScale === zoom)"), true);
   assert.equal(workspace.includes('onStatus("Ready · " + session.info.pageCount + " pages.", false)'), true);
+  assert.equal(workspace.includes("let readyAnnounced = false"), true);
+  assert.equal(workspace.includes("else if (currentPageError)"), true);
+  assert.equal(workspace.includes("if (index === currentPage) {\\n      currentPageError = true;"), true);
   assert.equal(workspace.includes('if (!disposed) onStatus("Ready · " + session.info.pageCount + " pages.")'), false);
   assert.equal(workspace.includes("Loading PDF page"), true);
   assert.equal(workspace.includes("Retry page"), true);
