@@ -255,7 +255,13 @@ export function mountLibraryCatalog(
   layoutToggle.setAttribute("aria-label", "Library layout");
   layoutToggle.append(gridButton, listButton);
 
-  toolbar.append(searchLabel, statusFilter, authorFilter, tagFilter, progressFilter, formatFilter, sortFilter, clearFiltersButton, layoutToggle);
+  const advancedFilters = element(owner, "details", "library-advanced-filters");
+  const advancedFiltersSummary = element(owner, "summary", "library-advanced-filters-toggle", "More filters");
+  const advancedFiltersContent = element(owner, "div", "library-advanced-filters-content");
+  advancedFiltersContent.append(statusFilter, authorFilter, tagFilter, progressFilter, formatFilter);
+  advancedFilters.append(advancedFiltersSummary, advancedFiltersContent);
+
+  toolbar.append(searchLabel, sortFilter, clearFiltersButton, layoutToggle, advancedFilters);
 
   const quickFilters = element(owner, "div", "library-quick-filters");
   quickFilters.setAttribute("role", "group");
@@ -289,6 +295,22 @@ export function mountLibraryCatalog(
 
   root.replaceChildren(heading, summary, toolbar, quickFilters, viewsSection, cards, empty);
 
+  function syncAdvancedFilterLabel(): void {
+    const activeCount = [
+      filters.status !== "all",
+      filters.author.trim().length > 0,
+      filters.tag !== "all",
+      filters.progress !== "all",
+      filters.format !== "all",
+    ].filter(Boolean).length;
+    advancedFiltersSummary.textContent = activeCount === 0
+      ? "More filters"
+      : "More filters · " + String(activeCount);
+    advancedFilters.classList.toggle("has-active-filters", activeCount > 0);
+    clearFiltersButton.hidden = activeCount === 0 &&
+      filters.query.trim().length === 0 && filters.sort === "recent";
+  }
+
   function syncFilters(): void {
     search.value = filters.query;
     statusFilter.value = filters.status;
@@ -297,6 +319,7 @@ export function mountLibraryCatalog(
     progressFilter.value = filters.progress;
     formatFilter.value = filters.format;
     sortFilter.value = filters.sort;
+    syncAdvancedFilterLabel();
   }
 
   function renderSummary(): void {
@@ -628,6 +651,7 @@ export function mountLibraryCatalog(
 
   function updateFilters(next: Partial<LibraryFilters>): void {
     filters = { ...filters, ...next };
+    syncAdvancedFilterLabel();
     renderCards();
     renderQuickFilters();
   }
